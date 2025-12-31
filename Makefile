@@ -6,6 +6,7 @@ setup:
 	cd platform && npm install
 	cd aggregator && npm install
 	cd services/smpp-gateway && go mod tidy
+	cd services/hlr-service && go mod tidy
 
 # Build all services
 build:
@@ -15,6 +16,7 @@ build:
 	cd services/routing-engine && go build -o routing-engine .
 	cd services/campaign-engine && go build -o campaign-engine .
 	cd services/ss7-gateway && go build -o ss7-gateway .
+	cd services/hlr-service && go build -o hlr-service .
 
 # Test all services
 test:
