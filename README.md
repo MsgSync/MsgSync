@@ -183,7 +183,7 @@ git clone https://github.com/your-org/MsgSync.git
 cd MsgSync
 
 # Start all services
-docker-compose up -d
+docker-compose up -d --build
 
 # Run database migrations
 docker-compose exec platform npx prisma migrate deploy

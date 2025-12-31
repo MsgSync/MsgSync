@@ -205,6 +205,28 @@ services:
       timeout: 10s
       retries: 3
 
+  smpp-gateway:
+    build:
+      context: .
+      dockerfile: services/smpp-gateway/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+    depends_on:
+      - kafka
+    restart: unless-stopped
+
+  routing-engine:
+    build:
+      context: .
+      dockerfile: services/routing-engine/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - kafka
+      - postgres
+    restart: unless-stopped
+
   nginx:
     image: nginx:alpine
     ports:
