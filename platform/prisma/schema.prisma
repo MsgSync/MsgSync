@@ -175,6 +175,10 @@ model Message {
   campaign      Campaign?    @relation(fields: [campaignId], references: [id])
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([status, createdAt])
+  @@index([recipient, createdAt])
 }
 
 model ApiKey {
@@ -322,11 +326,14 @@ model RoutingRule {
   providerId     String
   provider       Provider  @relation(fields: [providerId], references: [id])
   priority       Int       @default(1)
+  llrScore       Float     @default(0.0)
+  lcrRate        Decimal   @default(0.0)
   active         Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   @@unique([prefix, mcc, mnc, organizationId, providerId])
+  @@index([prefix, mcc, mnc, priority])
 }
 model HlrConfig {
   id             String   @id @default(uuid())
