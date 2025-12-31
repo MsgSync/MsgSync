@@ -136,23 +136,77 @@ jobs:
         cd services/campaign-engine
         go test ./...
 
-  build-images:
+  build-and-push:
     runs-on: ubuntu-latest
     needs: [test-go-services, test-platform]
+    permissions:
+      contents: read
+      packages: write
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Build HLR Service
-      run: docker build -t msgsync/hlr-service -f services/hlr-service/Dockerfile .
 
-    - name: Build SS7 Gateway
-      run: docker build -t msgsync/ss7-gateway -f services/ss7-gateway/Dockerfile .
+    - name: Log in to the Container registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build SMPP Gateway
-      run: docker build -t msgsync/smpp-gateway -f services/smpp-gateway/Dockerfile .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-    - name: Build Routing Engine
-      run: docker build -t msgsync/routing-engine -f services/routing-engine/Dockerfile .
+    - name: Lowercase Repo Owner
+      run: |
+        echo "REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
+      env:
+        GITHUB_REPOSITORY_OWNER: '${{ github.repository_owner }}'
 
-    - name: Build Campaign Engine
-      run: docker build -t msgsync/campaign-engine -f services/campaign-engine/Dockerfile .
+    - name: Build and Push HLR Service
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: services/hlr-service/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_OWNER }}/hlr-service:latest
+          ghcr.io/${{ env.REPO_OWNER }}/hlr-service:${{ github.sha }}
+
+    - name: Build and Push SS7 Gateway
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: services/ss7-gateway/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_OWNER }}/ss7-gateway:latest
+          ghcr.io/${{ env.REPO_OWNER }}/ss7-gateway:${{ github.sha }}
+
+    - name: Build and Push SMPP Gateway
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: services/smpp-gateway/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_OWNER }}/smpp-gateway:latest
+          ghcr.io/${{ env.REPO_OWNER }}/smpp-gateway:${{ github.sha }}
+
+    - name: Build and Push Routing Engine
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: services/routing-engine/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_OWNER }}/routing-engine:latest
+          ghcr.io/${{ env.REPO_OWNER }}/routing-engine:${{ github.sha }}
+
+    - name: Build and Push Campaign Engine
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: services/campaign-engine/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_OWNER }}/campaign-engine:latest
+          ghcr.io/${{ env.REPO_OWNER }}/campaign-engine:${{ github.sha }}
