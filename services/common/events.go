@@ -25,3 +25,14 @@ type ProviderRequestEvent struct {
 	Config       json.RawMessage `json:"config"`
 	Cost         decimal.Decimal `json:"cost"`
 }
+
+// MapMessage represents a MAP (Mobile Application Part) request/response
+// that will be sent via Kafka between HLR service and SS7 gateway.
+type MapMessage struct {
+	CorrelationID string `json:"correlationId"`
+	Type          string `json:"type"` // SRI_SM, ATI
+	MSISDN        string `json:"msisdn"`
+	IMSI          string `json:"imsi,omitempty"`
+	VLR           string `json:"vlr,omitempty"`
+	Error         string `json:"error,omitempty"`
+}

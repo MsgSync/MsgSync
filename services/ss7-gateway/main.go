@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"io"
 
@@ -18,8 +19,10 @@ import (
 )
 
 const (
-	ReceivedTopic = "sms.received"
-	RoutedTopic   = "sms.routed"
+	ReceivedTopic    = "sms.received"
+	RoutedTopic      = "sms.routed"
+	MapRequestTopic  = "ss7.map.request"
+	MapResponseTopic = "ss7.map.response"
 )
 
 type SS7Gateway struct {
@@ -54,10 +57,53 @@ func (g *SS7Gateway) Start(ctx context.Context) error {
 	// Start Kafka consumer for outgoing messages
 	go g.consumeOutgoing(ctx)
 
-	log.Println("Waiting for messages from Routing Engine...")
+	// Start Kafka consumer for MAP/HLR requests
+	go g.consumeMapRequests(ctx)
+
+	log.Println("Waiting for messages and HLR requests...")
 
 	<-ctx.Done()
 	return nil
+}
+
+func (g *SS7Gateway) consumeMapRequests(ctx context.Context) {
+	brokers := strings.Split(g.config.KafkaBrokers, ",")
+	consumer := kafka.NewConsumer(brokers, MapRequestTopic, "ss7-map-group")
+	producer := kafka.NewProducer(brokers, MapResponseTopic)
+
+	err := consumer.Consume(ctx, func(key, value []byte) error {
+		var req common.MapMessage
+		if err := json.Unmarshal(value, &req); err != nil {
+			return err
+		}
+
+		log.Printf("[SS7 HLR] Received MAP Request: Type=%s, MSISDN=%s, ID=%s",
+			req.Type, req.MSISDN, req.CorrelationID)
+
+		timer := monitoring.ProcessingDuration.WithLabelValues("ss7-gateway", "map-sri")
+		obs := prometheus.NewTimer(timer)
+		defer obs.ObserveDuration()
+
+		// Mock MAP SRI (Send Routing Information) handshake
+		// In production, this would use g.transport to send TCAP/MAP pdu
+		time.Sleep(200 * time.Millisecond) // Simulate network delay
+
+		resp := req
+		resp.IMSI = "23415" + req.MSISDN[len(req.MSISDN)-5:]
+		resp.VLR = "1.2.3.4"
+
+		val, _ := json.Marshal(resp)
+		if err := producer.Publish(ctx, []byte(req.CorrelationID), val); err != nil {
+			log.Printf("Failed to publish MAP response: %v", err)
+			return err
+		}
+
+		monitoring.MessagesProcessed.WithLabelValues("ss7-gateway", "hlr-success").Inc()
+		return nil
+	})
+	if err != nil {
+		log.Printf("MAP Consumer error: %v", err)
+	}
 }
 
 func (g *SS7Gateway) consumeOutgoing(ctx context.Context) {

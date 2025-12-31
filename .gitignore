@@ -74,11 +74,11 @@ target/
 *.exe
 *.test
 *.out
-**/smpp-gateway
-**/routing-engine
-**/campaign-engine
-**/ss7-gateway
-**/common
+services/smpp-gateway/smpp-gateway
+services/routing-engine/routing-engine
+services/campaign-engine/campaign-engine
+services/ss7-gateway/ss7-gateway
+services/hlr-service/hlr-service
 
 # Compiled files
 *.o

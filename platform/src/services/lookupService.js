@@ -21,17 +21,24 @@ class LookupService {
             return cached;
         }
 
-        // 2. Try configured HLR providers
-        const activeConfigs = await prisma.hlrConfig.findMany({ where: { active: true } });
-        let result = null;
+        // 2. Try Go HLR Service if available
+        const HLR_SERVICE_URL = process.env.HLR_SERVICE_URL || 'http://localhost:3003';
+        try {
+            const hlrResponse = await axios.post(`${HLR_SERVICE_URL}/lookup`, { phone: cleanPhone }, { timeout: 5000 });
+            if (hlrResponse.data && hlrResponse.data.isValid !== undefined) {
+                result = hlrResponse.data;
+            }
+        } catch (e) {
+            console.log("Go HLR Service unavailable, falling back to other providers...");
 
-        if (activeConfigs.length > 0) {
-            // Attempt to use the first active HLR provider (or fallback through them)
-            // For now we just use the first one, but could be enhanced with fallback logic
-            result = await this.performExternalHlr(activeConfigs[0], cleanPhone);
+            // 2.5 Try configured legacy HLR providers
+            const activeConfigs = await prisma.hlrConfig.findMany({ where: { active: true } });
+            if (activeConfigs.length > 0) {
+                result = await this.performExternalHlr(activeConfigs[0], cleanPhone);
+            }
         }
 
-        // 3. Fallback to mock if no real provider or real provider failed
+        // 3. Fallback to local mock if still no result
         if (!result) {
             result = await this.mockExternalHlr(cleanPhone);
         }
