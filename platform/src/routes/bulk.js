@@ -14,6 +14,8 @@ const {
 } = require('../controllers/bulk');
 const authenticate = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/rateLimiter');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 router.use(authenticate);
 router.use(apiLimiter);
@@ -26,7 +28,7 @@ router.post('/lists/:listId/contacts', addContacts);
 // Campaigns
 router.get('/campaigns', getCampaigns);
 router.get('/campaigns/:id', getCampaignById);
-router.post('/campaigns', createCampaign);
+router.post('/campaigns', upload.single('csv'), createCampaign);
 router.post('/campaigns/:id/start', startCampaign);
 router.post('/campaigns/:id/pause', pauseCampaign);
 router.post('/campaigns/:id/resume', resumeCampaign);

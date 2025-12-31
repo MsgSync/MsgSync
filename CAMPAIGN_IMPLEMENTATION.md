@@ -184,7 +184,7 @@ User Action → Frontend JS → API Request → Controller → Service → Datab
 
 ### Quick Setup
 ```bash
-cd /Users/KhulnaSoft/MsgSync/platform
+cd /Users/MsgSync/MsgSync/platform
 ./setup-campaigns.sh
 ```
 

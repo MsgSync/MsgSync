@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const providerService = require('./providerService');
+const { trackMessage } = require('../middleware/prom');
 
 /**
  * Processes a message from the queue and attempts delivery through a provider.
@@ -61,22 +62,49 @@ async function processMessage(messageId) {
         // Billing Selection Logic:
         // ON_ATTEMPT: Always charge if we tried sending
         // ON_SUBMISSION: Only charge if provider accepted (deliveryResult.success)
-        // ON_DELIVERY: (Handled via DLR webhook, but for now defaults to submission success)
+        // ON_DELIVERY: Charged via DLR webhook (handled in callbacks controller)
         let finalPrice = 0;
         if (org.billingPolicy === 'ON_ATTEMPT') {
             finalPrice = rate.pricePerSms;
-        } else if (deliveryResult.success) {
+        } else if (org.billingPolicy === 'ON_SUBMISSION' && deliveryResult.success) {
             finalPrice = rate.pricePerSms;
         }
+        // If ON_DELIVERY, finalPrice remains 0 here; it will be charged in the DLR callback.
 
         // 5. Update message with result and financials
         const aiService = require('./aiService');
         const sentimentResult = await aiService.analyzeSentiment(message.content);
 
+        // --- NEW: Atomic Balance Deduction & Transaction Logging ---
+        const finalStatus = deliveryResult.success ? 'sent' : 'failed';
+        let transaction = null;
+
+        if (finalPrice > 0) {
+            await prisma.$transaction(async (tx) => {
+                // Deduct from organization balance
+                await tx.organization.update({
+                    where: { id: message.organizationId },
+                    data: { balance: { decrement: finalPrice } }
+                });
+
+                // Create Transaction record
+                transaction = await tx.transaction.create({
+                    data: {
+                        amount: finalPrice,
+                        type: 'DEBIT',
+                        currency: 'USD',
+                        status: 'COMPLETED',
+                        description: `SMS to ${message.recipient} | ID: ${message.id}`,
+                        organizationId: message.organizationId
+                    }
+                });
+            });
+        }
+
         const updatedMessage = await prisma.message.update({
             where: { id: messageId },
             data: {
-                status: deliveryResult.success ? 'sent' : 'failed',
+                status: finalStatus,
                 externalId: deliveryResult.externalId,
                 provider: deliveryResult.providerUsed || 'none',
                 error: deliveryResult.error,
@@ -98,6 +126,9 @@ async function processMessage(messageId) {
             const integrationService = require('./integrationService');
             await integrationService.sendSlackAlert(updatedMessage.metadata.slack_webhook_url, updatedMessage);
         }
+
+        // Track metric
+        trackMessage(updatedMessage.status, updatedMessage.provider || 'none');
 
         return deliveryResult;
     } catch (error) {

@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: MsgSync SMS Platform API
+  version: 1.0.0
+  description: High-throughput API for message submission and status tracking.
+servers:
+  - url: https://api.msgsync.io/v1
+paths:
+  /messages:
+    post:
+      summary: Submit single or batch messages
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/MessageRequest'
+              required:
+                - messages
+      responses:
+        '202':
+          description: Messages accepted for delivery
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  message_ids:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          description: Unauthorized
+        '429':
+          description: Rate limit exceeded
+  /messages/{id}:
+    get:
+      summary: Get message status and history
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    MessageRequest:
+      type: object
+      properties:
+        to:
+          type: string
+          description: Recipient phone number in E.164 format
+        from:
+          type: string
+          description: Sender ID or virtual number
+        content:
+          type: string
+        profile:
+          type: string
+          enum: [TRANSACTIONAL, PROMOTIONAL, OTP]
+        scheduled_at:
+          type: string
+          format: date-time
+      required:
+        - to
+        - content
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [queued, sending, sent, delivered, failed]
+        external_id:
+          type: string
+        error:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        delivered_at:
+          type: string
+          format: date-time

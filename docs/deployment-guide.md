@@ -32,6 +32,18 @@ services:
     ports:
       - "6379:6379"
 
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+
   platform:
     build: 
       context: ./platform
@@ -55,6 +67,57 @@ services:
     ports:
       - "3000:3000"
     depends_on:
+      - postgres
+
+  smpp-gateway:
+    build:
+      context: .
+      dockerfile: services/smpp-gateway/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+    depends_on:
+      - kafka
+
+  routing-engine:
+    build:
+      context: .
+      dockerfile: services/routing-engine/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+      DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_platform?schema=public"
+    depends_on:
+      - kafka
+      - postgres
+
+  campaign-engine:
+    build:
+      context: .
+      dockerfile: services/campaign-engine/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+      DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_platform?schema=public"
+    depends_on:
+      - kafka
+      - postgres
+
+  ss7-gateway:
+    build:
+      context: .
+      dockerfile: services/ss7-gateway/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+    depends_on:
+      - kafka
+
+  hlr-service:
+    build:
+      context: .
+      dockerfile: services/hlr-service/Dockerfile
+    environment:
+      KAFKA_BROKERS: "kafka:9092"
+      DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_platform?schema=public"
+    depends_on:
+      - kafka
       - postgres
 
 volumes:
@@ -95,6 +158,46 @@ RUN npx prisma generate
 
 EXPOSE 3000
 CMD ["npm", "start"]
+```
+
+### Go Services Dockerfiles
+
+All Go services (`smpp-gateway`, `routing-engine`, `campaign-engine`, `ss7-gateway`, `hlr-service`) use a multi-stage build process.
+Note that the **build context must be the project root** to allow access to shared libraries (`services/common`).
+
+**Example Template:**
+```dockerfile
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# Copy the common module which is a dependency
+COPY services/common ./services/common
+
+# Copy the service code
+COPY services/service-name ./services/service-name
+
+# Set workdir to the service directory
+WORKDIR /app/services/service-name
+
+# Download dependencies
+RUN go mod download
+
+# Build the binary
+RUN go build -o service-name .
+
+# Final stage
+FROM alpine:latest
+
+WORKDIR /app
+
+# Install certificates
+RUN apk --no-cache add ca-certificates
+
+# Copy binary from builder
+COPY --from=builder /app/services/service-name/service-name .
+
+CMD ["./service-name"]
 ```
 
 ## Deployment Steps

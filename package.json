@@ -34,7 +34,8 @@
   "workspaces": [
     "platform",
     "aggregator",
-    "sdk/*"
+    "sdk/*",
+    "web"
   ],
   "devDependencies": {
     "eslint": "^8.50.0",

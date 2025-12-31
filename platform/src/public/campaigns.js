@@ -11,7 +11,29 @@ document.addEventListener('DOMContentLoaded', () => {
     loadContactLists();
     loadCampaigns();
     setupEventListeners();
+
+    // Polling for progress updates
+    setInterval(() => {
+        const hasRunning = campaigns.some(c => c.status === 'running' || c.status === 'scheduled');
+        if (hasRunning) {
+            silentRefresh();
+        }
+    }, 5000);
 });
+
+async function silentRefresh() {
+    try {
+        const response = await fetch(`${API_BASE}/campaigns`, {
+            headers: { 'X-API-Key': API_KEY }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            campaigns = data.data || [];
+            renderCampaigns(true); // silent render
+            updateStats();
+        }
+    } catch (e) { /* ignore silent failure */ }
+}
 
 function setupEventListeners() {
     // Template preview
@@ -77,13 +99,15 @@ async function loadContactLists() {
 }
 
 // Rendering
-function renderCampaigns() {
+function renderCampaigns(silent = false) {
     const grid = document.getElementById('campaigns-grid');
     const emptyState = document.getElementById('empty-state');
 
     if (campaigns.length === 0) {
-        grid.style.display = 'none';
-        emptyState.style.display = 'block';
+        if (!silent) {
+            grid.style.display = 'none';
+            emptyState.style.display = 'block';
+        }
         return;
     }
 
@@ -97,9 +121,9 @@ function renderCampaigns() {
 function createCampaignCard(campaign) {
     const statusClass = `status-${campaign.status}`;
     const scheduledDate = campaign.scheduledAt ? new Date(campaign.scheduledAt).toLocaleString() : 'Not scheduled';
-    const messageCount = campaign.messages?.length || 0;
-    const sentCount = campaign.messages?.filter(m => m.status === 'sent' || m.status === 'delivered').length || 0;
-    const failedCount = campaign.messages?.filter(m => m.status === 'failed').length || 0;
+    const progress = campaign.totalRecipients > 0
+        ? Math.round(((campaign.sentCount + campaign.failedCount) / campaign.totalRecipients) * 100)
+        : 0;
 
     return `
         <div class="campaign-card" onclick="viewCampaignDetails('${campaign.id}')">
@@ -114,6 +138,18 @@ function createCampaignCard(campaign) {
                 <span class="campaign-status ${statusClass}">${campaign.status}</span>
             </div>
             
+            ${campaign.status === 'running' ? `
+                <div class="progress-container" style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                        <span>Progress</span>
+                        <span>${progress}%</span>
+                    </div>
+                    <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div style="width: ${progress}%; height: 100%; background: var(--primary); transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+            ` : ''}
+
             <div class="campaign-meta">
                 ${campaign.senderId ? `
                     <div class="meta-item">
@@ -129,7 +165,7 @@ function createCampaignCard(campaign) {
                 ` : ''}
                 <div class="meta-item">
                     <i data-lucide="users"></i>
-                    <span>${campaign.contactList?.contacts?.length || 0} recipients</span>
+                    <span>${campaign.totalRecipients || 0} recipients</span>
                 </div>
             </div>
             
@@ -139,15 +175,15 @@ function createCampaignCard(campaign) {
             
             <div class="campaign-stats">
                 <div class="stat-item">
-                    <span class="stat-value">${messageCount}</span>
+                    <span class="stat-value">${campaign.totalRecipients || 0}</span>
                     <span class="stat-label">Total</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: var(--success)">${sentCount}</span>
+                    <span class="stat-value" style="color: var(--success)">${campaign.sentCount || 0}</span>
                     <span class="stat-label">Sent</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" style="color: var(--error)">${failedCount}</span>
+                    <span class="stat-value" style="color: var(--error)">${campaign.failedCount || 0}</span>
                     <span class="stat-label">Failed</span>
                 </div>
             </div>
@@ -247,30 +283,36 @@ async function createCampaign() {
         return;
     }
 
-    const scheduleType = document.querySelector('input[name="schedule-type"]:checked').value;
-    const scheduledAt = scheduleType === 'scheduled'
-        ? document.getElementById('scheduled-time').value
-        : null;
+    const recipientType = document.querySelector('input[name="recipient-type"]:checked').value;
 
-    const campaignData = {
-        name: document.getElementById('campaign-name').value,
-        template: document.getElementById('message-template').value,
-        contactListId: document.getElementById('contact-list').value,
-        senderId: document.getElementById('sender-id').value || null,
-        scheduledAt: scheduledAt,
-        enableTracking: document.getElementById('enable-tracking').checked,
-        enableWebhooks: document.getElementById('enable-webhooks').checked
-    };
+    const formData = new FormData();
+    formData.append('name', document.getElementById('campaign-name').value);
+    formData.append('template', document.getElementById('message-template').value);
+    formData.append('senderId', document.getElementById('sender-id').value || '');
+    formData.append('scheduledAt', scheduledAt || '');
+    formData.append('enableTracking', document.getElementById('enable-tracking').checked);
+    formData.append('enableWebhooks', document.getElementById('enable-webhooks').checked);
+    formData.append('recipientType', recipientType);
+
+    if (recipientType === 'csv') {
+        const csvFile = document.getElementById('campaign-csv').files[0];
+        if (!csvFile) {
+            showError('Please select a CSV file');
+            return;
+        }
+        formData.append('csv', csvFile);
+    } else {
+        formData.append('contactListId', document.getElementById('contact-list').value);
+    }
 
     showLoading(true);
     try {
         const response = await fetch(`${API_BASE}/campaigns`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-API-Key': API_KEY
             },
-            body: JSON.stringify(campaignData)
+            body: formData
         });
 
         if (response.ok) {
@@ -656,6 +698,27 @@ function parseCSV(csv) {
     }
 
     return contacts;
+}
+
+function toggleRecipientType() {
+    const type = document.querySelector('input[name="recipient-type"]:checked').value;
+    const listGroup = document.getElementById('contact-list-group');
+    const csvGroup = document.getElementById('csv-upload-group');
+    const createListBtn = document.getElementById('create-list-btn');
+
+    if (type === 'csv') {
+        listGroup.style.display = 'none';
+        csvGroup.style.display = 'block';
+        createListBtn.style.display = 'none';
+        document.getElementById('contact-list').required = false;
+        document.getElementById('campaign-csv').required = true;
+    } else {
+        listGroup.style.display = 'block';
+        csvGroup.style.display = 'none';
+        createListBtn.style.display = 'block';
+        document.getElementById('contact-list').required = true;
+        document.getElementById('campaign-csv').required = false;
+    }
 }
 
 function toggleSchedule() {

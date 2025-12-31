@@ -374,36 +374,37 @@
             </div>
         </header>
 
-        <div class="stats-row">
-            <div class="glass-card">
-                <div class="stat-card-inner">
-                    <span class="label">Volume</span>
-                    <span class="value" id="total-count">0</span>
-                    <span class="trend up"><i data-lucide="trending-up"></i> Total messages processed</span>
-                </div>
-            </div>
-            <div class="glass-card">
-                <div class="stat-card-inner">
-                    <span class="label">Delivered</span>
-                    <span class="value" id="sent-count" style="color: var(--success)">0</span>
-                    <span class="trend up"><i data-lucide="check-circle"></i> Successfully sent</span>
-                </div>
-            </div>
-            <div class="glass-card">
-                <div class="stat-card-inner">
-                    <span class="label">Failures</span>
-                    <span class="value" id="failed-count" style="color: var(--error)">0</span>
-                    <span class="trend down"><i data-lucide="alert-circle"></i> Delivery errors</span>
-                </div>
-            </div>
-            <div class="glass-card">
-                <div class="stat-card-inner">
-                    <span class="label">Performance</span>
-                    <span class="value" id="success-rate">0%</span>
-                    <div id="performance-bar"
-                        style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden;">
-                        <div id="performance-fill" style="height: 100%; background: var(--success); width: 0%;"></div>
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2.5rem;">
+            <div class="glass-card" style="border-left: 4px solid var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <span class="label">SIGTRAN (SS7)</span>
+                        <div class="value" id="ss7-status">ACTIVE</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="ss7-info">Local SPC: 100 | Peer:
+                            UP</div>
                     </div>
+                    <i data-lucide="zap" class="text-primary"></i>
+                </div>
+            </div>
+            <div class="glass-card" style="border-left: 4px solid var(--success);">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <span class="label">SMPP Binds</span>
+                        <div class="value" id="smpp-status">CONNECTED</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="smpp-info">3 Active Sessions
+                        </div>
+                    </div>
+                    <i data-lucide="link" style="color: var(--success)"></i>
+                </div>
+            </div>
+            <div class="glass-card" style="border-left: 4px solid var(--warning);">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <span class="label">API Usage</span>
+                        <div class="value" id="api-usage-count">0 / 0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="api-key-name">No Active Key</div>
+                    </div>
+                    <i data-lucide="key" style="color: var(--warning)"></i>
                 </div>
             </div>
         </div>
@@ -476,19 +477,36 @@
 
     <script>
         lucide.createIcons();
-        const API_KEY = 'demo-api-key';
         let trendChart, statusChart;
+
+        async function fetchActiveApiKey() {
+            try {
+                const res = await fetch('/api/api-keys');
+                const data = await res.json();
+                if (data.status === 'success' && data.data.length > 0) {
+                    const activeKey = data.data.find(k => k.active) || data.data[0];
+                    document.getElementById('api-key-name').innerText = activeKey.name;
+                    document.getElementById('api-usage-count').innerText = `${activeKey.usageCount.toLocaleString()} / ${activeKey.monthlyQuota.toLocaleString()}`;
+                    return activeKey.key;
+                }
+            } catch (err) {
+                console.error('Error fetching API keys:', err);
+            }
+            return 'demo-api-key';
+        }
 
         async function refreshData() {
             const bar = document.getElementById('loading-bar');
             bar.style.width = '30%';
 
+            const currentApiKey = await fetchActiveApiKey();
+
             try {
                 // Parallel fetching
                 const [msgRes, statsRes, trendRes] = await Promise.all([
-                    fetch('/api/messages', { headers: { 'X-API-Key': API_KEY } }),
-                    fetch('/api/analytics/stats', { headers: { 'X-API-Key': API_KEY } }),
-                    fetch('/api/analytics/trends', { headers: { 'X-API-Key': API_KEY } })
+                    fetch('/api/messages', { headers: { 'X-API-Key': currentApiKey } }),
+                    fetch('/api/analytics/stats', { headers: { 'X-API-Key': currentApiKey } }),
+                    fetch('/api/analytics/trends', { headers: { 'X-API-Key': currentApiKey } })
                 ]);
 
                 const messages = await msgRes.json();

@@ -57,6 +57,11 @@ async function sendMessage(req, res) {
         // 2. Add to Bull queue for background processing with optional delay
         await messageQueue.add({ messageId: message.id }, { delay });
 
+        // 3. Track API Key Usage
+        if (req.apiKey) {
+            await securityService.incrementApiKeyUsage(req.apiKey.id);
+        }
+
         res.status(202).json({
             status: 'success',
             data: message,

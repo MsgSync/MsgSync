@@ -165,14 +165,46 @@
 
                     <div class="form-section">
                         <h3>Recipients</h3>
-                        <div class="form-group">
+                        <div class="schedule-options">
+                            <label class="radio-option">
+                                <input type="radio" name="recipient-type" value="manual" checked
+                                    onchange="toggleRecipientType()">
+                                <div class="radio-content">
+                                    <i data-lucide="users"></i>
+                                    <div>
+                                        <strong>Contact List</strong>
+                                        <p>Select from existing lists</p>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="recipient-type" value="csv" onchange="toggleRecipientType()">
+                                <div class="radio-content">
+                                    <i data-lucide="file-up"></i>
+                                    <div>
+                                        <strong>Upload CSV</strong>
+                                        <p>Process high-volume list</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div id="contact-list-group" class="form-group" style="margin-top: 1rem;">
                             <label for="contact-list">Contact List *</label>
-                            <select id="contact-list" required>
+                            <select id="contact-list">
                                 <option value="">Select a contact list</option>
                             </select>
                             <small id="list-count">0 contacts selected</small>
                         </div>
-                        <button type="button" class="btn btn-secondary" onclick="openContactListModal()">
+
+                        <div id="csv-upload-group" class="form-group" style="display: none; margin-top: 1rem;">
+                            <label for="campaign-csv">Upload Recipients (CSV) *</label>
+                            <input type="file" id="campaign-csv" accept=".csv">
+                            <small>Max 50MB. Required columns: phone. Optional: firstName, lastName, etc.</small>
+                        </div>
+
+                        <button type="button" id="create-list-btn" class="btn btn-secondary"
+                            onclick="openContactListModal()">
                             <i data-lucide="plus"></i> Create New List
                         </button>
                     </div>

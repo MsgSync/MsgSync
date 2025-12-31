@@ -6,12 +6,17 @@ class InvoiceService {
      * Generates a new invoice for an organization for a specific period.
      */
     async generateInvoice(organizationId, periodStart, periodEnd) {
-        // 1. Calculate total amount from messages in period
+        // 1. Fetch organization for currency and billing info
+        const org = await prisma.organization.findUnique({
+            where: { id: organizationId }
+        });
+
+        // 2. Calculate total amount from messages in period (only those with status 'sent' or 'delivered')
         const aggregation = await prisma.message.aggregate({
             where: {
                 organizationId,
-                status: 'sent',
-                sentAt: {
+                status: { in: ['sent', 'delivered'] },
+                createdAt: { // Using createdAt as the billing anchor
                     gte: new Date(periodStart),
                     lte: new Date(periodEnd)
                 }
@@ -26,12 +31,12 @@ class InvoiceService {
         const tax = Number(amount) * taxRate;
         const total = Number(amount) + tax;
 
-        // 2. Generate unique invoice number
+        // 3. Generate unique invoice number
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
         const invoiceNumber = `INV-${dateStr}-${randomStr}`;
 
-        // 3. Create invoice record
+        // 4. Create invoice record
         const invoice = await prisma.invoice.create({
             data: {
                 number: invoiceNumber,
@@ -39,6 +44,7 @@ class InvoiceService {
                 amount: amount,
                 tax: tax,
                 total: total,
+                currency: 'USD',
                 status: 'UNPAID',
                 periodStart: new Date(periodStart),
                 periodEnd: new Date(periodEnd),

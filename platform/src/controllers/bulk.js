@@ -1,6 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const campaignService = require('../services/campaignService');
+const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
 
 /**
  * Controller for Contact Lists and Campaigns.
@@ -53,21 +56,36 @@ async function createCampaign(req, res) {
             data: {
                 name,
                 template,
-                contactListId,
+                contactListId: contactListId || null,
                 senderId: senderId || null,
                 apiKeyId: req.apiKey.id,
                 organizationId: req.organization ? req.organization.id : null,
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
-                enableTracking: enableTracking !== undefined ? enableTracking : true,
-                enableWebhooks: enableWebhooks !== undefined ? enableWebhooks : false,
+                enableTracking: enableTracking === 'true' || enableTracking === true,
+                enableWebhooks: enableWebhooks === 'true' || enableWebhooks === true,
                 status: 'draft'
-            },
-            include: {
-                contactList: {
-                    include: { contacts: true }
-                }
             }
         });
+
+        // If CSV is uploaded, forward to campaign-engine
+        if (req.file) {
+            const form = new FormData();
+            form.append('campaignId', campaign.id);
+            form.append('csv', fs.createReadStream(req.file.path));
+
+            try {
+                await axios.post(`${process.env.CAMPAIGN_ENGINE_URL || 'http://localhost:3002'}/upload`, form, {
+                    headers: { ...form.getHeaders() }
+                });
+                // Cleanup temp file
+                fs.unlinkSync(req.file.path);
+            } catch (err) {
+                console.error('Failed to forward CSV to campaign-engine:', err.message);
+                // We keep the campaign but with error metadata? 
+                // For now just throw so user knows
+                throw new Error('Failed to process CSV recipient list');
+            }
+        }
 
         // Audit Log
         const auditService = require('../services/auditService');

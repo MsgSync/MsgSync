@@ -606,6 +606,20 @@
         let map;
         const markers = [];
 
+        async function fetchActiveApiKey() {
+            try {
+                const res = await fetch('/api/api-keys');
+                const data = await res.json();
+                if (data.status === 'success' && data.data.length > 0) {
+                    const activeKey = data.data.find(k => k.active) || data.data[0];
+                    return activeKey.key;
+                }
+            } catch (err) {
+                console.error('Error fetching API keys:', err);
+            }
+            return 'demo-api-key';
+        }
+
         async function init() {
             initCharts();
             initMap();
@@ -670,10 +684,11 @@
 
         async function loadAllData() {
             try {
+                const apiKey = await fetchActiveApiKey();
                 const [finRes, trendRes, statsRes] = await Promise.all([
-                    fetch('/api/analytics/financials'),
-                    fetch('/api/analytics/trends'),
-                    fetch('/api/analytics/stats')
+                    fetch('/api/analytics/financials', { headers: { 'X-API-Key': apiKey } }),
+                    fetch('/api/analytics/trends', { headers: { 'X-API-Key': apiKey } }),
+                    fetch('/api/analytics/stats', { headers: { 'X-API-Key': apiKey } })
                 ]);
 
                 const financials = (await finRes.json()).data;

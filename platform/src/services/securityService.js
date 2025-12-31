@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 const geoip = require('geoip-lite');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
+const crypto = require('crypto');
 
 class SecurityService {
     /**
@@ -127,7 +128,74 @@ class SecurityService {
             return { valid: false, reason: 'CONTENT_REJECTED_SPAM' };
         }
 
+        // 4. Quota & Expiration Check
+        const usageValidation = await this.validateApiKeyUsage(apiKey);
+        if (!usageValidation.valid) {
+            return usageValidation;
+        }
+
         return { valid: true };
+    }
+
+    /**
+     * Validates if API key has remaining quota and is not expired.
+     */
+    async validateApiKeyUsage(apiKey) {
+        if (!apiKey.active) {
+            return { valid: false, reason: 'API_KEY_INACTIVE' };
+        }
+
+        if (apiKey.expiresAt && new Date(apiKey.expiresAt) < new Date()) {
+            return { valid: false, reason: 'API_KEY_EXPIRED' };
+        }
+
+        if (apiKey.usageCount >= apiKey.monthlyQuota) {
+            return { valid: false, reason: 'MONTHLY_QUOTA_REACHED' };
+        }
+
+        return { valid: true };
+    }
+
+    /**
+     * Increments the usage count for an API key.
+     */
+    async incrementApiKeyUsage(keyId) {
+        return await prisma.apiKey.update({
+            where: { id: keyId },
+            data: { usageCount: { increment: 1 } }
+        });
+    }
+
+    /**
+     * Generates a new API Key for an organization.
+     */
+    async generateApiKey(organizationId, name, monthlyQuota = 10000) {
+        const key = `ms_${crypto.randomBytes(24).toString('hex')}`;
+        return await prisma.apiKey.create({
+            data: {
+                key,
+                name,
+                organizationId,
+                monthlyQuota,
+                lastRotatedAt: new Date()
+            }
+        });
+    }
+
+    /**
+     * Rotates an existing API key.
+     */
+    async rotateApiKey(keyId) {
+        const newKey = `ms_${crypto.randomBytes(24).toString('hex')}`;
+        return await prisma.apiKey.update({
+            where: { id: keyId },
+            data: {
+                key: newKey,
+                lastRotatedAt: new Date(),
+                // Reset usage count on rotation? Usually optional, but let's keep it for now.
+                usageCount: 0
+            }
+        });
     }
 
     /**

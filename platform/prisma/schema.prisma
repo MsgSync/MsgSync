@@ -62,6 +62,8 @@ model Organization {
   billingCycle   String         @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
   invoiceFormat  String         @default("PDF")     // PDF, EXCEL, BOTH
   billingPolicy  String         @default("ON_SUBMISSION") // ON_ATTEMPT, ON_SUBMISSION, ON_DELIVERY
+  taxId          String?
+  address        String?
   
   apiKeys     ApiKey[]
   messages    Message[]
@@ -143,6 +145,7 @@ model Transaction {
   id             String       @id @default(uuid())
   amount         Decimal
   type           String       // CREDIT, DEBIT
+  currency       String       @default("USD")
   status         String       @default("PENDING") // PENDING, COMPLETED, FAILED
   description    String?
   organizationId String
@@ -175,6 +178,10 @@ model Message {
   campaign      Campaign?    @relation(fields: [campaignId], references: [id])
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([status, createdAt])
+  @@index([recipient, createdAt])
 }
 
 model ApiKey {
@@ -184,6 +191,10 @@ model ApiKey {
   active         Boolean        @default(true)
   allowedIps     String[]       @default([]) // IP Whitelisting
   rateLimit      Int            @default(5)  // Messages per second
+  monthlyQuota   Int            @default(10000)
+  usageCount     Int            @default(0)
+  expiresAt      DateTime?
+  lastRotatedAt  DateTime       @default(now())
   messages       Message[]
   contactLists   ContactList[]
   campaigns      Campaign[]
@@ -237,8 +248,18 @@ model Campaign {
   contactListId  String
   contactList    ContactList  @relation(fields: [contactListId], references: [id])
   messages       Message[]
+  recipients     CampaignRecipient[]
+  schedules      CampaignSchedule[]
+  totalRecipients Int         @default(0)
+  sentCount      Int          @default(0)
+  failedCount    Int          @default(0)
+  startedAt      DateTime?
+  metadata       Json?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, status])
+  @@index([scheduledAt])
 }
 
 model Rate {
@@ -322,11 +343,14 @@ model RoutingRule {
   providerId     String
   provider       Provider  @relation(fields: [providerId], references: [id])
   priority       Int       @default(1)
+  llrScore       Float     @default(0.0)
+  lcrRate        Decimal   @default(0.0)
   active         Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   @@unique([prefix, mcc, mnc, organizationId, providerId])
+  @@index([prefix, mcc, mnc, priority])
 }
 model HlrConfig {
   id             String   @id @default(uuid())
@@ -351,4 +375,38 @@ model Alert {
   organization   Organization @relation(fields: [organizationId], references: [id])
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model CampaignRecipient {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  phone      String
+  variables  Json?
+  status     String   @default("PENDING") // PENDING, SENT, FAILED
+  messageId  String?  @unique
+  error      String?
+
+  @@index([campaignId, status])
+  @@index([phone])
+}
+
+model CampaignSchedule {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  nextRun    DateTime
+  interval   String?  // e.g., "DAILY", "WEEKLY"
+  active     Boolean  @default(true)
+
+  @@index([nextRun, active])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
 }
