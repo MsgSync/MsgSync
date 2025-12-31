@@ -35,4 +35,4 @@ run-gateway:
 
 # Run the Routing Engine (Go)
 run-routing:
-	cd services/routing-engine && ./routing-engine
+	@export DATABASE_URL="postgresql://user:password@localhost:5432/msgsync_platform?sslmode=disable" && cd services/routing-engine && ./routing-engine
