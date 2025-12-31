@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/MsgSync/MsgSync/services/common"
+	"github.com/MsgSync/MsgSync/services/common/logging"
 	"github.com/MsgSync/MsgSync/services/common/monitoring"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
@@ -22,13 +24,14 @@ import (
 
 type HLRService struct {
 	config     *Config
+	logger     *slog.Logger
 	writer     *kafka.Writer
 	reader     *kafka.Reader
 	pending    map[string]chan *LookupResponse
 	pendingMux sync.Mutex
 }
 
-func NewHLRService(cfg *Config) *HLRService {
+func NewHLRService(cfg *Config, logger *slog.Logger) *HLRService {
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(strings.Split(cfg.KafkaBrokers, ",")...),
 		Topic:    "ss7.map.request",
@@ -43,6 +46,7 @@ func NewHLRService(cfg *Config) *HLRService {
 
 	return &HLRService{
 		config:  cfg,
+		logger:  logger,
 		writer:  w,
 		reader:  r,
 		pending: make(map[string]chan *LookupResponse),
@@ -53,13 +57,13 @@ func (s *HLRService) RunResponseConsumer(ctx context.Context) {
 	for {
 		m, err := s.reader.ReadMessage(ctx)
 		if err != nil {
-			log.Printf("Error reading response: %v", err)
+			s.logger.Error("Error reading response", "error", err)
 			continue
 		}
 
 		var mapResp common.MapMessage
 		if err := json.Unmarshal(m.Value, &mapResp); err != nil {
-			log.Printf("Error unmarshaling response: %v", err)
+			s.logger.Error("Error unmarshaling response", "error", err)
 			continue
 		}
 
@@ -153,8 +157,9 @@ func (s *HLRService) doExternalLookup(ctx context.Context, phone string) (*Looku
 }
 
 func main() {
+	logger := logging.NewLogger()
 	cfg := LoadConfig()
-	svc := NewHLRService(cfg)
+	svc := NewHLRService(cfg, logger)
 
 	monitoring.StartMetricsServer(":8085")
 
@@ -163,8 +168,9 @@ func main() {
 
 	http.HandleFunc("/lookup", svc.HandleLookup)
 
-	fmt.Printf("HLR/MNP Service starting on port %s (Metrics: :8085)...\n", cfg.Port)
+	logger.Info("HLR/MNP Service starting", "port", cfg.Port, "metrics_port", ":8085")
 	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
-		log.Fatal(err)
+		logger.Error("Server failed", "error", err)
+		os.Exit(1)
 	}
 }

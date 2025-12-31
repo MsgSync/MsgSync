@@ -1,5 +1,10 @@
 .PHONY: setup build test lint run-platform run-gateway
 
+# Lint code
+lint:
+	@echo "Linting..."
+	golangci-lint run ./...
+
 # Monorepo setup
 setup:
 	@echo "Setting up monorepo..."

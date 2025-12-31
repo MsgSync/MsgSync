@@ -1,18 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"time"
 
+	"github.com/MsgSync/MsgSync/services/common/logging"
 	"github.com/MsgSync/MsgSync/services/common/monitoring"
 	"github.com/linxGnu/gosmpp"
 	"github.com/linxGnu/gosmpp/pdu"
 )
 
 func main() {
-	fmt.Println("Starting MsgSync SMPP Gateway...")
+	logger := logging.NewLogger()
+	logger.Info("Starting MsgSync SMPP Gateway...")
 
 	monitoring.StartMetricsServer(":8081")
 
@@ -39,7 +39,7 @@ func main() {
 		OnPDU: func(p pdu.PDU, responded bool) {
 			switch pd := p.(type) {
 			case *pdu.SubmitSMResp:
-				log.Printf("SubmitSMResp received: ID=%s, Status=%d", pd.MessageID, pd.CommandStatus)
+				logger.Info("SubmitSMResp received", "id", pd.MessageID, "status", pd.CommandStatus)
 				if pd.CommandStatus == 0 {
 					monitoring.MessagesProcessed.WithLabelValues("smpp-gateway", "success").Inc()
 				} else {
@@ -47,20 +47,21 @@ func main() {
 				}
 			case *pdu.DeliverSM:
 				msg, _ := pd.Message.GetMessage()
-				log.Printf("DeliverSM received: Source=%s, Content=%s", pd.SourceAddr.String(), msg)
+				logger.Info("DeliverSM received", "source", pd.SourceAddr.String(), "content", msg)
 			}
 		},
 		OnClosed: func(state gosmpp.State) {
-			log.Printf("Connection closed: %v", state)
+			logger.Info("Connection closed", "state", state)
 		},
 	}, 5*time.Second)
 
 	if err != nil {
-		log.Fatalf("Failed to create session: %v", err)
+		logger.Error("Failed to create session", "error", err)
+		os.Exit(1)
 	}
 	defer session.Close()
 
-	log.Printf("Bound to SMSC at %s", smscAddr)
+	logger.Info("Bound to SMSC", "addr", smscAddr)
 
 	// Keep alive
 	for {
