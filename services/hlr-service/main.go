@@ -11,25 +11,15 @@ import (
 	"time"
 
 	"github.com/MsgSync/MsgSync/services/common"
+	"github.com/MsgSync/MsgSync/services/common/monitoring"
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/segmentio/kafka-go"
 )
 
-var (
-	lookupsTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "hlr_lookups_total",
-			Help: "Total number of HLR lookups.",
-		},
-		[]string{"status"},
-	)
-)
+// Simplified: using common monitoring package
 
-func init() {
-	prometheus.MustRegister(lookupsTotal)
-}
+// No local init needed
 
 type HLRService struct {
 	config     *Config
@@ -89,11 +79,7 @@ func (s *HLRService) RunResponseConsumer(ctx context.Context) {
 				MNC:           "Unknown",
 				Type:          "mobile",
 				LastCheckedAt: time.Now(),
-				Status:        "active",
-			}
-			if mapResp.Error != "" {
-				resp.Status = "error: " + mapResp.Error
-			}
+			monitoring.MessagesProcessed.WithLabelValues("hlr-service", "active").Inc()
 			ch <- resp
 		} else {
 			s.pendingMux.Unlock()
@@ -157,10 +143,10 @@ func (s *HLRService) doExternalLookup(ctx context.Context, phone string) (*Looku
 
 	select {
 	case resp := <-ch:
-		lookupsTotal.WithLabelValues("success").Inc()
+		monitoring.MessagesProcessed.WithLabelValues("hlr-service", "success").Inc()
 		return resp, nil
 	case <-ctx.Done():
-		lookupsTotal.WithLabelValues("timeout").Inc()
+		monitoring.MessagesProcessed.WithLabelValues("hlr-service", "timeout").Inc()
 		return nil, ctx.Err()
 	}
 }
@@ -169,13 +155,14 @@ func main() {
 	cfg := LoadConfig()
 	svc := NewHLRService(cfg)
 
+	monitoring.StartMetricsServer(":8085")
+
 	ctx := context.Background()
 	go svc.RunResponseConsumer(ctx)
 
 	http.HandleFunc("/lookup", svc.HandleLookup)
-	http.Handle("/metrics", promhttp.Handler())
 
-	fmt.Printf("HLR/MNP Service starting on port %s...\n", cfg.Port)
+	fmt.Printf("HLR/MNP Service starting on port %s (Metrics: :8085)...\n", cfg.Port)
 	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
 		log.Fatal(err)
 	}
