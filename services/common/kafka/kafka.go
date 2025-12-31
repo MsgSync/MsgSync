@@ -54,6 +54,23 @@ func (c *Consumer) Read(ctx context.Context) (kafka.Message, error) {
 	return c.reader.ReadMessage(ctx)
 }
 
+func (c *Consumer) Consume(ctx context.Context, handler func(key, value []byte) error) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			msg, err := c.reader.ReadMessage(ctx)
+			if err != nil {
+				return err
+			}
+			if err := handler(msg.Key, msg.Value); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 func (c *Consumer) Close() error {
 	return c.reader.Close()
 }

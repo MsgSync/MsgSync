@@ -14,6 +14,7 @@ build:
 	cd services/smpp-gateway && go build -o smpp-gateway .
 	cd services/routing-engine && go build -o routing-engine .
 	cd services/campaign-engine && go build -o campaign-engine .
+	cd services/ss7-gateway && go build -o ss7-gateway .
 
 # Test all services
 test:

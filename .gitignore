@@ -70,13 +70,10 @@ env/
 *.war
 target/
 
-smpp-gateway
-routing-engine
-campaign-engine
+# Go
 *.exe
 *.test
 *.out
-vendor/
 
 # Compiled files
 *.o
