@@ -34,6 +34,8 @@ func main() {
 
 	// Create Session
 	session, err := gosmpp.NewSession(connector, gosmpp.Settings{
+		EnquireLink: 20 * time.Second,
+		ReadTimeout: 60 * time.Second,
 		OnPDU: func(p pdu.PDU, responded bool) {
 			switch pd := p.(type) {
 			case *pdu.SubmitSMResp:
