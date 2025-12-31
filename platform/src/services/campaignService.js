@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const messageQueue = require('../queue/messageQueue');
+const axios = require('axios');
 
 /**
  * Service to handle Bulk SMS Campaigns and Contact Management.
@@ -16,16 +17,31 @@ class CampaignService {
             include: {
                 contactList: {
                     include: { contacts: true }
-                }
+                },
+                recipients: true
             }
         });
 
         if (!campaign) throw new Error('Campaign not found');
 
-        console.log(`Processing Bulk Campaign: ${campaign.name} for ${campaign.contactList.contacts.length} contacts`);
+        // If this campaign has Go-processed recipients, delegate to Campaign Engine
+        if (campaign.recipients && campaign.recipients.length > 0) {
+            console.log(`Delegating High-Volume Campaign: ${campaign.name} to Go Engine`);
+            try {
+                await axios.post(`${process.env.CAMPAIGN_ENGINE_URL || 'http://localhost:3002'}/start`, {
+                    campaignId: campaign.id
+                });
+                return;
+            } catch (err) {
+                console.error('Failed to delegate to campaign-engine:', err.message);
+                throw new Error('Failed to start high-volume processing engine');
+            }
+        }
+
+        console.log(`Processing Regular Bulk Campaign: ${campaign.name} for ${campaign.contactList.contacts.length} contacts`);
 
         for (const contact of campaign.contactList.contacts) {
-            // Personalize content
+            // ... (rest of existing logic)
             let content = campaign.template;
             const variables = {
                 firstName: contact.firstName || '',
@@ -34,12 +50,10 @@ class CampaignService {
                 ...(contact.attributes || {})
             };
 
-            // Replace {{variableName}}
             Object.entries(variables).forEach(([key, value]) => {
                 content = content.replace(new RegExp(`{{${key}}}`, 'g'), value);
             });
 
-            // Create message record with sender ID in metadata
             const messageMetadata = {};
             if (campaign.senderId) {
                 messageMetadata.senderId = campaign.senderId;
@@ -60,20 +74,13 @@ class CampaignService {
                 }
             });
 
-            // Calculate delay if scheduled
             const delay = campaign.scheduledAt ? Math.max(0, new Date(campaign.scheduledAt).getTime() - Date.now()) : 0;
-
-            // Add to message queue
             await messageQueue.add({ messageId: message.id }, { delay });
         }
 
-        // Update campaign status
         await prisma.campaign.update({
             where: { id: campaign.id },
-            data: {
-                status: 'running',
-                ...(campaign.scheduledAt && new Date(campaign.scheduledAt) <= new Date() ? {} : {})
-            }
+            data: { status: 'running' }
         });
     }
 
@@ -81,6 +88,7 @@ class CampaignService {
      * Imports contacts into a list.
      */
     async importContacts(listId, contactsData) {
+        // ... (existing import logic)
         const list = await prisma.contactList.findUnique({ where: { id: listId } });
         if (!list) throw new Error('List not found');
 
@@ -102,7 +110,6 @@ class CampaignService {
                 }
             });
 
-            // Connect to list
             await prisma.contactList.update({
                 where: { id: listId },
                 data: {

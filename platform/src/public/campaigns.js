@@ -247,30 +247,36 @@ async function createCampaign() {
         return;
     }
 
-    const scheduleType = document.querySelector('input[name="schedule-type"]:checked').value;
-    const scheduledAt = scheduleType === 'scheduled'
-        ? document.getElementById('scheduled-time').value
-        : null;
+    const recipientType = document.querySelector('input[name="recipient-type"]:checked').value;
 
-    const campaignData = {
-        name: document.getElementById('campaign-name').value,
-        template: document.getElementById('message-template').value,
-        contactListId: document.getElementById('contact-list').value,
-        senderId: document.getElementById('sender-id').value || null,
-        scheduledAt: scheduledAt,
-        enableTracking: document.getElementById('enable-tracking').checked,
-        enableWebhooks: document.getElementById('enable-webhooks').checked
-    };
+    const formData = new FormData();
+    formData.append('name', document.getElementById('campaign-name').value);
+    formData.append('template', document.getElementById('message-template').value);
+    formData.append('senderId', document.getElementById('sender-id').value || '');
+    formData.append('scheduledAt', scheduledAt || '');
+    formData.append('enableTracking', document.getElementById('enable-tracking').checked);
+    formData.append('enableWebhooks', document.getElementById('enable-webhooks').checked);
+    formData.append('recipientType', recipientType);
+
+    if (recipientType === 'csv') {
+        const csvFile = document.getElementById('campaign-csv').files[0];
+        if (!csvFile) {
+            showError('Please select a CSV file');
+            return;
+        }
+        formData.append('csv', csvFile);
+    } else {
+        formData.append('contactListId', document.getElementById('contact-list').value);
+    }
 
     showLoading(true);
     try {
         const response = await fetch(`${API_BASE}/campaigns`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-API-Key': API_KEY
             },
-            body: JSON.stringify(campaignData)
+            body: formData
         });
 
         if (response.ok) {
@@ -656,6 +662,27 @@ function parseCSV(csv) {
     }
 
     return contacts;
+}
+
+function toggleRecipientType() {
+    const type = document.querySelector('input[name="recipient-type"]:checked').value;
+    const listGroup = document.getElementById('contact-list-group');
+    const csvGroup = document.getElementById('csv-upload-group');
+    const createListBtn = document.getElementById('create-list-btn');
+
+    if (type === 'csv') {
+        listGroup.style.display = 'none';
+        csvGroup.style.display = 'block';
+        createListBtn.style.display = 'none';
+        document.getElementById('contact-list').required = false;
+        document.getElementById('campaign-csv').required = true;
+    } else {
+        listGroup.style.display = 'block';
+        csvGroup.style.display = 'none';
+        createListBtn.style.display = 'block';
+        document.getElementById('contact-list').required = true;
+        document.getElementById('campaign-csv').required = false;
+    }
 }
 
 function toggleSchedule() {

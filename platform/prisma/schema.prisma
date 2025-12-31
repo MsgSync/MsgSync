@@ -241,8 +241,18 @@ model Campaign {
   contactListId  String
   contactList    ContactList  @relation(fields: [contactListId], references: [id])
   messages       Message[]
+  recipients     CampaignRecipient[]
+  schedules      CampaignSchedule[]
+  totalRecipients Int         @default(0)
+  sentCount      Int          @default(0)
+  failedCount    Int          @default(0)
+  startedAt      DateTime?
+  metadata       Json?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, status])
+  @@index([scheduledAt])
 }
 
 model Rate {
@@ -358,4 +368,38 @@ model Alert {
   organization   Organization @relation(fields: [organizationId], references: [id])
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model CampaignRecipient {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  phone      String
+  variables  Json?
+  status     String   @default("PENDING") // PENDING, SENT, FAILED
+  messageId  String?  @unique
+  error      String?
+
+  @@index([campaignId, status])
+  @@index([phone])
+}
+
+model CampaignSchedule {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  nextRun    DateTime
+  interval   String?  // e.g., "DAILY", "WEEKLY"
+  active     Boolean  @default(true)
+
+  @@index([nextRun, active])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
 }

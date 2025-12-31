@@ -70,9 +70,9 @@ env/
 *.war
 target/
 
-# Go
 smpp-gateway
 routing-engine
+campaign-engine
 *.exe
 *.test
 *.out
