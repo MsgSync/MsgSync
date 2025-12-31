@@ -11,9 +11,12 @@ const dynamicRoutingRoutes = require('./routes/routing');
 const lookupRoutes = require('./routes/lookups');
 const brandingRoutes = require('./routes/branding');
 const authRoutes = require('./routes/auth');
+const apiKeyRoutes = require('./routes/apiKeys');
 const auditRoutes = require('./routes/audit');
 const invoiceRoutes = require('./routes/invoices');
 const securityRoutes = require('./routes/security');
+const callbackRoutes = require('./routes/callbacks');
+const { middleware, client } = require('./middleware/prom');
 const requestLogger = require('./middleware/logger');
 
 // Load environment variables
@@ -28,6 +31,14 @@ const swaggerSpecs = require('./swagger');
 
 app.use(requestLogger);
 app.use(express.json());
+app.use(middleware);
+
+// Metrics endpoint
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Documentation
@@ -107,6 +118,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/otp', otpRoutes);
+app.use('/api/api-keys', apiKeyRoutes);
 app.use('/api/bulk', bulkRoutes);
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/bundles', bundleRoutes);
@@ -117,6 +129,7 @@ app.use('/api/branding', brandingRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/security', securityRoutes);
+app.use('/callbacks', callbackRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

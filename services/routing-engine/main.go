@@ -14,6 +14,8 @@ import (
 
 	"github.com/MsgSync/MsgSync/services/common"
 	"github.com/MsgSync/MsgSync/services/common/kafka"
+	"github.com/MsgSync/MsgSync/services/common/monitoring"
+	"github.com/prometheus/client_golang/prometheus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -86,13 +88,18 @@ func (re *RoutingEngine) Start(ctx context.Context) {
 
 func (re *RoutingEngine) process(ctx context.Context, event common.MessageSubmittedEvent) {
 	log.Printf("Processing message %s", event.MessageID)
+	timer := monitoring.ProcessingDuration.WithLabelValues("routing-engine", "select-route")
+	obs := prometheus.NewTimer(timer)
+	defer obs.ObserveDuration()
 
 	provider, err := re.SelectRoute(ctx, event.OrganizationID, event.Recipient, event.MCC, event.MNC, 1)
 	if err != nil {
 		log.Printf("Routing failed for %s: %v", event.MessageID, err)
-		// TODO: Publish routing failure event
+		monitoring.MessagesProcessed.WithLabelValues("routing-engine", "failed").Inc()
 		return
 	}
+
+	monitoring.MessagesProcessed.WithLabelValues("routing-engine", "success").Inc()
 
 	routedEvent := common.ProviderRequestEvent{
 		MessageID:    event.MessageID,
@@ -190,6 +197,8 @@ func (re *RoutingEngine) SelectRoute(ctx context.Context, organizationID, phone,
 func main() {
 	dsn := os.Getenv("DATABASE_URL")
 	brokers := strings.Split(getEnv("KAFKA_BROKERS", "localhost:9092"), ",")
+
+	monitoring.StartMetricsServer(":8082")
 
 	engine, err := NewRoutingEngine(dsn, brokers)
 	if err != nil {

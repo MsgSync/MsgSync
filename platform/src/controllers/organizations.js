@@ -30,6 +30,26 @@ exports.getById = async (req, res) => {
     }
 };
 
+exports.update = async (req, res) => {
+    try {
+        const org = await organizationService.updateOrganization(req.params.id, req.body);
+
+        // Audit Log
+        const auditService = require('../services/auditService');
+        await auditService.log({
+            action: 'UPDATE_ORGANIZATION',
+            entity: 'Organization',
+            entityId: req.params.id,
+            organizationId: req.params.id,
+            metadata: req.body
+        });
+
+        res.json(org);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 exports.listSubOrgs = async (req, res) => {
     try {
         const parentId = req.params.id === 'root' ? null : req.params.id;

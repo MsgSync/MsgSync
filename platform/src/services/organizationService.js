@@ -12,6 +12,19 @@ class OrganizationService {
       }
     });
   }
+  async updateOrganization(id, data) {
+    return await prisma.organization.update({
+      where: { id },
+      data: {
+        name: data.name,
+        billingEmail: data.billingEmail,
+        billingCycle: data.billingCycle,
+        billingPolicy: data.billingPolicy,
+        taxId: data.taxId,
+        address: data.address
+      }
+    });
+  }
 
   async getOrganization(id) {
     return await prisma.organization.findUnique({
@@ -40,7 +53,7 @@ class OrganizationService {
       const org = await tx.organization.findUnique({ where: { id: organizationId } });
       if (!org) throw new Error('Organization not found');
 
-      const newBalance = type === 'CREDIT' 
+      const newBalance = type === 'CREDIT'
         ? parseFloat(org.balance) + parseFloat(amount)
         : parseFloat(org.balance) - parseFloat(amount);
 
@@ -56,6 +69,7 @@ class OrganizationService {
           organizationId,
           amount,
           type,
+          currency: 'USD',
           description,
           status: 'COMPLETED'
         }
@@ -73,7 +87,6 @@ class OrganizationService {
   }
 
   async getReportingData(organizationId) {
-    // Basic aggregation for dummy reporting
     const messages = await prisma.message.groupBy({
       by: ['status'],
       where: { organizationId },

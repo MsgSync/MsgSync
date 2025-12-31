@@ -62,6 +62,8 @@ model Organization {
   billingCycle   String         @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
   invoiceFormat  String         @default("PDF")     // PDF, EXCEL, BOTH
   billingPolicy  String         @default("ON_SUBMISSION") // ON_ATTEMPT, ON_SUBMISSION, ON_DELIVERY
+  taxId          String?
+  address        String?
   
   apiKeys     ApiKey[]
   messages    Message[]
@@ -143,6 +145,7 @@ model Transaction {
   id             String       @id @default(uuid())
   amount         Decimal
   type           String       // CREDIT, DEBIT
+  currency       String       @default("USD")
   status         String       @default("PENDING") // PENDING, COMPLETED, FAILED
   description    String?
   organizationId String
@@ -188,6 +191,10 @@ model ApiKey {
   active         Boolean        @default(true)
   allowedIps     String[]       @default([]) // IP Whitelisting
   rateLimit      Int            @default(5)  // Messages per second
+  monthlyQuota   Int            @default(10000)
+  usageCount     Int            @default(0)
+  expiresAt      DateTime?
+  lastRotatedAt  DateTime       @default(now())
   messages       Message[]
   contactLists   ContactList[]
   campaigns      Campaign[]

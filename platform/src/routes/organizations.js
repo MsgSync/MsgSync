@@ -4,6 +4,7 @@ const organizationController = require('../controllers/organizations');
 
 router.post('/', organizationController.create);
 router.get('/:id', organizationController.getById);
+router.patch('/:id', organizationController.update);
 router.get('/:id/sub-orgs', organizationController.listSubOrgs);
 router.post('/:id/balance', organizationController.addBalance);
 router.get('/:id/transactions', organizationController.getTransactions);

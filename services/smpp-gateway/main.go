@@ -6,12 +6,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/MsgSync/MsgSync/services/common/monitoring"
 	"github.com/linxGnu/gosmpp"
 	"github.com/linxGnu/gosmpp/pdu"
 )
 
 func main() {
 	fmt.Println("Starting MsgSync SMPP Gateway...")
+
+	monitoring.StartMetricsServer(":8081")
 
 	// Configuration from environment
 	smscAddr := getEnv("SMSC_ADDR", "localhost:2775")
@@ -35,6 +38,11 @@ func main() {
 			switch pd := p.(type) {
 			case *pdu.SubmitSMResp:
 				log.Printf("SubmitSMResp received: ID=%s, Status=%d", pd.MessageID, pd.CommandStatus)
+				if pd.CommandStatus == 0 {
+					monitoring.MessagesProcessed.WithLabelValues("smpp-gateway", "success").Inc()
+				} else {
+					monitoring.MessagesProcessed.WithLabelValues("smpp-gateway", "failed").Inc()
+				}
 			case *pdu.DeliverSM:
 				msg, _ := pd.Message.GetMessage()
 				log.Printf("DeliverSM received: Source=%s, Content=%s", pd.SourceAddr.String(), msg)

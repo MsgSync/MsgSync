@@ -17,6 +17,8 @@ import (
 
 	"github.com/MsgSync/MsgSync/services/common"
 	"github.com/MsgSync/MsgSync/services/common/kafka"
+	"github.com/MsgSync/MsgSync/services/common/monitoring"
+	"github.com/prometheus/client_golang/prometheus"
 	"gorm.io/datatypes"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -114,6 +116,37 @@ func (ce *CampaignEngine) ProcessCSV(ctx context.Context, campaignID string, rea
 	return ce.db.Model(&Campaign{}).Where("id = ?", campaignID).Update("totalRecipients", count).Error
 }
 
+// RunScheduler periodically checks for scheduled campaigns
+func (ce *CampaignEngine) RunScheduler(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	log.Println("Campaign Scheduler started")
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			var scheduledCampaigns []Campaign
+			now := time.Now()
+			if err := ce.db.Where("status = ? AND scheduledAt <= ?", "scheduled", now).Find(&scheduledCampaigns).Error; err != nil {
+				log.Printf("Error fetching scheduled campaigns: %v", err)
+				continue
+			}
+
+			for _, c := range scheduledCampaigns {
+				log.Printf("Triggering scheduled campaign: %s (%s)", c.Name, c.ID)
+				go func(id string) {
+					if err := ce.StartCampaign(ctx, id); err != nil {
+						log.Printf("Error running scheduled campaign %s: %v", id, err)
+					}
+				}(c.ID)
+			}
+		}
+	}
+}
+
 // StartCampaign enqueues all pending recipients for a campaign to Kafka
 func (ce *CampaignEngine) StartCampaign(ctx context.Context, campaignID string) error {
 	var campaign Campaign
@@ -121,12 +154,32 @@ func (ce *CampaignEngine) StartCampaign(ctx context.Context, campaignID string) 
 		return err
 	}
 
+	// Only start if draft or scheduled
+	if campaign.Status != "draft" && campaign.Status != "scheduled" && campaign.Status != "paused" {
+		return nil
+	}
+
 	ce.db.Model(&campaign).Update("status", "RUNNING").Update("startedAt", time.Now())
 
 	var recipients []CampaignRecipient
 	offset := 0
 
+	totalSent := 0
+	totalFailed := 0
+
 	for {
+		// Check for pause/cancel status during execution
+		var current Campaign
+		ce.db.Select("status").First(&current, "id = ?", campaignID)
+		if current.Status == "paused" {
+			log.Printf("Campaign %s paused. Stopping processor.", campaignID)
+			return nil
+		}
+		if current.Status == "cancelled" {
+			log.Printf("Campaign %s cancelled. Stopping processor.", campaignID)
+			return nil
+		}
+
 		if err := ce.db.Where("campaignId = ? AND status = ?", campaignID, "PENDING").
 			Limit(BatchSize).Offset(offset).Find(&recipients).Error; err != nil {
 			return err
@@ -137,10 +190,17 @@ func (ce *CampaignEngine) StartCampaign(ctx context.Context, campaignID string) 
 		}
 
 		var wg sync.WaitGroup
+		batchSent := 0
+		batchFailed := 0
+		var mu sync.Mutex
+
 		for _, r := range recipients {
 			wg.Add(1)
 			go func(recp CampaignRecipient) {
 				defer wg.Done()
+				timer := monitoring.ProcessingDuration.WithLabelValues("campaign-engine", "enqueue")
+				obs := prometheus.NewTimer(timer)
+				defer obs.ObserveDuration()
 
 				// Basic variable substitution
 				content := campaign.Content
@@ -165,12 +225,30 @@ func (ce *CampaignEngine) StartCampaign(ctx context.Context, campaignID string) 
 				val, _ := json.Marshal(event)
 				if err := ce.producer.Publish(ctx, []byte(recp.ID), val); err != nil {
 					log.Printf("Failed to publish campaign message %s: %v", recp.ID, err)
+					monitoring.MessagesProcessed.WithLabelValues("campaign-engine", "failed").Inc()
+					mu.Lock()
+					batchFailed++
+					mu.Unlock()
+					ce.db.Model(&recp).Updates(map[string]interface{}{"status": "FAILED", "error": err.Error()})
 				} else {
 					ce.db.Model(&recp).Update("status", "SENT")
+					monitoring.MessagesProcessed.WithLabelValues("campaign-engine", "success").Inc()
+					mu.Lock()
+					batchSent++
+					mu.Unlock()
 				}
 			}(r)
 		}
 		wg.Wait()
+
+		totalSent += batchSent
+		totalFailed += batchFailed
+
+		// Update campaign progress
+		ce.db.Model(&campaign).Updates(map[string]interface{}{
+			"sentCount":   gorm.Expr("sentCount + ?", batchSent),
+			"failedCount": gorm.Expr("failedCount + ?", batchFailed),
+		})
 
 		offset += len(recipients)
 	}
@@ -241,6 +319,8 @@ func main() {
 	dsn := os.Getenv("DATABASE_URL")
 	brokers := strings.Split(getEnv("KAFKA_BROKERS", "localhost:9092"), ",")
 
+	monitoring.StartMetricsServer(":8083")
+
 	engine, err := NewCampaignEngine(dsn, brokers)
 	if err != nil {
 		log.Fatalf("Failed to initialize Campaign Engine: %v", err)
@@ -261,9 +341,11 @@ func main() {
 		}
 	}()
 
-	// For POC, we could listen for a signal or another Kafka topic to start a campaign
+	// Start scheduler
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	go engine.RunScheduler(ctx)
 
 	<-ctx.Done()
 	log.Println("Campaign Engine shutting down.")
