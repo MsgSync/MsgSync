@@ -71,6 +71,7 @@ env/
 target/
 
 # Go
+smpp-gateway
 *.exe
 *.test
 *.out
