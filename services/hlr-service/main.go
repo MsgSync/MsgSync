@@ -13,7 +13,6 @@ import (
 	"github.com/MsgSync/MsgSync/services/common"
 	"github.com/MsgSync/MsgSync/services/common/monitoring"
 	"github.com/google/uuid"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -79,6 +78,8 @@ func (s *HLRService) RunResponseConsumer(ctx context.Context) {
 				MNC:           "Unknown",
 				Type:          "mobile",
 				LastCheckedAt: time.Now(),
+				Status:        "active",
+			}
 			monitoring.MessagesProcessed.WithLabelValues("hlr-service", "active").Inc()
 			ch <- resp
 		} else {
@@ -137,7 +138,7 @@ func (s *HLRService) doExternalLookup(ctx context.Context, phone string) (*Looku
 		Key:   []byte(phone),
 		Value: val,
 	}); err != nil {
-		lookupsTotal.WithLabelValues("failed").Inc()
+		monitoring.MessagesProcessed.WithLabelValues("hlr-service", "failed").Inc()
 		return nil, fmt.Errorf("failed to send request to SS7 gateway: %v", err)
 	}
 
