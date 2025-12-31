@@ -159,8 +159,8 @@ func main() {
 
 	// Select transport based on environment (handled by build tags, but we also initialize here)
 	var transport SigtranTransport
-	// This is a simple logic for the entry point
-	transport = &FallbackTransport{config: cfg}
+	// Use platform-specific transport factory
+	transport = NewTransport(cfg)
 
 	gateway, err := NewSS7Gateway(brokers, cfg, transport)
 	if err != nil {

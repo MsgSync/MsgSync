@@ -16,6 +16,10 @@ type LinuxTransport struct {
 	config *Config
 }
 
+func NewTransport(cfg *Config) SigtranTransport {
+	return &LinuxTransport{config: cfg}
+}
+
 func (t *LinuxTransport) Establish(ctx context.Context) (io.WriteCloser, error) {
 	m3uaCfg := m3ua.NewConfig(
 		t.config.LocalSPC,
