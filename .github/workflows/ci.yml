@@ -143,16 +143,16 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Build HLR Service
-      run: docker build -t msgsync/hlr-service services/hlr-service
+      run: docker build -t msgsync/hlr-service -f services/hlr-service/Dockerfile .
 
     - name: Build SS7 Gateway
-      run: docker build -t msgsync/ss7-gateway services/ss7-gateway
+      run: docker build -t msgsync/ss7-gateway -f services/ss7-gateway/Dockerfile .
 
     - name: Build SMPP Gateway
-      run: docker build -t msgsync/smpp-gateway services/smpp-gateway
+      run: docker build -t msgsync/smpp-gateway -f services/smpp-gateway/Dockerfile .
 
     - name: Build Routing Engine
-      run: docker build -t msgsync/routing-engine services/routing-engine
+      run: docker build -t msgsync/routing-engine -f services/routing-engine/Dockerfile .
 
     - name: Build Campaign Engine
-      run: docker build -t msgsync/campaign-engine services/campaign-engine
+      run: docker build -t msgsync/campaign-engine -f services/campaign-engine/Dockerfile .
