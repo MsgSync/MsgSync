@@ -11,13 +11,15 @@ setup:
 build:
 	@echo "Building services..."
 	cd platform && npm run build
-	cd services/smpp-gateway && go build -o smpp-gateway main.go
+	cd services/smpp-gateway && go build -o smpp-gateway .
+	cd services/routing-engine && go build -o routing-engine .
 
 # Test all services
 test:
 	@echo "Running tests..."
 	cd platform && npm test
 	cd services/smpp-gateway && go test ./...
+	cd services/routing-engine && go test ./...
 
 # Run the platform (Node.js)
 run-platform:
@@ -26,3 +28,7 @@ run-platform:
 # Run the SMPP gateway (Go)
 run-gateway:
 	cd services/smpp-gateway && ./smpp-gateway
+
+# Run the Routing Engine (Go)
+run-routing:
+	cd services/routing-engine && ./routing-engine
