@@ -11,7 +11,7 @@ async function runOTPDemo() {
     const recipient = '+15550001122';
 
     try {
-        // 1. Request an OTP
+    // 1. Request an OTP
         console.log(`\n1. Requesting OTP for ${recipient}...`);
         const sendResp = await client.sendOTP({
             recipient: recipient,
@@ -29,7 +29,6 @@ async function runOTPDemo() {
         } catch (e) {
             console.log('Verification failed as expected:', e.message);
         }
-
     } catch (error) {
         console.error('OTP Demo Error:', error.message);
     }

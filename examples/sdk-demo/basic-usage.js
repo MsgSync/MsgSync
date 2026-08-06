@@ -11,7 +11,7 @@ async function runDemo() {
     });
 
     try {
-        // 1. Send a message
+    // 1. Send a message
         console.log('\n1. Sending a new message...');
         const sendResponse = await client.sendMessage({
             recipient: '+15551234567',
@@ -34,10 +34,11 @@ async function runDemo() {
         console.log('\n3. Fetching recent messages...');
         const listResponse = await client.listMessages();
         console.log(`Total messages in list: ${listResponse.data.length}`);
-
     } catch (error) {
         console.error('Demo Error:', error.message);
-        console.log('\nTip: Make sure the MsgSync Platform is running at http://localhost:3001');
+        console.log(
+            '\nTip: Make sure the MsgSync Platform is running at http://localhost:3001'
+        );
     }
 }
 

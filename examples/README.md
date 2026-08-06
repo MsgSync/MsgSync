@@ -5,29 +5,34 @@ Sample integrations and use cases for MsgSync.
 ## Available Examples
 
 ### Basic Examples
+
 - [**Simple Send**](./simple-send/) - Send a basic SMS message
 - [**Batch Send**](./batch-send/) - Send messages to multiple recipients
 - [**Scheduled Messages**](./scheduled-messages/) - Schedule messages for later delivery
 
 ### Integration Examples
+
 - [**Express Integration**](./express-integration/) - Integrate with Express.js
 - [**React App**](./react-app/) - Build a React messaging app
 - [**Python Flask**](./python-flask/) - Use MsgSync with Flask
 - [**Next.js**](./nextjs-app/) - Full-stack Next.js example
 
 ### Advanced Examples
+
 - [**Webhook Handler**](./webhook-handler/) - Handle delivery status webhooks
 - [**Two-way Messaging**](./two-way-messaging/) - Implement two-way SMS conversations
 - [**Message Templates**](./message-templates/) - Use dynamic message templates
 - [**Analytics Dashboard**](./analytics-dashboard/) - Build an analytics dashboard
 
 ### Provider Examples
+
 - [**Multi-provider Setup**](./multi-provider/) - Configure multiple SMS providers
 - [**Provider Fallback**](./provider-fallback/) - Implement automatic failover
 
 ## Quick Start
 
 Each example includes:
+
 - `README.md` - Detailed instructions
 - `package.json` or equivalent - Dependencies
 - `.env.example` - Environment variables template
@@ -36,29 +41,34 @@ Each example includes:
 ### Running an Example
 
 1. Navigate to the example directory:
+
 ```bash
 cd examples/simple-send
 ```
 
 2. Install dependencies:
+
 ```bash
-npm install
+pnpm install
 ```
 
 3. Copy and configure environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with your API credentials
 ```
 
 4. Run the example:
+
 ```bash
-npm start
+pnpm start
 ```
 
 ## Example Structure
 
 Each example follows this structure:
+
 ```
 example-name/
 ├── src/              # Source code

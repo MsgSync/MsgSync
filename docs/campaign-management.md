@@ -41,6 +41,7 @@ The MsgSync Campaign Management system provides an intuitive, web-based interfac
 3. Import contacts using CSV or JSON format:
 
 **CSV Format:**
+
 ```csv
 phone,firstName,lastName,email,tier
 +1234567890,John,Doe,john@example.com,gold
@@ -48,6 +49,7 @@ phone,firstName,lastName,email,tier
 ```
 
 **JSON Format:**
+
 ```json
 [
   {
@@ -93,6 +95,7 @@ Valid until {{expiryDate}}.
 ```
 
 **Available Variables:**
+
 - `{{firstName}}` - Contact's first name
 - `{{lastName}}` - Contact's last name
 - `{{phone}}` - Contact's phone number
@@ -102,12 +105,14 @@ Valid until {{expiryDate}}.
 ### Sender ID Configuration
 
 #### Alphanumeric Sender ID
+
 - Format: 1-11 alphanumeric characters
 - Example: `BRAND`, `ACME`, `SALE2025`
 - Best for: Brand recognition
 - Note: Not all carriers support alphanumeric sender IDs
 
 #### Virtual Number
+
 - Format: E.164 phone number format
 - Example: `+1234567890`
 - Best for: Two-way messaging, compliance
@@ -126,25 +131,30 @@ Valid until {{expiryDate}}.
 ### Managing Campaigns
 
 #### Launch a Campaign
+
 - Click the **Play** icon on a draft campaign
 - Or use **"Launch Campaign"** in the creation modal
 - Confirms before sending to all recipients
 
 #### Pause a Campaign
+
 - Click the **Pause** icon on a running campaign
 - Messages in queue will be held
 - Can be resumed later
 
 #### Resume a Campaign
+
 - Click the **Play** icon on a paused campaign
 - Queued messages will continue sending
 
 #### Delete a Campaign
+
 - Click the **Trash** icon
 - Only draft, scheduled, or completed campaigns can be deleted
 - Running campaigns must be paused first
 
 #### Duplicate a Campaign
+
 - Click the **Copy** icon
 - Creates a draft copy with "(Copy)" suffix
 - Useful for recurring campaigns
@@ -241,6 +251,7 @@ curl -X DELETE http://localhost:3001/api/bulk/campaigns/{id} \
 **Issue**: Campaign stuck in "running" status but no messages sent
 
 **Solutions**:
+
 - Check if contact list has valid phone numbers
 - Verify API key has sufficient permissions
 - Check message queue is running: `docker-compose ps`
@@ -251,6 +262,7 @@ curl -X DELETE http://localhost:3001/api/bulk/campaigns/{id} \
 **Issue**: Messages show a number instead of sender ID
 
 **Solutions**:
+
 - Verify sender ID format (alphanumeric 1-11 chars)
 - Check carrier support for alphanumeric sender IDs
 - Try using a virtual number instead
@@ -261,6 +273,7 @@ curl -X DELETE http://localhost:3001/api/bulk/campaigns/{id} \
 **Issue**: Messages show `{{firstName}}` instead of actual names
 
 **Solutions**:
+
 - Verify contact data includes the field
 - Check spelling matches exactly (case-sensitive)
 - Ensure contact import was successful
@@ -271,6 +284,7 @@ curl -X DELETE http://localhost:3001/api/bulk/campaigns/{id} \
 **Issue**: Many messages showing "failed" status
 
 **Solutions**:
+
 - Validate phone number format (E.164 recommended)
 - Check provider configuration and credentials
 - Review error messages in message details
@@ -281,6 +295,7 @@ curl -X DELETE http://localhost:3001/api/bulk/campaigns/{id} \
 ### Campaign Metrics
 
 The dashboard displays:
+
 - **Total Messages**: Number of messages created
 - **Delivered**: Successfully delivered messages
 - **Pending**: Messages in queue or sending
@@ -332,7 +347,7 @@ curl -X GET http://localhost:3001/api/bulk/campaigns/{id} \
 
 - **Documentation**: [Full API Docs](http://localhost:3001/docs)
 - **GitHub Issues**: [Report bugs](https://github.com/MsgSync/MsgSync/issues)
-- **Email**: support@msgsync.com
+- **Email**: support@khulnasoft.com
 - **Discord**: [Join community](https://discord.gg/msgsync)
 
 ### Feature Requests
@@ -343,4 +358,4 @@ Submit feature requests via GitHub Issues with the `enhancement` label.
 
 **Built with ❤️ by the MsgSync Team**
 
-*Effortless Campaign Management for Modern Businesses*
+_Effortless Campaign Management for Modern Businesses_

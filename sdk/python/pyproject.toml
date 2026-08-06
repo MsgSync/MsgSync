@@ -7,7 +7,7 @@ name = "msgsync-sdk"
 version = "1.0.0"
 description = "MsgSync Python SDK"
 readme = "README.md"
-authors = [{ name = "MsgSync Team", email = "support@msgsync.com" }]
+authors = [{ name = "MsgSync Team", email = "support@khulnasoft.com" }]
 license = { text = "MIT" }
 classifiers = [
     "Programming Language :: Python :: 3",

@@ -22,12 +22,14 @@ This comprehensive guide will walk you through deploying MsgSync to production w
 ## Prerequisites
 
 ### Required Services
+
 - **PostgreSQL 14+** (Managed service recommended: AWS RDS, Google Cloud SQL, or DigitalOcean)
 - **Redis 6+** (Managed service recommended: AWS ElastiCache, Redis Cloud, or Upstash)
 - **Node.js 18+**
 - **Docker & Docker Compose** (for containerized deployment)
 
 ### Domain & SSL
+
 - Registered domain name
 - SSL certificate (Let's Encrypt recommended)
 - DNS configured to point to your server
@@ -44,20 +46,21 @@ cd MsgSync
 
 # Install platform dependencies
 cd platform
-npm install
-npm run prisma:generate
+pnpm install
+pnpm run prisma:generate
 
 # Install aggregator dependencies
 cd ../aggregator
-npm install
-npm run prisma:generate
+pnpm install
+pnpm run prisma:generate
 ```
 
 ### 2. Configure Environment Variables
 
 Create production environment files:
 
-**`platform/.env.production`**
+**`packages/platform/.env.production`**
+
 ```env
 # Database
 DATABASE_URL="postgresql://user:password@your-db-host:5432/msgsync_production?schema=public"
@@ -82,7 +85,8 @@ WEBHOOK_SECRET=your-webhook-signing-secret
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 ```
 
-**`aggregator/.env.production`**
+**`packages/aggregator/.env.production`**
+
 ```env
 DATABASE_URL="postgresql://user:password@your-db-host:5432/msgsync_aggregator?schema=public"
 REDIS_URL="redis://your-redis-host:6379"
@@ -110,7 +114,7 @@ npx prisma migrate deploy
 
 ```bash
 cd platform
-npm run prisma:seed
+pnpm run prisma:seed
 ```
 
 ### 3. Create Production API Keys
@@ -157,13 +161,14 @@ requirepass your-strong-redis-password
 ### Option 1: Docker Compose (Recommended)
 
 **`docker-compose.production.yml`**
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   platform:
     build:
-      context: ./platform
+      context: ./packages/platform
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
@@ -172,7 +177,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
     env_file:
-      - ./platform/.env.production
+      - ./packages/platform/.env.production
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
@@ -183,12 +188,12 @@ services:
       replicas: 2
       resources:
         limits:
-          cpus: '1'
+          cpus: "1"
           memory: 1G
 
   aggregator:
     build:
-      context: ./aggregator
+      context: ./packages/aggregator
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
@@ -197,7 +202,7 @@ services:
       - DATABASE_URL=${AGGREGATOR_DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
     env_file:
-      - ./aggregator/.env.production
+      - ./packages/aggregator/.env.production
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
@@ -220,6 +225,7 @@ services:
 ```
 
 **Deploy:**
+
 ```bash
 docker-compose -f docker-compose.production.yml up -d
 ```
@@ -228,7 +234,7 @@ docker-compose -f docker-compose.production.yml up -d
 
 ```bash
 # Install PM2 globally
-npm install -g pm2
+pnpm add -g pm2
 
 # Start Platform
 cd platform
@@ -252,6 +258,7 @@ pm2 startup
 ### 1. Nginx Reverse Proxy Configuration
 
 **`nginx.conf`**
+
 ```nginx
 upstream platform {
     least_conn;
@@ -349,27 +356,31 @@ curl https://api.yourdomain.com/health
 ### 2. Logging Strategy
 
 **Install Winston for structured logging:**
+
 ```bash
-npm install winston
+pnpm add winston
 ```
 
-**`platform/src/utils/logger.js`**
+**`packages/platform/src/utils/logger.js`**
+
 ```javascript
-const winston = require('winston');
+const winston = require("winston");
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   format: winston.format.json(),
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    new winston.transports.File({ filename: "combined.log" }),
   ],
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+if (process.env.NODE_ENV !== "production") {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  );
 }
 
 module.exports = logger;
@@ -378,6 +389,7 @@ module.exports = logger;
 ### 3. Metrics & Alerting
 
 **Recommended Tools:**
+
 - **Prometheus + Grafana**: For metrics visualization
 - **Sentry**: For error tracking
 - **DataDog / New Relic**: For APM
@@ -406,23 +418,23 @@ spec:
         app: msgsync-platform
     spec:
       containers:
-      - name: platform
-        image: your-registry/msgsync-platform:latest
-        ports:
-        - containerPort: 3001
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: msgsync-secrets
-              key: database-url
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
+        - name: platform
+          image: your-registry/msgsync-platform:latest
+          ports:
+            - containerPort: 3001
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: msgsync-secrets
+                  key: database-url
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
 ```
 
 ### Database Optimization
@@ -464,7 +476,7 @@ find /backups -name "msgsync_*.sql.gz" -mtime +30 -delete
 
 1. **RTO (Recovery Time Objective)**: 1 hour
 2. **RPO (Recovery Point Objective)**: 15 minutes
-3. **Backup Strategy**: 
+3. **Backup Strategy**:
    - Continuous WAL archiving for PostgreSQL
    - Redis AOF persistence enabled
    - Daily full backups to S3/GCS
@@ -498,17 +510,20 @@ pg_restore -d msgsync_test /backups/latest.sql.gz
 ### Regular Maintenance Tasks
 
 **Weekly:**
+
 - Review error logs
 - Check queue depths
 - Monitor API response times
 
 **Monthly:**
-- Update dependencies (`npm audit fix`)
+
+- Update dependencies (`pnpm audit`)
 - Review and rotate API keys
 - Test disaster recovery
 - Analyze usage patterns
 
 **Quarterly:**
+
 - Security audit
 - Performance optimization
 - Capacity planning review

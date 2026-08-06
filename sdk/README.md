@@ -5,18 +5,23 @@ Official SDKs for integrating MsgSync into your applications.
 ## Available SDKs
 
 ### JavaScript/TypeScript
+
 ```bash
-npm install @msgsync/sdk
+pnpm add @msgsync/sdk
 ```
+
 See [JavaScript SDK](./javascript/) for documentation.
 
 ### Python
+
 ```bash
 pip install msgsync
 ```
+
 See [Python SDK](./python/) for documentation.
 
 ### Java
+
 ```xml
 <dependency>
     <groupId>com.msgsync</groupId>
@@ -24,46 +29,50 @@ See [Python SDK](./python/) for documentation.
     <version>1.0.0</version>
 </dependency>
 ```
+
 See [Java SDK](./java/) for documentation.
 
 ### Go
+
 ```bash
 go get github.com/msgsync/go-sdk
 ```
+
 See [Go SDK](./go/) for documentation.
 
 ## Quick Start Example (JavaScript)
 
 ```javascript
-const MsgSync = require('@msgsync/sdk');
+const MsgSync = require("@msgsync/sdk");
 
 // Initialize the client
 const client = new MsgSync({
-  apiKey: 'your-api-key',
-  endpoint: 'https://api.msgsync.io'
+  apiKey: "your-api-key",
+  endpoint: "https://api.msgsync.io",
 });
 
 // Send a message
 async function sendMessage() {
   const result = await client.messages.send({
-    to: '+1234567890',
-    body: 'Hello from MsgSync!',
-    from: '+0987654321'
+    to: "+1234567890",
+    body: "Hello from MsgSync!",
+    from: "+0987654321",
   });
-  
-  console.log('Message sent:', result.id);
+
+  console.log("Message sent:", result.id);
 }
 
 // Get message status
 async function getStatus(messageId) {
   const status = await client.messages.get(messageId);
-  console.log('Status:', status.delivery_status);
+  console.log("Status:", status.delivery_status);
 }
 ```
 
 ## Features
 
 All SDKs provide:
+
 - ✅ Full API coverage
 - ✅ Type safety (where applicable)
 - ✅ Async/await support
@@ -86,6 +95,7 @@ sdk/
 ## Documentation
 
 For detailed SDK documentation, see:
+
 - [SDK Reference](../docs/sdk-reference.md)
 - Individual SDK directories for language-specific docs
 

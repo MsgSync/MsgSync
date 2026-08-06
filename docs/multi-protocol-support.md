@@ -7,9 +7,11 @@ MsgSync supports industry-standard messaging protocols for seamless integration 
 ## Supported Protocols
 
 ### 1. **SMPP (Short Message Peer-to-Peer)**
+
 Industry-standard protocol for high-volume SMS delivery through direct carrier connections.
 
 #### Features
+
 - SMPP 3.4 protocol support
 - Automatic delivery receipt handling
 - Connection pooling and auto-reconnect
@@ -17,6 +19,7 @@ Industry-standard protocol for high-volume SMS delivery through direct carrier c
 - Configurable bind modes (transmitter, receiver, transceiver)
 
 #### Configuration Example
+
 ```javascript
 {
   "name": "Carrier SMPP Gateway",
@@ -36,6 +39,7 @@ Industry-standard protocol for high-volume SMS delivery through direct carrier c
 ```
 
 #### Database Setup
+
 ```sql
 INSERT INTO "Provider" (id, name, type, config, active, priority)
 VALUES (
@@ -56,9 +60,11 @@ VALUES (
 ---
 
 ### 2. **SS7 (SIGTRAN M3UA/SCCP)**
+
 Telecom-grade signaling protocol for direct SMS-C integration.
 
 #### Features
+
 - M3UA (MTP3 User Adaptation Layer) support
 - SCCP (Signaling Connection Control Part) messaging
 - Point code routing
@@ -66,6 +72,7 @@ Telecom-grade signaling protocol for direct SMS-C integration.
 - Delivery report handling
 
 #### Configuration Example
+
 ```javascript
 {
   "name": "SS7 SIGTRAN Gateway",
@@ -83,6 +90,7 @@ Telecom-grade signaling protocol for direct SMS-C integration.
 ```
 
 #### Use Cases
+
 - Direct carrier integration
 - SMS-C to SMS-C routing
 - International SMS delivery
@@ -91,9 +99,11 @@ Telecom-grade signaling protocol for direct SMS-C integration.
 ---
 
 ### 3. **HTTP/HTTPS REST API**
+
 Standard web-based API for easy integration.
 
 #### Features
+
 - RESTful endpoints
 - JSON request/response
 - OAuth 2.0 / API Key authentication
@@ -101,7 +111,9 @@ Standard web-based API for easy integration.
 - Batch messaging support
 
 #### Already Implemented
+
 The platform's core API (`/api/messages`) provides full HTTP/HTTPS support with:
+
 - TLS 1.2+ encryption
 - Rate limiting
 - Request validation
@@ -110,9 +122,11 @@ The platform's core API (`/api/messages`) provides full HTTP/HTTPS support with:
 ---
 
 ### 4. **Generic HTTP Provider**
+
 Flexible adapter for third-party HTTP gateways.
 
 #### Configuration Example
+
 ```javascript
 {
   "name": "Custom SMS Gateway",
@@ -148,6 +162,7 @@ MsgSync automatically selects the best protocol based on:
 4. **Load Balancing**: Distribute across multiple connections
 
 ### Priority Configuration
+
 ```sql
 -- Set SMPP as primary (priority 1)
 UPDATE "Provider" SET priority = 1 WHERE type = 'smpp';
@@ -163,29 +178,32 @@ UPDATE "Provider" SET priority = 3 WHERE type = 'generic-http';
 
 ## Performance Benchmarks
 
-| Protocol | Throughput | Latency | Use Case |
-|----------|-----------|---------|----------|
-| **SMPP** | 100-1000 msg/s | 50-200ms | High-volume carrier delivery |
-| **SS7** | 50-500 msg/s | 100-500ms | Telecom-grade routing |
-| **HTTP** | 10-100 msg/s | 200-1000ms | Web-based integrations |
+| Protocol | Throughput     | Latency    | Use Case                     |
+| -------- | -------------- | ---------- | ---------------------------- |
+| **SMPP** | 100-1000 msg/s | 50-200ms   | High-volume carrier delivery |
+| **SS7**  | 50-500 msg/s   | 100-500ms  | Telecom-grade routing        |
+| **HTTP** | 10-100 msg/s   | 200-1000ms | Web-based integrations       |
 
 ---
 
 ## Security Considerations
 
 ### SMPP Security
+
 - Use VPN or dedicated circuits for SMPP connections
 - Implement IP whitelisting
 - Rotate system_id passwords regularly
 - Monitor for unauthorized bind attempts
 
 ### SS7 Security
+
 - Deploy SS7 firewall (SS7FW)
 - Implement point code filtering
 - Monitor for SS7 attacks (SMS spoofing, location tracking)
 - Use encrypted transport (IPsec)
 
 ### HTTP Security
+
 - Always use HTTPS (TLS 1.2+)
 - Implement API key rotation
 - Use HMAC signatures for webhooks
@@ -196,16 +214,18 @@ UPDATE "Provider" SET priority = 3 WHERE type = 'generic-http';
 ## Monitoring & Troubleshooting
 
 ### SMPP Debugging
+
 ```bash
 # Enable SMPP debug logs
 export SMPP_DEBUG=true
-npm run dev
+pnpm run dev
 
 # Monitor SMPP connections
 netstat -an | grep 2775
 ```
 
 ### SS7 Debugging
+
 ```bash
 # Capture SS7 traffic (requires root)
 tcpdump -i eth0 port 2905 -w ss7_capture.pcap
@@ -217,16 +237,19 @@ wireshark ss7_capture.pcap
 ### Common Issues
 
 **SMPP Connection Refused**
+
 - Check firewall rules
 - Verify system_id and password
 - Confirm SMSC IP address
 
 **SS7 Routing Failure**
+
 - Verify point code configuration
 - Check global title translation
 - Confirm network indicator settings
 
 **HTTP Timeout**
+
 - Increase timeout settings
 - Check gateway availability
 - Verify SSL certificate validity
@@ -236,18 +259,21 @@ wireshark ss7_capture.pcap
 ## Production Deployment
 
 ### SMPP Best Practices
+
 1. Use connection pooling (5-10 connections per SMSC)
 2. Implement automatic reconnection with exponential backoff
 3. Monitor bind status and alert on failures
 4. Log all PDUs for audit trail
 
 ### SS7 Best Practices
+
 1. Deploy redundant SIGTRAN gateways
 2. Use separate point codes for production/testing
 3. Implement SS7 firewall rules
 4. Monitor signaling link utilization
 
 ### Scaling Recommendations
+
 - **< 10K msg/day**: Single HTTP provider
 - **10K - 100K msg/day**: SMPP with 2-3 connections
 - **100K - 1M msg/day**: Multiple SMPP providers + load balancing

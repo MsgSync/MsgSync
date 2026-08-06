@@ -22,8 +22,8 @@ Enhancement suggestions are tracked as GitHub issues. Create an issue using our 
 2. **Make your changes** following our coding standards
 3. **Add tests** if you've added code that should be tested
 4. **Update documentation** if you've changed APIs
-5. **Ensure tests pass** by running `npm test`
-6. **Run linting** with `npm run lint`
+5. **Ensure tests pass** by running `pnpm test`
+6. **Run linting** with `pnpm run lint`
 7. **Submit your pull request** using our PR template
 
 ## Development Setup
@@ -31,7 +31,7 @@ Enhancement suggestions are tracked as GitHub issues. Create an issue using our 
 ### Prerequisites
 
 - Node.js 16.x or higher
-- npm or yarn
+- pnpm
 - Git
 - (Add other prerequisites)
 
@@ -48,13 +48,13 @@ cd MsgSync
 git remote add upstream https://github.com/MsgSync/MsgSync.git
 
 # Install dependencies
-npm install
+pnpm install
 
 # Run tests
-npm test
+pnpm test
 
 # Start development server
-npm run dev
+pnpm run dev
 ```
 
 ## Coding Standards
@@ -101,17 +101,17 @@ async function sendMessage(to, message, options = {}) {
 - Follow the Arrange-Act-Assert pattern
 
 ```javascript
-describe('MessageHandler', () => {
-  it('should send a message successfully', async () => {
+describe("MessageHandler", () => {
+  it("should send a message successfully", async () => {
     // Arrange
     const handler = new MessageHandler();
-    const message = { to: '+1234567890', body: 'Test' };
-    
+    const message = { to: "+1234567890", body: "Test" };
+
     // Act
     const result = await handler.send(message);
-    
+
     // Assert
-    expect(result.status).toBe('sent');
+    expect(result.status).toBe("sent");
   });
 });
 ```
@@ -134,6 +134,7 @@ describe('MessageHandler', () => {
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -143,6 +144,7 @@ describe('MessageHandler', () => {
 - `chore`: Maintenance tasks
 
 **Example:**
+
 ```
 feat(platform): add retry logic for failed messages
 
@@ -175,6 +177,7 @@ Closes #123
 ## Recognition
 
 Contributors are recognized in:
+
 - The [Contributors](https://github.com/MsgSync/MsgSync/graphs/contributors) page
 - Release notes for significant contributions
 - Our community showcase

@@ -29,6 +29,7 @@ client = MsgSyncClient(api_key="your_api_key")
 ## 📨 Message Management
 
 ### Send a Single SMS
+
 Queue a message for immediate or future delivery.
 
 ```python
@@ -42,6 +43,7 @@ print(f"Message ID: {response['data']['id']}")
 ```
 
 ### Get Message Status
+
 Retrieve real-time status updates for a specific message.
 
 ```python
@@ -50,6 +52,7 @@ print(f"Status: {status['data']['status']}")
 ```
 
 ### List Recent Messages
+
 Fetch a list of recent transmissions.
 
 ```python
@@ -63,6 +66,7 @@ for msg in messages:
 ## 🔐 OTP Verification
 
 ### Send an OTP
+
 Generate and send a secure verification code.
 
 ```python
@@ -71,6 +75,7 @@ client.send_otp(recipient="+15550001122", length=6, ttl=300)
 ```
 
 ### Verify a Code
+
 Verify the code provided by the user.
 
 ```python
@@ -87,12 +92,14 @@ else:
 ## 🚀 Bulk Campaigns & Lists
 
 ### Create a Contact List
+
 ```python
 list_res = client.create_list(name="Winter Sale Prospects")
 list_id = list_res["data"]["id"]
 ```
 
 ### Import Contacts
+
 ```python
 contacts = [
     {"phone": "+15550001122", "firstName": "Alice"},
@@ -102,6 +109,7 @@ client.add_contacts(list_id=list_id, contacts=contacts)
 ```
 
 ### Launch a Campaign
+
 ```python
 campaign = client.create_campaign(
     name="Holiday Promotion",

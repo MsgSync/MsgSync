@@ -13,7 +13,7 @@ This guide explains how to deploy MsgSync using Docker and Docker Compose.
 Create a `docker-compose.yml` file in the root directory:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -33,7 +33,7 @@ services:
       - "6379:6379"
 
   platform:
-    build: 
+    build:
       context: ./platform
     environment:
       DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_platform?schema=public"
@@ -63,54 +63,67 @@ volumes:
 
 ## Dockerfiles
 
-### Platform Dockerfile (`platform/Dockerfile`)
+### Platform Dockerfile (`packages/platform/Dockerfile`)
 
 ```dockerfile
 FROM node:18-alpine
 
+RUN npm install -g pnpm@8
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --production
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/platform/package.json ./packages/platform/
+RUN pnpm install --frozen-lockfile --prod
 
-COPY . .
-RUN npx prisma generate
+COPY packages/platform/ ./packages/platform/
+RUN cd packages/platform && npx prisma generate
 
 EXPOSE 3001
-CMD ["npm", "start"]
+CMD ["node", "packages/platform/src/index.js"]
 ```
 
-### Aggregator Dockerfile (`aggregator/Dockerfile`)
+### Aggregator Dockerfile (`packages/aggregator/Dockerfile`)
 
 ```dockerfile
 FROM node:18-alpine
 
+RUN npm install -g pnpm@8
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --production
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/aggregator/package.json ./packages/aggregator/
+COPY packages/sdk-js/package.json ./packages/sdk-js/
+RUN pnpm install --frozen-lockfile --prod
 
-COPY . .
-RUN npx prisma generate
+COPY packages/aggregator/ ./packages/aggregator/
+COPY packages/sdk-js/ ./packages/sdk-js/
+RUN cd packages/aggregator && npx prisma generate
 
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "packages/aggregator/src/index.js"]
 ```
 
 ## Deployment Steps
 
 1.  **Build and Start**:
+
     ```bash
     docker-compose up -d --build
     ```
 
 2.  **Initialize Database**:
+
     ```bash
     docker-compose exec platform npx prisma migrate deploy
-    docker-compose exec platform npm run prisma:seed
+    docker-compose exec platform pnpm run prisma:seed
     ```
 
 3.  **Verify**:
     - Platform API: `http://localhost:3001/health`
     - Aggregator API: `http://localhost:3000/health`
+
+```
+
 ```

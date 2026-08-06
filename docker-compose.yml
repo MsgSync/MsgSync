@@ -19,7 +19,8 @@ services:
 
   platform:
     build:
-      context: ./platform
+      context: .
+      dockerfile: packages/platform/Dockerfile
     environment:
       DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_platform?schema=public"
       REDIS_URL: "redis://redis:6379"
@@ -33,14 +34,18 @@ services:
 
   aggregator:
     build:
-      context: ./aggregator
+      context: .
+      dockerfile: packages/aggregator/Dockerfile
     environment:
-      DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_platform?schema=public"
+      DATABASE_URL: "postgresql://msgsync:password123@postgres:5432/msgsync_aggregator?schema=public"
+      PLATFORM_API_URL: "http://platform:3001/api"
       PORT: 3000
+      NODE_ENV: production
     ports:
       - "3000:3000"
     depends_on:
       - postgres
+      - platform
 
 volumes:
   postgres_data:
