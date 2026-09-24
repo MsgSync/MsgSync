@@ -15,6 +15,7 @@ import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TerminalDrawer } from './components/TerminalDrawer';
 import { NotificationsPopover } from './components/NotificationsPopover';
 import { LoginScreen } from './screens/LoginScreen';
+import { LandingPage } from './screens/LandingPage';
 
 const OperatorProfileScreen = lazy(() => import('./screens/OperatorProfileScreen').then(module => ({ default: module.OperatorProfileScreen })));
 const DashboardScreen = lazy(() => import('./screens/DashboardScreen').then(module => ({ default: module.DashboardScreen })));
@@ -191,6 +192,11 @@ function AuthenticatedApp({ user }: { user: AuthenticatedUser }) {
 
 function AppContent() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const isLanding = window.location.pathname === '/' && !window.location.search.includes('console=1');
+
+  if (isLanding) {
+    return <LandingPage onOpenConsole={() => { window.history.pushState({}, '', '/?console=1'); window.location.reload(); }} />;
+  }
 
   if (isLoading) {
     return (

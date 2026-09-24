@@ -1,0 +1,83 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MsgSync API",
+    "version": "2.4.0",
+    "description": "Messaging, campaign, HLR, routing, billing, and security APIs."
+  },
+  "servers": [{ "url": "https://api.msgsync.dev/v2" }],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/messages": {
+      "post": {
+        "summary": "Send a message",
+        "parameters": [
+          { "name": "Idempotency-Key", "in": "header", "required": false, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendMessage" } } }
+        },
+        "responses": { "202": { "description": "Message accepted" }, "403": { "$ref": "#/components/responses/Forbidden" } }
+      }
+    },
+    "/messages/{messageId}": {
+      "get": {
+        "summary": "Get message status",
+        "parameters": [{ "name": "messageId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Message status" } }
+      }
+    },
+    "/campaigns": {
+      "post": {
+        "summary": "Create a campaign",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCampaign" } } } },
+        "responses": { "201": { "description": "Campaign created" } }
+      }
+    },
+    "/lookups/info": {
+      "get": {
+        "summary": "HLR and MNP lookup",
+        "parameters": [{ "name": "phone", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Lookup result" } }
+      }
+    },
+    "/network/rates/{planId}": {
+      "get": {
+        "summary": "List plan rates",
+        "parameters": [{ "name": "planId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Rate list" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": { "bearerAuth": { "type": "http", "scheme": "bearer" } },
+    "schemas": {
+      "SendMessage": {
+        "type": "object",
+        "required": ["recipient", "content"],
+        "properties": {
+          "recipient": { "type": "string", "description": "Destination in E.164 format" },
+          "content": { "type": "string", "description": "UTF-8 message content" },
+          "metadata": { "type": "object", "properties": { "profile": { "type": "string", "enum": ["TRANSACTIONAL", "PROMOTIONAL", "OTP"] }, "senderId": { "type": "string" } } },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "callbackUrl": { "type": "string", "format": "uri" }
+        }
+      },
+      "CreateCampaign": {
+        "type": "object",
+        "required": ["name", "template", "contactListId"],
+        "properties": {
+          "name": { "type": "string" },
+          "template": { "type": "string" },
+          "contactListId": { "type": "string", "format": "uuid" },
+          "senderId": { "type": "string" },
+          "scheduledAt": { "type": "string", "format": "date-time" },
+          "enableTracking": { "type": "boolean", "default": true },
+          "enableWebhooks": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "responses": { "Forbidden": { "description": "Request blocked by security or billing policy" } }
+  }
+}
