@@ -7,6 +7,7 @@
     "dev": "pnpm -r --parallel run dev",
     "dev:platform": "pnpm --filter @msgsync/platform run dev",
     "dev:aggregator": "pnpm --filter @msgsync/aggregator run dev",
+    "dev:www": "pnpm --filter @msgsync/www run dev",
     "start": "pnpm -r --parallel run start",
     "bootstrap:env": "node scripts/bootstrap-env.js",
     "check:stack": "node scripts/check-local-stack.js",
@@ -48,5 +49,26 @@
   "engines": {
     "node": ">=16.0.0",
     "pnpm": ">=8.0.0"
+  },
+  "catalog": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.38",
+    "tsx": "^4.16.2",
+    "@typescript/native": "^5.6.2",
+    "zod": "^3.23.8",
+    "recharts": "^2.12.0",
+    "@tanstack/react-table": "^8.20.0",
+    "next-themes": "^0.3.0",
+    "lodash": "^4.17.21",
+    "radix-ui": "^1.1.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^2.0.0"
   }
 }
