@@ -8,6 +8,8 @@ interface HeaderProps {
   onToggleTerminal: () => void;
   onToggleNotifications: () => void;
   unreadCount: number;
+  userName?: string | null;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTerminal,
   onToggleNotifications,
   unreadCount,
+  userName,
+  onLogout,
 }) => {
   const [mps, setMps] = useState(1287);
   const [tenant, setTenant] = useState('GlobalTel Direct (Tier-1)');
@@ -192,10 +196,19 @@ export const Header: React.FC<HeaderProps> = ({
           />
           <div className="hidden lg:flex flex-col text-left">
             <span className="text-[13px] text-[#dfe2ee] font-semibold leading-tight group-hover:text-[#4cd7f6] transition-colors">
-              Marcus Vance
+              {userName || 'Marcus Vance'}
             </span>
-            <span className="text-[10px] text-[#bcc9cd]">VP Infrastructure</span>
+            <span className="text-[10px] text-[#bcc9cd]">{userName ? 'Operator' : 'VP Infrastructure'}</span>
           </div>
+          {onLogout && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onLogout(); }}
+              className="ml-1 px-1.5 py-0.5 rounded bg-[#262a33] text-[#ffb4ab] border border-[#ffb4ab]/30 text-[9px] font-semibold hover:bg-[#ffb4ab]/15 transition-colors"
+              title="Logout"
+            >
+              LOGOUT
+            </button>
+          )}
         </button>
       </div>
     </header>

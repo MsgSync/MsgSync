@@ -6,6 +6,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ScreenId } from './types';
 import { apiClient } from './lib/api/client';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { useNotifications } from './hooks/useNotifications';
 import { useSession } from './hooks/useNotifications';
 import { useBilling } from './hooks/useBilling';
@@ -20,6 +21,7 @@ import { Toast } from './components/Toast';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TerminalDrawer } from './components/TerminalDrawer';
 import { NotificationsPopover } from './components/NotificationsPopover';
+import { LoginScreen } from './screens/LoginScreen';
 
 // Screens
 import { OperatorProfileScreen } from './screens/OperatorProfileScreen';
@@ -42,75 +44,53 @@ import { OrganizationsScreen } from './screens/OrganizationsScreen';
 import { SecurityCenterScreen } from './screens/SecurityCenterScreen';
 import { ObservabilityScreen } from './screens/ObservabilityScreen';
 
-export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>('iam-security');
+function AppContent() {
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>('dashboard');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'warning' | 'error' | 'info' } | null>(null);
 
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { notifications, unreadCount, markAllRead, clearAll, markAsRead } = useNotifications();
-  const { currentUser, revokeSessions, loading: sessionLoading } = useSession();
+  const { revokeSessions } = useSession();
   const { invoices: billingInvoices, loading: billingLoading } = useBilling('root');
-  const { messages: messagesData, refetch: refetchMessages } = useMessages();
+  const { messages: messagesData } = useMessages();
   const { performLookup } = useLookup();
-  const { campaigns, refetch: refetchCampaigns } = useCampaigns();
-  const { rules, providers, refetch: refetchRouting } = useRouting();
+  const { campaigns } = useCampaigns();
+  const { rules, providers } = useRouting();
 
   const showToast = useCallback((message: string, type: 'success' | 'warning' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast((curr) => (curr?.message === message ? null : curr)), 3600);
   }, []);
 
-  useEffect(() => {
-    const token = apiClient.getToken();
-    if (!token) {
-      const storedToken = localStorage.getItem('msgsync_auth_token');
-      if (storedToken) {
-        apiClient.setToken(storedToken);
-      }
-    }
+  const handleLogout = useCallback(async () => {
+    await logout();
+    setCurrentScreen('dashboard');
+    showToast('Logged out successfully.', 'info');
+  }, [logout, showToast]);
+
+  const handleNavigate = useCallback((screen: ScreenId) => {
+    setCurrentScreen(screen);
   }, []);
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f131c' }}>
+        <div className="text-[#869397] font-code-metric text-[14px]">Initializing NOC Engine...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return <LoginScreen onLoginSuccess={() => setCurrentScreen('dashboard')} />;
+  }
 
   const handleRevokeSessions = useCallback(() => {
     revokeSessions();
     showToast('All remote sessions revoked across cluster nodes.', 'warning');
   }, [revokeSessions, showToast]);
-
-  const handleActionExecute = useCallback((actionKey: string) => {
-    if (actionKey === 'action-audit') {
-      try {
-        const auditPayload = {
-          operator: currentUser?.name || 'Unknown',
-          uid: currentUser?.id || 'unknown',
-          timestamp: new Date().toISOString(),
-          carrier: 'GlobalTel Direct (Tier-1)',
-          recordsExported: 489,
-          integrityHash: 'sha256-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-        };
-        const blob = new Blob([JSON.stringify(auditPayload, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `audit-${Date.now()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('Security Audit Log (JSON) generated and downloaded.', 'success');
-      } catch (err) {
-        showToast('Failed to generate audit log.', 'error');
-      }
-    } else if (actionKey === 'action-revoke') {
-      handleRevokeSessions();
-    } else if (actionKey === 'action-fido') {
-      showToast('Insert FIDO2/WebAuthn key into USB-C port and tap sensor...', 'info');
-    } else if (actionKey === 'action-hotreload') {
-      setCurrentScreen('intelligent-routing');
-      showToast('Navigated to Intelligent Routing LCR weights engine.', 'info');
-    } else if (actionKey === 'action-breakglass') {
-      setCurrentScreen('iam-security');
-      showToast('Open Break-Glass Token dialog on IAM & Security screen.', 'warning');
-    }
-  }, [currentUser, handleRevokeSessions, showToast]);
 
   const handleMarkAllRead = useCallback(() => {
     markAllRead();
@@ -122,52 +102,41 @@ export default function App() {
     showToast('Notification alert history cleared.', 'info');
   }, [clearAll, showToast]);
 
-  const handleNavigate = useCallback((screen: ScreenId) => {
-    setCurrentScreen(screen);
-  }, []);
+  const handleActionExecute = useCallback((actionKey: string) => {
+    if (actionKey === 'action-revoke') {
+      handleRevokeSessions();
+    } else if (actionKey === 'action-hotreload') {
+      setCurrentScreen('intelligent-routing');
+      showToast('Navigated to Intelligent Routing LCR weights engine.', 'info');
+    } else if (actionKey === 'action-breakglass') {
+      setCurrentScreen('iam-security');
+      showToast('Open Break-Glass Token dialog on IAM & Security screen.', 'warning');
+    }
+  }, [handleRevokeSessions, showToast]);
 
   const renderScreen = useCallback(() => {
     switch (currentScreen) {
-      case 'iam-security':
-        return <OperatorProfileScreen sessions={[]} currentUser={currentUser} onRevokeSessions={handleRevokeSessions} onShowToast={showToast} />;
-      case 'dashboard':
-        return <DashboardScreen onNavigate={handleNavigate} onShowToast={showToast} />;
-      case 'live-monitor':
-        return <LiveMonitorScreen onShowToast={showToast} />;
-      case 'smpp-connections':
-        return <SmppScreen trunks={[]} onShowToast={showToast} />;
-      case 'ss7-sigtran':
-        return <Ss7Screen onShowToast={showToast} />;
-      case 'intelligent-routing':
-        return <RoutingScreen onShowToast={showToast} />;
-      case 'message-center':
-        return <MessageCenterScreen onShowToast={showToast} />;
-      case 'hlr-mnp-lookup':
-        return <HlrLookupScreen onShowToast={showToast} />;
-      case 'billing-and-credit-ledger':
-        return <BillingScreen onShowToast={showToast} />;
-      case 'developer-portal-and-apis':
-        return <DeveloperPortalScreen onShowToast={showToast} />;
-      case 'otp-service':
-        return <OtpServiceScreen onShowToast={showToast} />;
-      case 'campaigns':
-        return <CampaignsScreen onShowToast={showToast} />;
-      case 'contacts-and-segments':
-        return <ContactsSegmentsScreen onShowToast={showToast} />;
-      case 'sender-ids':
-        return <SenderIdsScreen onShowToast={showToast} />;
-      case 'providers':
-        return <ProvidersScreen onShowToast={showToast} />;
-      case 'organizations-and-tenants':
-        return <OrganizationsScreen onShowToast={showToast} />;
-      case 'security-center':
-        return <SecurityCenterScreen onShowToast={showToast} />;
-      case 'observability-and-queues':
-        return <ObservabilityScreen onShowToast={showToast} />;
-      default:
-        return null;
+      case 'dashboard': return <DashboardScreen onNavigate={handleNavigate} onShowToast={showToast} />;
+      case 'live-monitor': return <LiveMonitorScreen onShowToast={showToast} />;
+      case 'smpp-connections': return <SmppScreen trunks={[]} onShowToast={showToast} />;
+      case 'ss7-sigtran': return <Ss7Screen onShowToast={showToast} />;
+      case 'intelligent-routing': return <RoutingScreen onShowToast={showToast} />;
+      case 'message-center': return <MessageCenterScreen onShowToast={showToast} />;
+      case 'hlr-mnp-lookup': return <HlrLookupScreen onShowToast={showToast} />;
+      case 'billing-and-credit-ledger': return <BillingScreen onShowToast={showToast} />;
+      case 'developer-portal-and-apis': return <DeveloperPortalScreen onShowToast={showToast} />;
+      case 'otp-service': return <OtpServiceScreen onShowToast={showToast} />;
+      case 'campaigns': return <CampaignsScreen onShowToast={showToast} />;
+      case 'contacts-and-segments': return <ContactsSegmentsScreen onShowToast={showToast} />;
+      case 'sender-ids': return <SenderIdsScreen onShowToast={showToast} />;
+      case 'providers': return <ProvidersScreen onShowToast={showToast} />;
+      case 'organizations-and-tenants': return <OrganizationsScreen onShowToast={showToast} />;
+      case 'iam-security': return <OperatorProfileScreen sessions={[]} currentUser={user} onRevokeSessions={handleRevokeSessions} onShowToast={showToast} />;
+      case 'security-center': return <SecurityCenterScreen onShowToast={showToast} />;
+      case 'observability-and-queues': return <ObservabilityScreen onShowToast={showToast} />;
+      default: return null;
     }
-  }, [currentScreen, handleNavigate, handleRevokeSessions, showToast]);
+  }, [currentScreen, handleNavigate, handleRevokeSessions, showToast, user]);
 
   return (
     <div className="min-h-screen bg-[#0f131c] text-[#dfe2ee] font-body-md selection:bg-[#06b6d4]/30 selection:text-[#4cd7f6]">
@@ -201,6 +170,8 @@ export default function App() {
         onToggleTerminal={() => setIsTerminalOpen(!isTerminalOpen)}
         onToggleNotifications={() => setIsNotificationsOpen(!isNotificationsOpen)}
         unreadCount={unreadCount}
+        userName={user.name}
+        onLogout={handleLogout}
       />
 
       <Sidebar
@@ -217,5 +188,13 @@ export default function App() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

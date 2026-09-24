@@ -308,6 +308,15 @@ export interface HlrConfig {
   active: boolean;
 }
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  organization: Organization;
+  twoFactorEnabled: boolean;
+  avatarUrl: string | null;
+}
+
 export interface Alert {
   id: string;
   name: string;
