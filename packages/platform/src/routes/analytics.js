@@ -12,19 +12,21 @@ const {
     deleteAlert
 } = require('../controllers/analytics');
 const authenticate = require('../middleware/auth');
+const { authorize } = require('../middleware/rbac');
+const { PERMISSIONS } = require('../config/rbac');
 const { apiLimiter } = require('../middleware/rateLimiter');
 
 router.use(authenticate);
 router.use(apiLimiter);
 
-router.get('/stats', getStats);
-router.get('/trends', getTrends);
-router.get('/volume-by-provider', getVolumeByProvider);
-router.get('/financials', getFinancials);
-router.get('/reports', getReports);
-router.get('/live-traffic', getLiveTraffic);
-router.get('/alerts', getAlerts);
-router.post('/alerts', saveAlert);
-router.delete('/alerts/:id', deleteAlert);
+router.get('/stats', authorize(PERMISSIONS.ANALYTICS_READ), getStats);
+router.get('/trends', authorize(PERMISSIONS.ANALYTICS_READ), getTrends);
+router.get('/volume-by-provider', authorize(PERMISSIONS.ANALYTICS_READ), getVolumeByProvider);
+router.get('/financials', authorize(PERMISSIONS.ANALYTICS_READ), getFinancials);
+router.get('/reports', authorize(PERMISSIONS.ANALYTICS_READ), getReports);
+router.get('/live-traffic', authorize(PERMISSIONS.ANALYTICS_READ), getLiveTraffic);
+router.get('/alerts', authorize(PERMISSIONS.ANALYTICS_READ), getAlerts);
+router.post('/alerts', authorize(PERMISSIONS.ANALYTICS_READ), saveAlert);
+router.delete('/alerts/:id', authorize(PERMISSIONS.ANALYTICS_READ), deleteAlert);
 
 module.exports = router;

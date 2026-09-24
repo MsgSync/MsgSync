@@ -42,7 +42,7 @@ describe('Auth Middleware', () => {
     });
 
     it('should authenticate with a valid X-API-Key header', async () => {
-        const mockApiKey = { id: '1', key: 'valid-key', active: true };
+        const mockApiKey = { id: '1', key: 'valid-key', active: true, organization: { id: 'org-1', type: 'ADMIN' } };
         req.headers['x-api-key'] = 'valid-key';
         prisma.apiKey.findUnique.mockResolvedValue(mockApiKey);
 
@@ -57,7 +57,7 @@ describe('Auth Middleware', () => {
     });
 
     it('should authenticate with a valid Authorization Bearer token', async () => {
-        const mockApiKey = { id: '1', key: 'valid-token', active: true };
+        const mockApiKey = { id: '1', key: 'valid-token', active: true, organization: { id: 'org-1', type: 'ADMIN' } };
         req.headers['authorization'] = 'Bearer valid-token';
         prisma.apiKey.findUnique.mockResolvedValue(mockApiKey);
 

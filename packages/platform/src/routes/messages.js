@@ -8,6 +8,8 @@ const {
 } = require('../controllers/messages');
 
 const authenticate = require('../middleware/auth');
+const { authorize } = require('../middleware/rbac');
+const { PERMISSIONS } = require('../config/rbac');
 const { apiLimiter, messageSendLimiter } = require('../middleware/rateLimiter');
 
 router.use(authenticate);
@@ -40,8 +42,8 @@ router.use(apiLimiter);
  *       200:
  *         description: List of messages
  */
-router.post('/', messageSendLimiter, sendMessage);
-router.get('/', listMessages);
+router.post('/', messageSendLimiter, authorize(PERMISSIONS.SMS_SEND), sendMessage);
+router.get('/', authorize(PERMISSIONS.SMS_READ), listMessages);
 /**
  * @openapi
  * /messages/{id}:
@@ -57,7 +59,7 @@ router.get('/', listMessages);
  *       200:
  *         description: Message status object
  */
-router.get('/:id', getMessageStatus);
-router.delete('/:id', cancelMessage);
+router.get('/:id', authorize(PERMISSIONS.SMS_READ), getMessageStatus);
+router.delete('/:id', authorize(PERMISSIONS.SMS_WRITE), cancelMessage);
 
 module.exports = router;

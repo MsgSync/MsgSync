@@ -1,6 +1,22 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const campaignService = require('../services/campaignService');
+const {
+    getOrganizationScope,
+    organizationScopeWhere
+} = require('../services/authorizationService');
+
+function apiKeyIdForRequest(req) {
+    return req.apiKey?.id || null;
+}
+
+async function findCampaignForRequest(req, id, include) {
+    const scope = await getOrganizationScope(req);
+    return prisma.campaign.findFirst({
+        where: { id, ...organizationScopeWhere(scope) },
+        ...(include ? { include } : {})
+    });
+}
 
 /**
  * Controller for Contact Lists and Campaigns.
@@ -12,7 +28,7 @@ async function createList(req, res) {
         const list = await prisma.contactList.create({
             data: {
                 name,
-                apiKeyId: req.apiKey.id,
+                apiKeyId: apiKeyIdForRequest(req),
                 organizationId: req.organization ? req.organization.id : null
             }
         });
@@ -26,6 +42,14 @@ async function addContacts(req, res) {
     const { listId } = req.params;
     const { contacts } = req.body; // Array of contact objects
     try {
+        const scope = await getOrganizationScope(req);
+        const list = await prisma.contactList.findFirst({
+            where: { id: listId, ...organizationScopeWhere(scope) },
+            select: { id: true }
+        });
+        if (!list) {
+            return res.status(404).json({ status: 'error', message: 'Contact list not found' });
+        }
         await campaignService.importContacts(listId, contacts);
         res
             .status(200)
@@ -60,13 +84,22 @@ async function createCampaign(req, res) {
             }
         }
 
+        const scope = await getOrganizationScope(req);
+        const contactList = await prisma.contactList.findFirst({
+            where: { id: contactListId, ...organizationScopeWhere(scope) },
+            select: { id: true }
+        });
+        if (!contactList) {
+            return res.status(404).json({ status: 'error', message: 'Contact list not found' });
+        }
+
         const campaign = await prisma.campaign.create({
             data: {
                 name,
                 template,
                 contactListId,
                 senderId: senderId || null,
-                apiKeyId: req.apiKey.id,
+                apiKeyId: apiKeyIdForRequest(req),
                 organizationId: req.organization ? req.organization.id : null,
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
                 enableTracking: enableTracking !== undefined ? enableTracking : true,
@@ -100,6 +133,10 @@ async function createCampaign(req, res) {
 async function startCampaign(req, res) {
     const { id } = req.params;
     try {
+        const campaign = await findCampaignForRequest(req, id);
+        if (!campaign) {
+            return res.status(404).json({ status: 'error', message: 'Campaign not found' });
+        }
     // Run in background
         campaignService
             .processCampaign(id)
@@ -125,10 +162,9 @@ async function startCampaign(req, res) {
 
 async function getCampaigns(req, res) {
     try {
+        const scope = await getOrganizationScope(req);
         const campaigns = await prisma.campaign.findMany({
-            where: {
-                apiKeyId: req.apiKey.id
-            },
+            where: organizationScopeWhere(scope),
             include: {
                 contactList: {
                     include: { contacts: true }
@@ -148,14 +184,9 @@ async function getCampaigns(req, res) {
 async function getCampaignById(req, res) {
     const { id } = req.params;
     try {
-        const campaign = await prisma.campaign.findUnique({
-            where: { id },
-            include: {
-                contactList: {
-                    include: { contacts: true }
-                },
-                messages: true
-            }
+        const campaign = await findCampaignForRequest(req, id, {
+            contactList: { include: { contacts: true } },
+            messages: true
         });
 
         if (!campaign) {
@@ -173,6 +204,10 @@ async function getCampaignById(req, res) {
 async function pauseCampaign(req, res) {
     const { id } = req.params;
     try {
+        const existingCampaign = await findCampaignForRequest(req, id);
+        if (!existingCampaign) {
+            return res.status(404).json({ status: 'error', message: 'Campaign not found' });
+        }
         const campaign = await prisma.campaign.update({
             where: { id },
             data: { status: 'paused' }
@@ -197,7 +232,7 @@ async function pauseCampaign(req, res) {
 async function resumeCampaign(req, res) {
     const { id } = req.params;
     try {
-        const campaign = await prisma.campaign.findUnique({ where: { id } });
+        const campaign = await findCampaignForRequest(req, id);
 
         if (!campaign) {
             return res
@@ -242,7 +277,7 @@ async function deleteCampaign(req, res) {
     const { id } = req.params;
     try {
     // Check if campaign can be deleted (not running)
-        const campaign = await prisma.campaign.findUnique({ where: { id } });
+        const campaign = await findCampaignForRequest(req, id);
 
         if (!campaign) {
             return res
@@ -282,10 +317,9 @@ async function deleteCampaign(req, res) {
 
 async function getLists(req, res) {
     try {
+        const scope = await getOrganizationScope(req);
         const lists = await prisma.contactList.findMany({
-            where: {
-                apiKeyId: req.apiKey.id
-            },
+            where: organizationScopeWhere(scope),
             include: {
                 contacts: true
             },

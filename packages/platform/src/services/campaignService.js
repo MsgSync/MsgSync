@@ -55,6 +55,7 @@ class CampaignService {
                     recipient: contact.phone,
                     content: content,
                     apiKeyId: campaign.apiKeyId,
+                    organizationId: campaign.organizationId,
                     campaignId: campaign.id,
                     status: 'queued',
                     scheduledAt: campaign.scheduledAt || new Date(),

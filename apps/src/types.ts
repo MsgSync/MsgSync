@@ -313,6 +313,7 @@ export interface AuthUser {
   email: string;
   name: string | null;
   organization: Organization;
+  role: string;
   twoFactorEnabled: boolean;
   avatarUrl: string | null;
 }

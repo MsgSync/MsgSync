@@ -19,6 +19,6 @@ router.post('/refresh', authController.refreshToken);
 router.post('/verify-2fa', authController.verify2FA);
 router.get('/sso/:provider', authController.ssoLogin);
 router.get('/sso/:provider/callback', authController.ssoLogin);
-router.get('/me', authController.getCurrentUser);
+router.get('/me', authenticate, authController.getCurrentUser);
 
 module.exports = router;

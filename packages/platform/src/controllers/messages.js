@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const messageQueue = require('../queue/messageQueue');
+const { getOrganizationScope, organizationScopeWhere } = require('../services/authorizationService');
 
 /**
  * Sends a new message by adding it to the processing queue.
@@ -77,8 +78,9 @@ async function sendMessage(req, res) {
 async function getMessageStatus(req, res) {
     const { id } = req.params;
     try {
-        const message = await prisma.message.findUnique({
-            where: { id }
+        const scope = await getOrganizationScope(req);
+        const message = await prisma.message.findFirst({
+            where: { id, ...organizationScopeWhere(scope) }
         });
 
         if (!message) {
@@ -98,7 +100,9 @@ async function getMessageStatus(req, res) {
  */
 async function listMessages(req, res) {
     try {
+        const scope = await getOrganizationScope(req);
         const messages = await prisma.message.findMany({
+            where: organizationScopeWhere(scope),
             orderBy: { createdAt: 'desc' },
             take: 50
         });
@@ -114,8 +118,9 @@ async function listMessages(req, res) {
 async function cancelMessage(req, res) {
     const { id } = req.params;
     try {
-        const message = await prisma.message.findUnique({
-            where: { id }
+        const scope = await getOrganizationScope(req);
+        const message = await prisma.message.findFirst({
+            where: { id, ...organizationScopeWhere(scope) }
         });
 
         if (!message) {

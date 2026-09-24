@@ -12,6 +12,7 @@ const dynamicRoutingRoutes = require('./routes/routing');
 const lookupRoutes = require('./routes/lookups');
 const brandingRoutes = require('./routes/branding');
 const authRoutes = require('./routes/auth');
+const accessRoutes = require('./routes/access');
 const auditRoutes = require('./routes/audit');
 const invoiceRoutes = require('./routes/invoices');
 const securityRoutes = require('./routes/security');
@@ -132,6 +133,7 @@ app.get('/audits', (req, res) => {
 app.use('/api/messages', messageRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/access', accessRoutes);
 app.use('/api/otp', otpRoutes);
 app.use('/api/bulk', bulkRoutes);
 app.use('/api/organizations', organizationRoutes);

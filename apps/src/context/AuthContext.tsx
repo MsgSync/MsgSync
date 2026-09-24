@@ -6,6 +6,7 @@ interface AuthUser {
   email: string;
   name: string | null;
   organization: any;
+  role: string;
   twoFactorEnabled: boolean;
   avatarUrl: string | null;
 }

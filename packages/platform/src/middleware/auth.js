@@ -1,6 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const prisma = new PrismaClient();
+const { normalizeRole, permissionsForRole } = require('../config/rbac');
 
 async function authenticate(req, res, next) {
     const apiKeyValue = req.headers['x-api-key'];
@@ -24,8 +26,16 @@ async function authenticate(req, res, next) {
         });
 
         if (apiKey?.active) {
+            if (!apiKey.organization) {
+                return res.status(403).json({
+                    status: 'error',
+                    message: 'API key is not assigned to an organization.'
+                });
+            }
             req.apiKey = apiKey;
             req.organization = apiKey.organization;
+            req.identityRole = normalizeRole(null, apiKey.organization.type);
+            req.permissions = permissionsForRole(req.identityRole);
             return next();
         }
 
@@ -62,6 +72,20 @@ async function authenticate(req, res, next) {
 
         req.user = user;
         req.organization = user.organization;
+        req.apiKey = await prisma.apiKey.findFirst({
+            where: { organizationId: user.organizationId, active: true }
+        });
+        if (!req.apiKey) {
+            req.apiKey = await prisma.apiKey.create({
+                data: {
+                    key: `msg_live_${crypto.randomBytes(32).toString('hex')}`,
+                    name: 'Operator Console',
+                    organizationId: user.organizationId
+                }
+            });
+        }
+        req.identityRole = normalizeRole(user.role, user.organization.type);
+        req.permissions = permissionsForRole(req.identityRole);
         return next();
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {

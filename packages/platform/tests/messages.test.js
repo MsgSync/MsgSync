@@ -19,6 +19,8 @@ const prisma = new PrismaClient();
 jest.mock('../src/middleware/auth', () => (req, res, next) => {
     req.apiKey = { id: '1', key: 'test-key', active: true };
     req.organization = { id: 'org-1', billingPolicy: 'ON_SUBMISSION' };
+    req.identityRole = 'ADMIN';
+    req.permissions = ['sms:send', 'sms:read', 'sms:write'];
     next();
 });
 

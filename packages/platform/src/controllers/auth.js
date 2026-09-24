@@ -111,6 +111,7 @@ exports.login = async (req, res) => {
                     id: user.id,
                     email: user.email,
                     name: user.name,
+                    role: user.role,
                     avatarUrl: user.avatarUrl,
                     organization: user.organization,
                     twoFactorEnabled: user.twoFactorEnabled
@@ -170,7 +171,8 @@ exports.register = async (req, res) => {
                 email,
                 name,
                 passwordHash,
-                organizationId: org.id
+                organizationId: org.id,
+                role: 'ADMIN'
             },
             include: { organization: true }
         });
@@ -189,7 +191,7 @@ exports.register = async (req, res) => {
 
         res.status(201).json({
             status: 'success',
-            data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, organization: user.organization } }
+            data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization } }
         });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
@@ -290,7 +292,7 @@ exports.verify2FA = async (req, res) => {
             { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
         );
 
-        res.json({ status: 'success', data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, organization: user.organization } } });
+        res.json({ status: 'success', data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization } } });
     } catch (error) {
         res.status(401).json({ error: 'Invalid session or code' });
     }
@@ -366,7 +368,7 @@ exports.ssoLogin = async (req, res) => {
 
         await securityService.logSecurityEvent(user.id, user.organizationId, 'LOGIN_SUCCESS', { remoteIp });
 
-        res.json({ status: 'success', data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, organization: user.organization } } });
+        res.json({ status: 'success', data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization } } });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

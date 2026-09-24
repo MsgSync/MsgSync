@@ -87,11 +87,16 @@ class RoutingService {
         });
     }
 
-    async listRules() {
+    async listRules(where = {}) {
         return await prisma.routingRule.findMany({
+            where,
             include: { provider: true },
             orderBy: { createdAt: 'desc' }
         });
+    }
+
+    async getRule(id) {
+        return await prisma.routingRule.findUnique({ where: { id } });
     }
 
     async deleteRule(id) {
