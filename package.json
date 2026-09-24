@@ -8,7 +8,6 @@
     "dev": "pnpm -r --parallel run dev",
     "dev:platform": "pnpm --filter @msgsync/platform run dev",
     "dev:aggregator": "pnpm --filter @msgsync/aggregator run dev",
-    "dev:www": "pnpm --filter @msgsync/www run dev",
     "start": "pnpm -r --parallel run start",
     "bootstrap:env": "node scripts/bootstrap-env.js",
     "check:stack": "node scripts/check-local-stack.js",
