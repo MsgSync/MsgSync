@@ -10,17 +10,22 @@ interface AuthUser {
   avatarUrl: string | null;
 }
 
+interface LoginResult {
+  requires2FA: boolean;
+  tempToken?: string;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   token: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verify2FA: (tempToken: string, code: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
-  loginWithSSO: (provider: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -66,29 +71,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => { loadSession(); }, [loadSession]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const result = await apiClient.post<{ status: string; data: { accessToken: string; refreshToken: string; user: AuthUser } }>('/api/auth/login', { email, password });
-    const { accessToken, refreshToken: rt, user: userData } = result.data;
+  const persistSession = useCallback((accessToken: string, nextRefreshToken: string, userData: AuthUser) => {
     apiClient.setToken(accessToken);
     setToken(accessToken);
-    setRefreshToken(rt);
+    setRefreshToken(nextRefreshToken);
     setUser(userData);
     localStorage.setItem('msgsync_token', accessToken);
-    localStorage.setItem('msgsync_refresh_token', rt);
+    localStorage.setItem('msgsync_refresh_token', nextRefreshToken);
     localStorage.setItem('msgsync_user', JSON.stringify(userData));
   }, []);
 
+  const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
+    const result = await apiClient.post<{
+      status: string;
+      data: { requires2FA?: boolean; tempToken?: string; accessToken?: string; refreshToken?: string; user?: AuthUser };
+    }>('/api/auth/login', { email, password });
+
+    if (result.data.requires2FA && result.data.tempToken) {
+      return { requires2FA: true, tempToken: result.data.tempToken };
+    }
+
+    if (!result.data.accessToken || !result.data.refreshToken || !result.data.user) {
+      throw new Error('Login response was incomplete');
+    }
+
+    persistSession(result.data.accessToken, result.data.refreshToken, result.data.user);
+    return { requires2FA: false };
+  }, [persistSession]);
+
+  const verify2FA = useCallback(async (tempToken: string, code: string) => {
+    const result = await apiClient.post<{
+      status: string;
+      data: { accessToken: string; refreshToken: string; user: AuthUser };
+    }>('/api/auth/verify-2fa', { temp_token: tempToken, code });
+    persistSession(result.data.accessToken, result.data.refreshToken, result.data.user);
+  }, [persistSession]);
+
   const register = useCallback(async (email: string, password: string, name: string) => {
     const result = await apiClient.post<{ status: string; data: { accessToken: string; refreshToken: string; user: AuthUser } }>('/api/auth/register', { email, password, name });
-    const { accessToken, refreshToken: rt, user: userData } = result.data;
-    apiClient.setToken(accessToken);
-    setToken(accessToken);
-    setRefreshToken(rt);
-    setUser(userData);
-    localStorage.setItem('msgsync_token', accessToken);
-    localStorage.setItem('msgsync_refresh_token', rt);
-    localStorage.setItem('msgsync_user', JSON.stringify(userData));
-  }, []);
+    persistSession(result.data.accessToken, result.data.refreshToken, result.data.user);
+  }, [persistSession]);
 
   const logout = useCallback(async () => {
     try { await apiClient.post('/api/auth/logout'); } catch {}
@@ -116,26 +138,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [refreshToken, logout]);
 
-  const loginWithSSO = useCallback(async (provider: string) => {
-    const result = await apiClient.get<{ status: string; data: { requires2FA: boolean; tempToken?: string; accessToken?: string; refreshToken?: string; user?: AuthUser } }>(`/api/auth/sso/${provider}`);
-    const { accessToken, refreshToken: rt, user: userData, requires2FA } = result.data;
-    if (requires2FA) {
-      setUser({ email: '', name: null, organization: null, twoFactorEnabled: true, id: '', avatarUrl: null });
-      return;
+  useEffect(() => {
+    if (!token || !refreshToken) return;
+
+    try {
+      const encodedPayload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(encodedPayload));
+      const expiresAt = Number(payload.exp) * 1000;
+      const delay = Math.max(0, expiresAt - Date.now() - 5 * 60 * 1000);
+      const timeout = window.setTimeout(() => {
+        void refreshSession();
+      }, Math.min(delay, 2_147_000_000));
+
+      return () => window.clearTimeout(timeout);
+    } catch {
+      void refreshSession();
     }
-    if (accessToken && userData) {
-      apiClient.setToken(accessToken);
-      setToken(accessToken);
-      setRefreshToken(rt || '');
-      setUser(userData);
-      localStorage.setItem('msgsync_token', accessToken);
-      localStorage.setItem('msgsync_refresh_token', rt || '');
-      localStorage.setItem('msgsync_user', JSON.stringify(userData));
-    }
-  }, []);
+  }, [token, refreshToken, refreshSession]);
 
   return (
-    <AuthContext.Provider value={{ user, token, refreshToken, isAuthenticated, isLoading, login, register, logout, refreshSession, loginWithSSO }}>
+    <AuthContext.Provider value={{ user, token, refreshToken, isAuthenticated, isLoading, login, verify2FA, register, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

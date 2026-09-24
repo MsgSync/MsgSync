@@ -3,17 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useCallback } from 'react';
 import { ScreenId } from './types';
-import { apiClient } from './lib/api/client';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { useNotifications } from './hooks/useNotifications';
-import { useSession } from './hooks/useNotifications';
-import { useBilling } from './hooks/useBilling';
-import { useMessages } from './hooks/useMessages';
-import { useLookup } from './hooks/useLookup';
-import { useCampaigns } from './hooks/useCampaigns';
-import { useRouting } from './hooks/useRouting';
+import { useNotifications, useSession } from './hooks/useNotifications';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { Footer } from './components/Footer';
@@ -23,42 +16,37 @@ import { TerminalDrawer } from './components/TerminalDrawer';
 import { NotificationsPopover } from './components/NotificationsPopover';
 import { LoginScreen } from './screens/LoginScreen';
 
-// Screens
-import { OperatorProfileScreen } from './screens/OperatorProfileScreen';
-import { DashboardScreen } from './screens/DashboardScreen';
-import { LiveMonitorScreen } from './screens/LiveMonitorScreen';
-import { SmppScreen } from './screens/SmppScreen';
-import { Ss7Screen } from './screens/Ss7Screen';
-import { RoutingScreen } from './screens/RoutingScreen';
-import { MessageCenterScreen } from './screens/MessageCenterScreen';
-import { HlrLookupScreen } from './screens/HlrLookupScreen';
-import { BillingScreen } from './screens/BillingScreen';
-import { DeveloperPortalScreen } from './screens/DeveloperPortalScreen';
-import { OtpServiceScreen } from './screens/OtpServiceScreen';
-import { CampaignsScreen } from './screens/CampaignsScreen';
-import { ContactsScreen } from './screens/ContactsScreen';
-import { ContactsSegmentsScreen } from './screens/ContactsSegmentsScreen';
-import { SenderIdsScreen } from './screens/SenderIdsScreen';
-import { ProvidersScreen } from './screens/ProvidersScreen';
-import { OrganizationsScreen } from './screens/OrganizationsScreen';
-import { SecurityCenterScreen } from './screens/SecurityCenterScreen';
-import { ObservabilityScreen } from './screens/ObservabilityScreen';
+const OperatorProfileScreen = lazy(() => import('./screens/OperatorProfileScreen').then(module => ({ default: module.OperatorProfileScreen })));
+const DashboardScreen = lazy(() => import('./screens/DashboardScreen').then(module => ({ default: module.DashboardScreen })));
+const LiveMonitorScreen = lazy(() => import('./screens/LiveMonitorScreen').then(module => ({ default: module.LiveMonitorScreen })));
+const SmppScreen = lazy(() => import('./screens/SmppScreen').then(module => ({ default: module.SmppScreen })));
+const Ss7Screen = lazy(() => import('./screens/Ss7Screen').then(module => ({ default: module.Ss7Screen })));
+const RoutingScreen = lazy(() => import('./screens/RoutingScreen').then(module => ({ default: module.RoutingScreen })));
+const MessageCenterScreen = lazy(() => import('./screens/MessageCenterScreen').then(module => ({ default: module.MessageCenterScreen })));
+const HlrLookupScreen = lazy(() => import('./screens/HlrLookupScreen').then(module => ({ default: module.HlrLookupScreen })));
+const BillingScreen = lazy(() => import('./screens/BillingScreen').then(module => ({ default: module.BillingScreen })));
+const DeveloperPortalScreen = lazy(() => import('./screens/DeveloperPortalScreen').then(module => ({ default: module.DeveloperPortalScreen })));
+const OtpServiceScreen = lazy(() => import('./screens/OtpServiceScreen').then(module => ({ default: module.OtpServiceScreen })));
+const CampaignsScreen = lazy(() => import('./screens/CampaignsScreen').then(module => ({ default: module.CampaignsScreen })));
+const ContactsSegmentsScreen = lazy(() => import('./screens/ContactsSegmentsScreen').then(module => ({ default: module.ContactsSegmentsScreen })));
+const SenderIdsScreen = lazy(() => import('./screens/SenderIdsScreen').then(module => ({ default: module.SenderIdsScreen })));
+const ProvidersScreen = lazy(() => import('./screens/ProvidersScreen').then(module => ({ default: module.ProvidersScreen })));
+const OrganizationsScreen = lazy(() => import('./screens/OrganizationsScreen').then(module => ({ default: module.OrganizationsScreen })));
+const SecurityCenterScreen = lazy(() => import('./screens/SecurityCenterScreen').then(module => ({ default: module.SecurityCenterScreen })));
+const ObservabilityScreen = lazy(() => import('./screens/ObservabilityScreen').then(module => ({ default: module.ObservabilityScreen })));
 
-function AppContent() {
+type AuthenticatedUser = NonNullable<ReturnType<typeof useAuth>['user']>;
+
+function AuthenticatedApp({ user }: { user: AuthenticatedUser }) {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('dashboard');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type?: 'success' | 'warning' | 'error' | 'info' } | null>(null);
 
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const { notifications, unreadCount, markAllRead, clearAll, markAsRead } = useNotifications();
+  const { logout } = useAuth();
+  const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
   const { revokeSessions } = useSession();
-  const { invoices: billingInvoices, loading: billingLoading } = useBilling('root');
-  const { messages: messagesData } = useMessages();
-  const { performLookup } = useLookup();
-  const { campaigns } = useCampaigns();
-  const { rules, providers } = useRouting();
 
   const showToast = useCallback((message: string, type: 'success' | 'warning' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -74,18 +62,6 @@ function AppContent() {
   const handleNavigate = useCallback((screen: ScreenId) => {
     setCurrentScreen(screen);
   }, []);
-
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f131c' }}>
-        <div className="text-[#869397] font-code-metric text-[14px]">Initializing NOC Engine...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !user) {
-    return <LoginScreen onLoginSuccess={() => setCurrentScreen('dashboard')} />;
-  }
 
   const handleRevokeSessions = useCallback(() => {
     revokeSessions();
@@ -182,13 +158,33 @@ function AppContent() {
 
       <div className="pl-64">
         <main className="w-full pt-16 pb-12 min-h-screen bg-[#0f131c] px-5">
-          {renderScreen()}
+          <Suspense fallback={<div className="flex justify-center py-12 text-[#869397] font-code-metric text-[13px]">Loading module...</div>}>
+            {renderScreen()}
+          </Suspense>
         </main>
       </div>
 
       <Footer />
     </div>
   );
+}
+
+function AppContent() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f131c' }}>
+        <div className="text-[#869397] font-code-metric text-[14px]">Initializing NOC Engine...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return <LoginScreen onLoginSuccess={() => undefined} />;
+  }
+
+  return <AuthenticatedApp user={user} />;
 }
 
 export default function App() {

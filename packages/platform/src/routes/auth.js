@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth');
+const authenticate = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/rateLimiter');
 
 const loginLimiter = require('express-rate-limit')({
@@ -13,7 +14,7 @@ const loginLimiter = require('express-rate-limit')({
 
 router.post('/register', apiLimiter, authController.register);
 router.post('/login', apiLimiter, loginLimiter, authController.login);
-router.post('/logout', authController.logout);
+router.post('/logout', authenticate, authController.logout);
 router.post('/refresh', authController.refreshToken);
 router.post('/verify-2fa', authController.verify2FA);
 router.get('/sso/:provider', authController.ssoLogin);

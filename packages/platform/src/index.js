@@ -35,10 +35,13 @@ const allowedOrigins = new Set(
         .map(origin => origin.trim())
         .filter(Boolean)
 );
+const deploymentOriginPattern = /^https:\/\/msgsync-[a-z0-9-]+-mdselim606570-9293s-projects\.vercel\.app$/;
 
 app.use(cors({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+        if (!origin || allowedOrigins.has(origin) || deploymentOriginPattern.test(origin)) {
+            return callback(null, true);
+        }
         return callback(new Error('Origin not allowed'));
     },
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],

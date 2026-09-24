@@ -24,12 +24,6 @@ exports.login = async (req, res) => {
         });
 
         if (!user || !user.passwordHash) {
-            await require('../services/securityService').logSecurityEvent(
-                null,
-                null,
-                'LOGIN_FAILED_INVALID_CREDENTIALS',
-                { email, ip: req.ip }
-            );
             return res.status(401).json({
                 status: 'error',
                 message: 'Invalid email or password'
@@ -68,6 +62,19 @@ exports.login = async (req, res) => {
                 status: 'error',
                 message: `Access denied from ${restriction.detectedCountry}`,
                 country: restriction.detectedCountry
+            });
+        }
+
+        if (user.twoFactorEnabled) {
+            const tempToken = jwt.sign(
+                { userId: user.id, type: '2FA_PENDING' },
+                JWT_SECRET,
+                { expiresIn: '10m' }
+            );
+
+            return res.json({
+                status: 'success',
+                data: { requires2FA: true, tempToken }
             });
         }
 
@@ -126,11 +133,26 @@ exports.register = async (req, res) => {
             });
         }
 
+        if (password.length < 8) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Password must be at least 8 characters'
+            });
+        }
+
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             return res.status(409).json({
                 status: 'error',
                 message: 'Email already registered'
+            });
+        }
+
+        const userCount = await prisma.user.count();
+        if (userCount > 0) {
+            return res.status(403).json({
+                status: 'error',
+                message: 'Registration is closed'
             });
         }
 
@@ -181,7 +203,7 @@ exports.logout = async (req, res) => {
 
         if (token) {
             await require('../services/securityService').logSecurityEvent(
-                req.userId || null,
+                req.user?.id || null,
                 req.organization?.id || null,
                 'LOGOUT',
                 { ip: req.ip }
@@ -253,7 +275,10 @@ exports.verify2FA = async (req, res) => {
             return res.status(401).json({ error: 'Invalid 2FA code' });
         }
 
-        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            include: { organization: true }
+        });
         const accessToken = jwt.sign(
             { userId: user.id, email: user.email, orgId: user.organizationId },
             JWT_SECRET,
