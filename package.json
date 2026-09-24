@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A powerful SMS platform for seamless message synchronization and delivery",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "dev:platform": "pnpm --filter @msgsync/platform run dev",
