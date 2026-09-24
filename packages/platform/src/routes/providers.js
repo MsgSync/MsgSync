@@ -10,7 +10,9 @@ router.use(authenticate);
 router.use(apiLimiter);
 
 router.get('/', authorize(PERMISSIONS.PROVIDER_READ), providerController.list);
+router.post('/', authorize(PERMISSIONS.PROVIDER_MANAGE), providerController.create);
 router.patch('/:id', authorize(PERMISSIONS.PROVIDER_MANAGE), providerController.update);
+router.delete('/:id', authorize(PERMISSIONS.PROVIDER_MANAGE), providerController.remove);
 router.post('/:id/health', authorize(PERMISSIONS.PROVIDER_MANAGE), providerController.healthCheck);
 router.post('/:id/test', authorize(PERMISSIONS.PROVIDER_MANAGE), providerController.testMessage);
 

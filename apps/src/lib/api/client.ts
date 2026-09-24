@@ -220,6 +220,30 @@ export class ApiClient {
     return this.get<{ data: any[] }>('/api/routing/providers');
   }
 
+  async getSmsGateways() {
+    return this.get<{ data: any[] }>('/api/providers');
+  }
+
+  async createSmsGateway(data: any) {
+    return this.post<ApiResponse>('/api/providers', data);
+  }
+
+  async updateSmsGateway(id: string, data: any) {
+    return this.patch<ApiResponse>(`/api/providers/${id}`, data);
+  }
+
+  async deleteSmsGateway(id: string) {
+    return this.delete<ApiResponse>(`/api/providers/${id}`);
+  }
+
+  async checkSmsGateway(id: string) {
+    return this.post<ApiResponse>(`/api/providers/${id}/health`);
+  }
+
+  async testSmsGateway(id: string, recipient: string) {
+    return this.post<ApiResponse>(`/api/providers/${id}/test`, { recipient });
+  }
+
   // HLR Lookups
   async getLookup(phone: string) {
     return this.get<{ data: any }>('/api/lookups/info', { phone });
@@ -285,6 +309,22 @@ export class ApiClient {
   }
 
   // Current User
+  async getManagedRoles() {
+    return this.get<{ data: any[] }>('/api/access/roles');
+  }
+
+  async getManagedUsers() {
+    return this.get<{ data: import('./types').ManagedUser[] }>('/api/access/users');
+  }
+
+  async createManagedUser(data: any) {
+    return this.post<ApiResponse>('/api/access/users', data);
+  }
+
+  async updateManagedUserRole(id: string, role: string) {
+    return this.patch<ApiResponse>(`/api/access/users/${id}/role`, { role });
+  }
+
   async getCurrentUser() {
     return this.get<{ data: any }>('/api/auth/me');
   }

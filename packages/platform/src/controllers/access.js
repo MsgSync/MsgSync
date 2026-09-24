@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
-const { ROLES, permissionsForRole } = require('../config/rbac');
+const { ROLES, ROLE_PERMISSIONS, permissionsForRole } = require('../config/rbac');
 const { getOrganizationScope, canAccessOrganization } = require('../services/authorizationService');
 const auditService = require('../services/auditService');
 
@@ -12,6 +12,25 @@ function roleForManagedUser(requesterRole, requestedRole) {
     }
     return ROLES.CUSTOMER;
 }
+
+exports.listRoles = async (req, res) => {
+    const descriptions = {
+        ADMIN: 'Global platform operator with unrestricted access.',
+        AGGREGATOR: 'Manages downstream resellers, customers, routing, and usage.',
+        RESELLER: 'Manages customer organizations within its reseller hierarchy.',
+        CUSTOMER: 'Self-service access to SMS, campaigns, lookups, and invoices.'
+    };
+    res.json({
+        status: 'success',
+        data: Object.values(ROLES).map(role => ({
+            role,
+            label: role.charAt(0) + role.slice(1).toLowerCase(),
+            description: descriptions[role],
+            permissions: ROLE_PERMISSIONS[role] || [],
+            userCount: 0
+        }))
+    });
+};
 
 exports.getMyAccess = async (req, res) => {
     res.json({
@@ -135,6 +154,7 @@ exports.updateUserRole = async (req, res) => {
 };
 
 module.exports = {
+    listRoles: exports.listRoles,
     getMyAccess: exports.getMyAccess,
     listCustomers: exports.listCustomers,
     createCustomer: exports.createCustomer,

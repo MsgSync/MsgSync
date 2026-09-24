@@ -19,6 +19,16 @@ export interface ApiError {
   code?: string;
 }
 
+export interface ManagedUser {
+  id: string;
+  email: string;
+  name: string | null;
+  role: 'ADMIN' | 'AGGREGATOR' | 'RESELLER' | 'CUSTOMER';
+  organizationId: string;
+  twoFactorEnabled: boolean;
+  createdAt: string;
+}
+
 export interface Message {
   id: string;
   recipient: string;

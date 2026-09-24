@@ -10,6 +10,7 @@ router.use(authenticate);
 router.use(apiLimiter);
 
 router.get('/me', accessController.getMyAccess);
+router.get('/roles', accessController.listRoles);
 router.get('/customers', authorize(PERMISSIONS.ORGANIZATION_READ), accessController.listCustomers);
 router.post('/customers', authorize(PERMISSIONS.ORGANIZATION_MANAGE), accessController.createCustomer);
 router.get('/users', authorize(PERMISSIONS.USER_MANAGE), accessController.listUsers);

@@ -32,7 +32,10 @@ const CampaignsScreen = lazy(() => import('./screens/CampaignsScreen').then(modu
 const ContactsSegmentsScreen = lazy(() => import('./screens/ContactsSegmentsScreen').then(module => ({ default: module.ContactsSegmentsScreen })));
 const SenderIdsScreen = lazy(() => import('./screens/SenderIdsScreen').then(module => ({ default: module.SenderIdsScreen })));
 const ProvidersScreen = lazy(() => import('./screens/ProvidersScreen').then(module => ({ default: module.ProvidersScreen })));
+const SmsGatewaysScreen = lazy(() => import('./screens/SmsGatewaysScreen').then(module => ({ default: module.SmsGatewaysScreen })));
 const OrganizationsScreen = lazy(() => import('./screens/OrganizationsScreen').then(module => ({ default: module.OrganizationsScreen })));
+const UserManagementScreen = lazy(() => import('./screens/UserManagementScreen').then(module => ({ default: module.UserManagementScreen })));
+const RoleManagementScreen = lazy(() => import('./screens/RoleManagementScreen').then(module => ({ default: module.RoleManagementScreen })));
 const SecurityCenterScreen = lazy(() => import('./screens/SecurityCenterScreen').then(module => ({ default: module.SecurityCenterScreen })));
 const ObservabilityScreen = lazy(() => import('./screens/ObservabilityScreen').then(module => ({ default: module.ObservabilityScreen })));
 
@@ -108,7 +111,10 @@ function AuthenticatedApp({ user }: { user: AuthenticatedUser }) {
       case 'contacts-and-segments': return <ContactsSegmentsScreen onShowToast={showToast} />;
       case 'sender-ids': return <SenderIdsScreen onShowToast={showToast} />;
       case 'providers': return <ProvidersScreen onShowToast={showToast} />;
+      case 'sms-gateways': return <SmsGatewaysScreen onShowToast={showToast} />;
       case 'organizations-and-tenants': return <OrganizationsScreen onShowToast={showToast} />;
+      case 'user-management': return <UserManagementScreen onShowToast={showToast} />;
+      case 'role-management': return <RoleManagementScreen />;
       case 'iam-security': return <OperatorProfileScreen sessions={[]} currentUser={user} onRevokeSessions={handleRevokeSessions} onShowToast={showToast} />;
       case 'security-center': return <SecurityCenterScreen onShowToast={showToast} />;
       case 'observability-and-queues': return <ObservabilityScreen onShowToast={showToast} />;

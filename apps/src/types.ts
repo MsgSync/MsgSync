@@ -11,10 +11,13 @@ export type ScreenId =
   | 'smpp-connections'
   | 'ss7-sigtran'
   | 'providers'
+  | 'sms-gateways'
   | 'intelligent-routing'
   | 'hlr-mnp-lookup'
   | 'billing-and-credit-ledger'
   | 'organizations-and-tenants'
+  | 'user-management'
+  | 'role-management'
   | 'developer-portal-and-apis'
   | 'security-center'
   | 'observability-and-queues';
@@ -349,10 +352,13 @@ export const SCREEN_METADATA: ScreenMetadata[] = [
   { id: 'smpp-connections', label: 'SMPP Connections', icon: 'settings_ethernet', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'ss7-sigtran', label: 'SS7 / SIGTRAN', icon: 'hub', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'providers', label: 'Providers', icon: 'lan', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
+  { id: 'sms-gateways', label: 'SMS Gateways', icon: 'cell_tower', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'intelligent-routing', label: 'Intelligent Routing', icon: 'alt_route', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'hlr-mnp-lookup', label: 'HLR / MNP Lookup', icon: 'find_in_page', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'billing-and-credit-ledger', label: 'Billing & Credit Ledger', icon: 'account_balance_wallet', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
   { id: 'organizations-and-tenants', label: 'Organizations & Tenants', icon: 'corporate_fare', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
+  { id: 'user-management', label: 'User Management', icon: 'group', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
+  { id: 'role-management', label: 'Role Management', icon: 'admin_panel_settings', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
   { id: 'developer-portal-and-apis', label: 'Developer Portal & APIs', icon: 'api', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: [] },
   { id: 'iam-security', label: 'IAM & Security', icon: 'security', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: ['LEVEL_4_TOP_SECRET'] },
   { id: 'security-center', label: 'Security Center', icon: 'shield', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: [] },
