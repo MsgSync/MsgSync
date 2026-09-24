@@ -14,7 +14,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentScreen, onNavigate, act
   const getLinkClasses = (active: boolean) =>
     `flex items-center justify-between px-2.5 py-1.5 rounded transition-all text-[12px] ${
       active
-        ? 'bg-[#06b6d4] text-[#00424f] font-semibold shadow-[0_0_8px_rgba(6,182,212,0.25)]'
+        ? 'bg-[#06b6d4]/12 text-[#4cd7f6] font-semibold shadow-[inset_2px_0_0_#4cd7f6,0_0_8px_rgba(6,182,212,0.12)]'
         : 'text-[#bcc9cd] hover:bg-[#262a33] hover:text-[#dfe2ee]'
     }`;
 
@@ -22,7 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentScreen, onNavigate, act
 
   return (
     <aside className="fixed left-0 top-14 bottom-8 w-64 bg-[#181c24] border-r border-[#3d494c] z-40 flex flex-col justify-between overflow-y-auto select-none">
-      <div className="p-2 space-y-3">
+      <div className="p-3 space-y-4">
         {sections.map((section) => (
           <div key={section}>
             <div className="px-2 py-1">

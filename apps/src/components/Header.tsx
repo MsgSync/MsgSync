@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-[#181c24]/95 backdrop-blur-xl border-b border-[#3d494c] flex items-center justify-between px-5">
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-[#181c24]/90 backdrop-blur-2xl border-b border-[#3d494c] flex items-center justify-between px-4 sm:px-5 shadow-[0_8px_24px_rgba(0,0,0,0.16)]">
       {/* Left: Brand & Tenant selector */}
       <div className="flex items-center gap-3">
         <button

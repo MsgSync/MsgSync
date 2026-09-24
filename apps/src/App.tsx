@@ -175,10 +175,12 @@ function AuthenticatedApp({ user }: { user: AuthenticatedUser }) {
       />
 
       <div className="pl-64">
-        <main className="w-full pt-16 pb-12 min-h-screen bg-[#0f131c] px-5">
-          <Suspense fallback={<div className="flex justify-center py-12 text-[#869397] font-code-metric text-[13px]">Loading module...</div>}>
-            {renderScreen()}
-          </Suspense>
+        <main className="w-full pt-16 pb-14 min-h-screen bg-transparent px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[1800px]">
+            <Suspense fallback={<div className="flex justify-center py-12 text-[#869397] font-code-metric text-[13px]">Loading module...</div>}>
+              {renderScreen()}
+            </Suspense>
+          </div>
         </main>
       </div>
 
