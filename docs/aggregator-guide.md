@@ -9,6 +9,7 @@ The aggregator module acts as the ingestion engine for the MsgSync platform. it 
 ## Architecture
 
 The aggregator is built with:
+
 - **Express.js**: API layer for manual triggers and source management.
 - **Prisma**: ORM for database interactions.
 - **PostgreSQL**: Central storage for messages and source configurations.
@@ -16,7 +17,9 @@ The aggregator is built with:
 ## Core Components
 
 ### 1. Data Normalization
+
 All incoming messages are converted to a standard schema:
+
 - `id`: Unique internal ID
 - `externalId`: ID from the original provider
 - `source`: Name of the provider (e.g., Twilio)
@@ -25,41 +28,50 @@ All incoming messages are converted to a standard schema:
 - `originalPayload`: Full raw data for debugging/future-proofing
 
 ### 2. Source Management
+
 Sources are configured in the database with specific connection parameters (URLs, API keys, headers) stored in a `config` JSON field.
 
 ## API Reference
 
 ### Trigger Aggregation
+
 `POST /api/aggregate`
 Triggers an immediate polling cycle across all active sources.
 
 ### Source Management
+
 - `GET /api/sources`: List all configured sources.
 - `POST /api/sources`: Add a new source configuration.
 
 ### Analytics
+
 `GET /api/analytics`
 Returns a summary of total messages aggregated, grouped by source and type.
 
 ## Setup and Configuration
 
 ### Requirements
+
 - Node.js >= 16.0.0
 - PostgreSQL database
 
 ### Installation
+
 ```bash
 cd aggregator
-npm install
+pnpm install
 ```
 
 ### Environment Variables
+
 Configure these in a `.env` file:
+
 - `DATABASE_URL`: Connection string for PostgreSQL.
 - `PORT`: Service port (default: 3000).
 - `AGGREGATION_INTERVAL`: Default polling interval in milliseconds.
 
 ### Database Setup
+
 ```bash
 npx prisma migrate dev
 ```
@@ -68,14 +80,14 @@ npx prisma migrate dev
 
 ```bash
 # Development
-npm run dev
+pnpm run dev
 
 # Production
-npm start
+pnpm start
 ```
 
 ## Testing
 
 ```bash
-npm test
+pnpm test
 ```

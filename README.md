@@ -15,6 +15,7 @@
 MsgSync is a **production-ready, enterprise-grade messaging platform** designed for high-volume SMS delivery, OTP verification, and targeted marketing campaigns. Built with scalability, security, and developer experience as core principles.
 
 ### Key Differentiators
+
 - 🏢 **Multi-Tenant SaaS Architecture**: Organization-level data isolation
 - 🌐 **Multi-Protocol Support**: SMPP, SS7, HTTP/HTTPS, RESTful APIs
 - 📊 **Real-Time Observability**: Premium dashboard with Chart.js analytics
@@ -41,6 +42,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 ## ✨ Features
 
 ### Core Platform
+
 - ✅ **Multi-Protocol Delivery**: SMPP 3.4, SS7 (SIGTRAN M3UA/SCCP), HTTP/HTTPS
 - ✅ **Message Queue**: BullMQ with Redis for reliable job processing
 - ✅ **Provider Failover**: Automatic fallback with priority-based routing
@@ -48,6 +50,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **Delivery Receipts**: Real-time status updates via webhooks
 
 ### Identity & Security
+
 - ✅ **OTP Verification**: Secure 2FA with customizable TTL and length
 - ✅ **API Key Authentication**: Bearer token and X-API-Key header support
 - ✅ **Rate Limiting**: IP-based and key-based throttling
@@ -55,6 +58,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **Multi-Tenancy**: Organization-level data isolation
 
 ### Marketing & Campaigns
+
 - ✅ **Web-Based Campaign Manager**: Intuitive interface for effortless campaign management
 - ✅ **Custom Sender IDs**: Branded alphanumeric IDs or virtual phone numbers
 - ✅ **Bulk SMS Engine**: Variable substitution with `{{placeholders}}`
@@ -65,6 +69,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **Real-time Analytics**: Track delivery, success rates, and engagement
 
 ### Multi-Level Client Management
+
 - ✅ **Hierarchical Console**: Multi-tier reseller and client management with breadcrumb navigation
 - ✅ **Credit Ledger**: Centralized balance management with transaction auditing
 - ✅ **Billing Portal**: Dedicated portal for invoice tracking and credit top-ups
@@ -72,6 +77,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **White-Label Reporting**: Organization-specific dashboards for sub-tenants
 
 ### Bundle & Package Management
+
 - ✅ **Automated Subscriptions**: Prepaid and post-paid SMS package assignment
 - ✅ **Granular Limits**: Define SMS quantity, validity periods, and subscription fees
 - ✅ **Traffic Rules**: Restrict bundles by SMS type (OTP/Promo) or Sender ID type
@@ -79,6 +85,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **Dynamic Modifiers**: Instant activation/deactivation of system-wide packages
 
 ### Intelligent Routing & Failover
+
 - ✅ **Least-Cost Routing (LCR)**: Automated prefix-based provider selection for cost optimization
 - ✅ **Dynamic Failover**: Multi-carrier retry logic ensures 99.9% delivery reliability
 - ✅ **Prefix Targeting**: Global routing rules with longest-prefix matching
@@ -86,6 +93,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **Health Monitoring**: Real-time latency and uptime tracking for all providers
 
 ### Carrier-Grade Security & Anti-Fraud
+
 - ✅ **IP Whitelisting**: Restrict API access to trusted server origins
 - ✅ **Smart Spend Limits**: Automated daily caps to prevent financial leakage
 - ✅ **Content Filtering**: Real-time spam and phishing detection algorithms
@@ -93,6 +101,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **Infrastructure Protection**: Shielding the core engine from DDoS and flooding
 
 ### HLR & Number Verification (MNP)
+
 - ✅ **Real-time Carrier ID**: Identify current mobile operators globally
 - ✅ **Portability Tracking**: Automated detection of ported numbers
 - ✅ **Line Type Detection**: Filter Mobile vs Landline vs VoIP
@@ -100,17 +109,20 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 - ✅ **SS7/HLR Integration**: Direct lookup capabilities into telecom registries
 
 ### AI Intelligence & NLP
+
 - ✅ **Sentiment Analysis**: Real-time message tone detection (Positive/Neutral/Negative)
 - ✅ **Batch Insights**: Aggregated campaign sentiment reporting
 - ✅ **Engagement Scoring**: AI-predicted quality of message content
 - ✅ **Spam Mitigation**: Intelligent content-based safety filtering
 
 ### Enterprise Authentication & SSO
+
 - ✅ **Social Login**: Google and GitHub OAuth 2.0 integration
 - ✅ **Role-Based Access**: Granular user permissions within organizations
 - ✅ **Session Security**: JWT-based stateless authentication
 
 ### Observability & Operations
+
 - ✅ **Premium Dashboard**: Glassmorphism UI with real-time charts
 - ✅ **Interactive API Docs**: Swagger/OpenAPI 3.0 specification
 - ✅ **Request Logging**: Structured logs with Winston
@@ -163,6 +175,7 @@ MsgSync is a **production-ready, enterprise-grade messaging platform** designed 
 ```
 
 ### Technology Stack
+
 - **Backend**: Node.js 18+, Express.js
 - **Database**: PostgreSQL 14+ with Prisma ORM
 - **Cache & Queue**: Redis 6+ with BullMQ
@@ -187,7 +200,7 @@ docker-compose up -d
 
 # Run database migrations
 docker-compose exec platform npx prisma migrate deploy
-docker-compose exec platform npm run prisma:seed
+docker-compose exec platform pnpm run prisma:seed
 
 # Access the dashboard
 open http://localhost:3001/dashboard
@@ -197,21 +210,20 @@ open http://localhost:3001/dashboard
 
 ```bash
 # Install dependencies
-cd platform && npm install
-cd ../aggregator && npm install
+pnpm install
 
 # Configure environment
-cp platform/.env.example platform/.env
+cp packages/platform/.env.example packages/platform/.env
 # Edit .env with your database and Redis URLs
 
 # Run migrations
-cd platform
+cd packages/platform
 npx prisma migrate dev
-npm run prisma:seed
+pnpm run prisma:seed
 
 # Start services
-npm run dev  # Platform on :3001
-cd ../aggregator && npm run dev  # Aggregator on :3000
+pnpm run dev  # Platform on :3001
+cd ../aggregator && pnpm run dev  # Aggregator on :3000
 ```
 
 ### First API Call
@@ -234,24 +246,28 @@ curl -X POST http://localhost:3001/api/messages \
 MsgSync supports multiple industry-standard protocols for maximum flexibility:
 
 ### SMPP (Short Message Peer-to-Peer)
+
 - **Version**: SMPP 3.4
 - **Throughput**: 100-1000 messages/second
 - **Use Case**: High-volume carrier integration
 - **Features**: Delivery receipts, long message support, bind modes
 
 ### SS7 (SIGTRAN M3UA/SCCP)
+
 - **Protocols**: M3UA, SCCP
 - **Throughput**: 50-500 messages/second
 - **Use Case**: Direct SMS-C integration, international routing
 - **Features**: Point code routing, global title translation
 
 ### HTTP/HTTPS REST API
+
 - **Standard**: RESTful JSON API
 - **Throughput**: 10-100 messages/second
 - **Use Case**: Web applications, microservices
 - **Features**: OAuth 2.0, API keys, webhooks
 
 ### Generic HTTP Provider
+
 - **Flexibility**: Adapter for any HTTP gateway
 - **Configuration**: Template-based payload mapping
 - **Use Case**: Third-party SMS services
@@ -264,35 +280,37 @@ MsgSync supports multiple industry-standard protocols for maximum flexibility:
 
 ### Official SDKs
 
-| Language | Package | Installation |
-|----------|---------|--------------|
-| **JavaScript/Node.js** | `@msgsync/sdk` | `npm install @msgsync/sdk` |
-| **Python** | `msgsync` | `pip install msgsync` |
-| **Go** | `msgsync` | `go get github.com/msgsync/sdk-go` |
-| **PHP** | `msgsync/sdk` | `composer require msgsync/sdk` |
+| Language               | Package        | Installation                       |
+| ---------------------- | -------------- | ---------------------------------- |
+| **JavaScript/Node.js** | `@msgsync/sdk` | `pnpm add @msgsync/sdk`            |
+| **Python**             | `msgsync`      | `pip install msgsync`              |
+| **Go**                 | `msgsync`      | `go get github.com/msgsync/sdk-go` |
+| **PHP**                | `msgsync/sdk`  | `composer require msgsync/sdk`     |
 
 ### Quick Examples
 
 **JavaScript**
+
 ```javascript
-const MsgSyncClient = require('@msgsync/sdk');
-const client = new MsgSyncClient({ apiKey: 'your-api-key' });
+const MsgSyncClient = require("@msgsync/sdk");
+const client = new MsgSyncClient({ apiKey: "your-api-key" });
 
 // Send message
 await client.sendMessage({
-  recipient: '+15550001122',
-  content: 'Hello World!'
+  recipient: "+15550001122",
+  content: "Hello World!",
 });
 
 // Send OTP
 await client.sendOTP({
-  recipient: '+15550001122',
+  recipient: "+15550001122",
   length: 6,
-  ttl: 300
+  ttl: 300,
 });
 ```
 
 **Python**
+
 ```python
 from msgsync import MsgSyncClient
 
@@ -312,6 +330,7 @@ result = client.verify_otp(
 ```
 
 **Go**
+
 ```go
 import "msgsync"
 
@@ -322,6 +341,7 @@ msg, err := client.SendMessage("+15550001122", "Hello World!", nil)
 ```
 
 **PHP**
+
 ```php
 use MsgSync\MsgSyncClient;
 
@@ -339,12 +359,13 @@ $client->sendMessage([
 ## 💼 Use Cases
 
 ### 1. Two-Factor Authentication (2FA)
+
 ```javascript
 // Send verification code
 const otp = await client.sendOTP({
   recipient: user.phone,
   length: 6,
-  ttl: 300
+  ttl: 300,
 });
 
 // Verify code
@@ -352,12 +373,13 @@ const verified = await client.verifyOTP(user.phone, userInput);
 ```
 
 ### 2. Marketing Campaigns
+
 ```javascript
 // Create targeted campaign
 const campaign = await client.createCampaign({
-  name: 'Summer Sale 2025',
-  template: 'Hi {{firstName}}! Use code {{code}} for {{discount}} off!',
-  contactListId: 'list-id'
+  name: "Summer Sale 2025",
+  template: "Hi {{firstName}}! Use code {{code}} for {{discount}} off!",
+  contactListId: "list-id",
 });
 
 // Launch campaign
@@ -365,22 +387,24 @@ await client.startCampaign(campaign.id);
 ```
 
 ### 3. Transactional Notifications
+
 ```javascript
 // Order confirmation
 await client.sendMessage({
   recipient: customer.phone,
   content: `Order #${orderId} confirmed! Arriving ${deliveryDate}.`,
-  metadata: { orderId, customerId }
+  metadata: { orderId, customerId },
 });
 ```
 
 ### 4. Security Alerts
+
 ```javascript
 // Login notification
 await client.sendMessage({
   recipient: user.phone,
   content: `New login from ${device} in ${location}. Secure your account: ${url}`,
-  metadata: { alertType: 'security', userId: user.id }
+  metadata: { alertType: "security", userId: user.id },
 });
 ```
 
@@ -433,12 +457,12 @@ spec:
   template:
     spec:
       containers:
-      - name: platform
-        image: msgsync/platform:latest
-        resources:
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
+        - name: platform
+          image: msgsync/platform:latest
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
 ```
 
 ### Monitoring & Observability
@@ -455,12 +479,14 @@ spec:
 ## 🎯 Performance & Scalability
 
 ### Benchmarks
+
 - **Throughput**: 1000+ messages/second (SMPP)
 - **Latency**: < 200ms (p95)
 - **Uptime**: 99.9% SLA-ready
 - **Concurrency**: 10,000+ concurrent connections
 
 ### Scaling Strategy
+
 - **Horizontal**: Add more platform instances
 - **Vertical**: Increase Redis/PostgreSQL resources
 - **Geographic**: Deploy regional instances
@@ -473,6 +499,7 @@ spec:
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md).
 
 ### Development Setup
+
 ```bash
 # Fork and clone
 git clone https://github.com/your-username/MsgSync.git
@@ -481,7 +508,7 @@ git clone https://github.com/your-username/MsgSync.git
 git checkout -b feature/amazing-feature
 
 # Make changes and test
-npm test
+pnpm test
 
 # Commit and push
 git commit -m 'Add amazing feature'
@@ -498,7 +525,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🌟 Support & Community
 
-- 📧 **Email**: support@msgsync.com
+- 📧 **Email**: support@khulnasoft.com
 - 💬 **Discord**: [Join our community](https://discord.gg/msgsync)
 - 🐛 **Issues**: [GitHub Issues](https://github.com/MsgSync/MsgSync/issues)
 - 📖 **Docs**: [Documentation Portal](https://docs.msgsync.com)
@@ -508,6 +535,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🏆 Acknowledgments
 
 Built with ❤️ by the MsgSync Team and powered by:
+
 - [Express.js](https://expressjs.com/) - Web framework
 - [Prisma](https://www.prisma.io/) - Database ORM
 - [BullMQ](https://docs.bullmq.io/) - Job queue

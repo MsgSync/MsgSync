@@ -28,6 +28,7 @@ When a message is placed in the queue, the `RoutingService` executes the followi
 ## 🔄 Failover Mechanism
 
 The `ProviderService` implements a recursive retry loop:
+
 - **Attempt 1**: Primary provider (Lowest priority number).
 - **Failure**: If a timeout or carrier error occurs, the provider status is logged.
 - **Attempt 2**: Secondary provider (Next in priority).
@@ -39,17 +40,18 @@ The `ProviderService` implements a recursive retry loop:
 
 Routing rules can be managed via the REST API:
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/routing` | GET | List all active routing rules |
-| `/api/routing` | POST | Create a new prefix-specific rule |
-| `/api/routing/:id` | DELETE | Remove a routing rule |
+| Endpoint           | Method | Description                       |
+| ------------------ | ------ | --------------------------------- |
+| `/api/routing`     | GET    | List all active routing rules     |
+| `/api/routing`     | POST   | Create a new prefix-specific rule |
+| `/api/routing/:id` | DELETE | Remove a routing rule             |
 
 ---
 
 ## 🛠️ Management Console
 
 Navigate to `/routing` to:
+
 - **Analyze Rules**: View the active hierarchy of carrier priority.
 - **Monitor Health**: See live uptime and latency stats for all integrated carriers (SMPP, Twilio, SS7, etc.).
 - **Global Priority**: Adjust the default system priority for world-wide traffic.

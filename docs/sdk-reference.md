@@ -4,12 +4,12 @@ MsgSync provide official SDKs for several popular programming languages to make 
 
 ## Supported Languages
 
-| Language | Package Manager | Installation | Documentation |
-|----------|-----------------|--------------|---------------|
-| **JavaScript / TypeScript** | npm | `npm install @msgsync/sdk` | [Link](./js-sdk.md) |
-| **Python** | pip | `pip install msgsync` | [Link](./python-sdk.md) |
-| **Go** | go get | `go get github.com/msgsync/go-sdk` | [Link](./go-sdk.md) |
-| **PHP** | composer | `composer require msgsync/sdk` | [Link](./php-sdk.md) |
+| Language                    | Package Manager | Installation                       | Documentation           |
+| --------------------------- | --------------- | ---------------------------------- | ----------------------- |
+| **JavaScript / TypeScript** | pnpm            | `pnpm add @msgsync/sdk`            | [Link](./js-sdk.md)     |
+| **Python**                  | pip             | `pip install msgsync`              | [Link](./python-sdk.md) |
+| **Go**                      | go get          | `go get github.com/msgsync/go-sdk` | [Link](./go-sdk.md)     |
+| **PHP**                     | composer        | `composer require msgsync/sdk`     | [Link](./php-sdk.md)    |
 
 ---
 
@@ -18,24 +18,29 @@ MsgSync provide official SDKs for several popular programming languages to make 
 All SDKs follow a consistent design pattern:
 
 ### 1. Initialization
+
 Create a client instance by providing your API key and the platform endpoint.
 
 ```javascript
 const client = new MsgSync({
-  apiKey: 'YOUR_API_KEY',
-  endpoint: 'https://api.msgsync.io' // Optional
+  apiKey: "YOUR_API_KEY",
+  endpoint: "https://api.msgsync.io", // Optional
 });
 ```
 
 ### 2. Resource Management
+
 Access platform features through resource namespaces:
+
 - `client.messages` - Single SMS delivery
 - `client.campaigns` - Bulk messaging & scheduling
 - `client.analytics` - Usage and delivery statistics
 - `client.verification` - OTP and lookups
 
 ### 3. Error Handling
+
 SDKs throw specific exception types for common API errors:
+
 - `AuthenticationError`: Invalid API key
 - `ValidationError`: Invalid input parameters
 - `RateLimitError`: Too many requests (429)

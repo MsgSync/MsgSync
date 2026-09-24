@@ -31,6 +31,7 @@ func main() {
 ## 📨 Sending Messages
 
 ### Single SMS
+
 Queue a single message for delivery.
 
 ```go
@@ -42,6 +43,7 @@ fmt.Printf("Message ID: %s, Status: %s\n", msg.ID, msg.Status)
 ```
 
 ### Get Status
+
 Check the status of a specific message.
 
 ```go
@@ -53,6 +55,7 @@ fmt.Printf("Current Status: %s\n", status.Status)
 ```
 
 ### List Recent Messages
+
 Retrieve a list of your most recent transmissions.
 
 ```go
@@ -70,6 +73,7 @@ for _, msg := range messages {
 ## 🔐 OTP (Verification)
 
 ### Send OTP
+
 Trigger a 6-digit verification code.
 
 ```go
@@ -81,6 +85,7 @@ fmt.Println("OTP Sent successfully")
 ```
 
 ### Verify Code
+
 Verify the code entered by the user.
 
 ```go
@@ -96,12 +101,14 @@ fmt.Println("Verification Result:", resp["status"])
 ## 🚀 Bulk Campaigns
 
 ### 1. Create a Contact List
+
 ```go
 list, err := client.CreateList("January Newsletter")
 listID := list["data"].(map[string]interface{})["id"].(string)
 ```
 
 ### 2. Add Contacts
+
 ```go
 contacts := []map[string]interface{}{
     {"phone": "+15550001122", "firstName": "John"},
@@ -111,6 +118,7 @@ client.AddContacts(listID, contacts)
 ```
 
 ### 3. Create & Start Campaign
+
 ```go
 campaign, _ := client.CreateCampaign("Summer Sale", "Hi {{firstName}}! Use code HOT20", listID)
 campaignID := campaign["data"].(map[string]interface{})["id"].(string)

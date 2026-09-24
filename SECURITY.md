@@ -64,7 +64,7 @@ When using MsgSync, please follow these security best practices:
 ### Code Security
 
 - Keep MsgSync and all dependencies updated
-- Run security audits regularly (`npm audit`)
+- Run security audits regularly (`pnpm audit`)
 - Use Content Security Policy headers
 - Validate and sanitize all user inputs
 
@@ -90,6 +90,7 @@ We would like to thank the following security researchers for responsibly disclo
 ## Contact
 
 For any security-related questions or concerns, contact:
+
 - Email: security@msgsync.io
 - GPG Key: (Add if applicable)
 

@@ -37,16 +37,17 @@ When a lookup request is initiated:
 
 ## 🚀 API Management
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/lookups/info?phone=XYZ` | GET | Perform a real-time HLR/MNP lookup |
-| `/api/lookups/recent` | GET | List the 100 most recent lookups |
+| Endpoint                      | Method | Description                        |
+| ----------------------------- | ------ | ---------------------------------- |
+| `/api/lookups/info?phone=XYZ` | GET    | Perform a real-time HLR/MNP lookup |
+| `/api/lookups/recent`         | GET    | List the 100 most recent lookups   |
 
 ---
 
 ## 🛠️ Verification Console
 
 Navigate to `/lookups` to:
+
 - **Instant Inspection**: Manually verify any phone number using the interactive tool.
 - **Detailed Insights**: View carrier names, line types, and ported status in a clean glassmorphism UI.
 - **Recent Activity**: Track all verification tasks performed by your team or via API.

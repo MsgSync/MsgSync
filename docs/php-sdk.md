@@ -29,6 +29,7 @@ $client = new MsgSyncClient($apiKey);
 ## 📨 Sending Messages
 
 ### Single SMS Delivery
+
 Send a basic message to a recipient.
 
 ```php
@@ -44,6 +45,7 @@ echo "Message ID: " . $response['data']['id'];
 ```
 
 ### Track Message Status
+
 Retrieve the current delivery status of a message.
 
 ```php
@@ -52,6 +54,7 @@ echo "Current Status: " . $status['data']['status'];
 ```
 
 ### List Recent Activity
+
 Get a list of the most recent message transmissions.
 
 ```php
@@ -66,6 +69,7 @@ foreach ($activity['data'] as $message) {
 ## 🔐 OTP (One-Time Passwords)
 
 ### Send Verification Code
+
 Trigger an OTP delivery.
 
 ```php
@@ -78,6 +82,7 @@ $client->sendOTP([
 ```
 
 ### Verify User Code
+
 Validate the code submitted by your user.
 
 ```php
@@ -113,6 +118,7 @@ try {
 ## Framework Integration
 
 ### Laravel Example
+
 You can wrap the client in a Service Provider or simply use it in your controllers:
 
 ```php

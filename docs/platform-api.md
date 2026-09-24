@@ -3,10 +3,12 @@
 The MsgSync Platform API provides programmatic access to the core messaging engine. It enables sending messages, managing campaigns, tracking delivery, and accessing real-time analytics.
 
 ## Base URL
+
 All API requests should be made to:
 `http://localhost:3001/api`
 
 ## Authentication
+
 MsgSync uses API keys to authenticate requests. You can find your API key in the MsgSync Console under Security settings.
 
 Include your API key in all requests as a header:
@@ -17,11 +19,13 @@ Include your API key in all requests as a header:
 ## 1. Messages
 
 ### Send Message
+
 `POST /messages`
 
 Queues a single SMS for delivery.
 
 **Request Body:**
+
 ```json
 {
   "recipient": "+15550001122",
@@ -31,6 +35,7 @@ Queues a single SMS for delivery.
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "status": "success",
@@ -42,11 +47,13 @@ Queues a single SMS for delivery.
 ```
 
 ### Get Message Status
+
 `GET /messages/:id`
 
 Retrieves the current status of a specific message.
 
 **Response (200 OK):**
+
 ```json
 {
   "status": "success",
@@ -62,6 +69,7 @@ Retrieves the current status of a specific message.
 ```
 
 ### List Messages
+
 `GET /messages`
 
 Retrieves a list of recent messages. Supports pagination and filtering.
@@ -71,11 +79,13 @@ Retrieves a list of recent messages. Supports pagination and filtering.
 ## 2. OTP (One-Time Passwords)
 
 ### Send OTP
+
 `POST /otp/send`
 
 Generates and sends a verification code to a recipient.
 
 **Request Body:**
+
 ```json
 {
   "recipient": "+15550001122",
@@ -85,11 +95,13 @@ Generates and sends a verification code to a recipient.
 ```
 
 ### Verify OTP
+
 `POST /otp/verify`
 
 Verifies a previously sent OTP code.
 
 **Request Body:**
+
 ```json
 {
   "recipient": "+15550001122",
@@ -102,11 +114,13 @@ Verifies a previously sent OTP code.
 ## 3. Campaigns & Bulk Messaging
 
 ### Create Campaign
+
 `POST /bulk/campaigns`
 
 Creates a new bulk messaging campaign linked to a contact list.
 
 **Request Body:**
+
 ```json
 {
   "name": "January Promo",
@@ -118,6 +132,7 @@ Creates a new bulk messaging campaign linked to a contact list.
 ```
 
 ### Campaign Controls
+
 - `POST /bulk/campaigns/:id/start` - Resume/Start processing
 - `POST /bulk/campaigns/:id/pause` - Temporarily halt delivery
 - `DELETE /bulk/campaigns/:id` - Cancel and delete campaign
@@ -127,11 +142,13 @@ Creates a new bulk messaging campaign linked to a contact list.
 ## 4. Analytics & Monitoring
 
 ### Get Stats
+
 `GET /analytics/stats`
 
 Returns high-level statistics for the dashboard (volume, delivery rate, failures).
 
 ### Get Trends
+
 `GET /analytics/trends`
 
 Returns hourly message volume and status distribution for charting.
@@ -141,6 +158,7 @@ Returns hourly message volume and status distribution for charting.
 ## 5. Security & Auditing
 
 ### Audit Logs
+
 `GET /audit`
 
 Retrieves a history of actions taken on the platform. Accessible only by administrative keys.
@@ -149,11 +167,11 @@ Retrieves a history of actions taken on the platform. Accessible only by adminis
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| 400  | Bad Request - Invalid parameters |
+| Code | Description                               |
+| ---- | ----------------------------------------- |
+| 400  | Bad Request - Invalid parameters          |
 | 401  | Unauthorized - Invalid or missing API Key |
-| 403  | Forbidden - Insufficient permissions |
-| 404  | Not Found - Resource does not exist |
-| 429  | Too Many Requests - Rate limit exceeded |
-| 500  | Internal Server Error |
+| 403  | Forbidden - Insufficient permissions      |
+| 404  | Not Found - Resource does not exist       |
+| 429  | Too Many Requests - Rate limit exceeded   |
+| 500  | Internal Server Error                     |
