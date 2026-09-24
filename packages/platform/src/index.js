@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const cors = require('cors');
 const messageRoutes = require('./routes/messages');
 const analyticsRoutes = require('./routes/analytics');
 const otpRoutes = require('./routes/otp');
@@ -28,6 +29,21 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger');
 
+const allowedOrigins = new Set(
+    (process.env.CLIENT_ORIGINS || 'http://localhost:3000')
+        .split(',')
+        .map(origin => origin.trim())
+        .filter(Boolean)
+);
+
+app.use(cors({
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+        return callback(new Error('Origin not allowed'));
+    },
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
+}));
 app.use(requestLogger);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

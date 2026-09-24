@@ -1,59 +1,81 @@
 const { PrismaClient } = require('@prisma/client');
+const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
 
-const auditService = require('../services/auditService');
-
-/**
- * Middleware to authenticate requests using an API key.
- * Supports both X-API-Key header and Authorization: Bearer <key>
- */
 async function authenticate(req, res, next) {
-    let apiKeyStr = req.headers['x-api-key'];
+    const apiKeyValue = req.headers['x-api-key'];
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith('Bearer ')
+        ? authHeader.slice(7)
+        : null;
+    const credential = apiKeyValue || bearerToken;
 
-    const authHeader = req.headers['authorization'];
-    if (!apiKeyStr && authHeader && authHeader.startsWith('Bearer ')) {
-        apiKeyStr = authHeader.split(' ')[1];
-    }
-
-    if (!apiKeyStr) {
+    if (!credential) {
         return res.status(401).json({
             status: 'error',
-            message: 'Authentication required. Please provide an API key.'
+            message: 'Authentication required.'
         });
     }
 
     try {
         const apiKey = await prisma.apiKey.findUnique({
-            where: { key: apiKeyStr },
+            where: { key: credential },
             include: { organization: true }
         });
 
-        if (!apiKey || !apiKey.active) {
-            await auditService.log({
-                action: 'AUTH_FAILURE',
-                entity: 'API_KEY',
-                entityId: 'unknown',
-                metadata: { key: apiKeyStr ? 'provided' : 'missing' },
-                ipAddress: req.ip
-            });
+        if (apiKey?.active) {
+            req.apiKey = apiKey;
+            req.organization = apiKey.organization;
+            return next();
+        }
+
+        if (apiKeyValue) {
             return res.status(403).json({
                 status: 'error',
                 message: 'Invalid or inactive API key.'
             });
         }
 
-        // Attach context to request
-        req.apiKey = apiKey;
-        req.organization = apiKey.organization;
-        next();
-    } catch (error) {
-        console.error('Auth Middleware Error:', error);
-        res
-            .status(500)
-            .json({
+        const decoded = jwt.verify(
+            bearerToken,
+            process.env.JWT_SECRET || 'msgsync-super-secret-key-change-in-production'
+        );
+
+        if (decoded.type === 'REFRESH' || decoded.type === '2FA_PENDING') {
+            return res.status(401).json({
                 status: 'error',
-                message: 'Internal server error during authentication.'
+                message: 'Invalid access token.'
             });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            include: { organization: true }
+        });
+
+        if (!user) {
+            return res.status(401).json({
+                status: 'error',
+                message: 'Invalid access token.'
+            });
+        }
+
+        req.user = user;
+        req.organization = user.organization;
+        return next();
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+            return res.status(401).json({
+                status: 'error',
+                message: 'Invalid or expired access token.'
+            });
+        }
+
+        console.error('Auth Middleware Error:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Internal server error during authentication.'
+        });
     }
 }
 

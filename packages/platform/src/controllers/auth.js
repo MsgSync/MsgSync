@@ -284,7 +284,7 @@ exports.getCurrentUser = async (req, res) => {
             include: { organization: true }
         });
 
-        res.json(user);
+        res.json({ status: 'success', data: user });
     } catch (error) {
         res.status(401).json({ error: 'Invalid session' });
     }
