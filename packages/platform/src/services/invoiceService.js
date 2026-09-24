@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const auditService = require('./auditService');
+const { sendInvoiceEmail } = require('./emailService');
 
 class InvoiceService {
     /**
@@ -33,6 +34,12 @@ class InvoiceService {
         const invoiceNumber = `INV-${dateStr}-${randomStr}`;
 
         // 3. Create invoice record
+        const organization = await prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: { billingEmail: true, invoiceFormat: true }
+        });
+        const invoiceFormat = organization?.invoiceFormat || 'BOTH';
+
         const invoice = await prisma.invoice.create({
             data: {
                 number: invoiceNumber,
@@ -44,8 +51,8 @@ class InvoiceService {
                 periodStart: new Date(periodStart),
                 periodEnd: new Date(periodEnd),
                 dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
-                pdfUrl: `/exports/invoices/${invoiceNumber}.pdf`,
-                excelUrl: `/exports/invoices/${invoiceNumber}.xlsx`
+                pdfUrl: invoiceFormat === 'EXCEL' ? null : `/exports/invoices/${invoiceNumber}.pdf`,
+                excelUrl: invoiceFormat === 'PDF' ? null : `/exports/invoices/${invoiceNumber}.xlsx`
             }
         });
 
@@ -56,6 +63,10 @@ class InvoiceService {
             entityId: invoice.id,
             organizationId,
             metadata: { number: invoiceNumber, total }
+        });
+
+        await sendInvoiceEmail(invoice, organization).catch(error => {
+            console.error(`Invoice email delivery failed for ${invoiceNumber}:`, error.message);
         });
 
         return invoice;

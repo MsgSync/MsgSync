@@ -40,6 +40,24 @@ exports.disable2FA = async (req, res) => {
   }
 };
 
+exports.getContentPolicy = async (req, res) => {
+  try {
+    const policy = await securityService.getContentPolicy(req.user.organizationId);
+    res.json({ status: 'success', data: policy });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
+exports.updateContentPolicy = async (req, res) => {
+  try {
+    const policy = await securityService.updateContentPolicy(req.user.organizationId, req.body);
+    await securityService.logSecurityEvent(req.user.id, req.user.organizationId, 'UPDATE_CONTENT_POLICY', req.body);
+    res.json({ status: 'success', data: policy });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
 exports.updateRestrictions = async (req, res) => {
   try {
     const { allowedCountries, maxDailySpend } = req.body;

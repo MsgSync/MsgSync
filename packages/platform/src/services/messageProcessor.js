@@ -67,11 +67,10 @@ async function processMessage(messageId) {
         // Billing Selection Logic:
         // ON_ATTEMPT: Always charge if we tried sending
         // ON_SUBMISSION: Only charge if provider accepted (deliveryResult.success)
-        // ON_DELIVERY: (Handled via DLR webhook, but for now defaults to submission success)
         let finalPrice = 0;
         if (billingPolicy === 'ON_ATTEMPT') {
             finalPrice = rate.pricePerSms;
-        } else if (deliveryResult.success) {
+        } else if (billingPolicy === 'ON_SUBMISSION' && deliveryResult.success) {
             finalPrice = rate.pricePerSms;
         }
 
@@ -94,6 +93,16 @@ async function processMessage(messageId) {
                 sentimentScore: sentimentResult.score
             }
         });
+
+        if (finalPrice > 0) {
+            const organizationService = require('./organizationService');
+            await organizationService.updateBalance(
+                message.organizationId,
+                Number(finalPrice),
+                'DEBIT',
+                `${billingPolicy} billing for message ${messageId}`
+            );
+        }
 
         // 6. Trigger webhook notification
         const webhookService = require('./webhookService');

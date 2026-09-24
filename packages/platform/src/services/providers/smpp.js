@@ -83,13 +83,44 @@ class SMPPProvider {
             const messageId = pdu.short_message.message.toString();
             const status = this.parseDeliveryStatus(pdu);
 
-            await prisma.message.update({
-                where: { externalId: messageId },
-                data: {
-                    status: status,
-                    deliveredAt: status === 'delivered' ? new Date() : null
-                }
+            const message = await prisma.message.findUnique({
+                where: { externalId: messageId }
             });
+
+            if (message) {
+                const organization = await prisma.organization.findUnique({
+                    where: { id: message.organizationId },
+                    select: { billingPolicy: true }
+                });
+                let price = message.price;
+                if (status === 'delivered' && organization?.billingPolicy === 'ON_DELIVERY' && Number(message.price || 0) === 0) {
+                    const rateService = require('../rateService');
+                    const organizationService = require('../organizationService');
+                    const rate = await rateService.lookupRateForOrganization(
+                        message.organizationId,
+                        message.recipient,
+                        null,
+                        null,
+                        message.profile || 'TRANSACTIONAL'
+                    );
+                    price = rate.pricePerSms;
+                    await organizationService.updateBalance(
+                        message.organizationId,
+                        Number(price),
+                        'DEBIT',
+                        `Delivery charge for message ${message.id}`
+                    );
+                }
+
+                await prisma.message.update({
+                    where: { id: message.id },
+                    data: {
+                        status: status,
+                        deliveredAt: status === 'delivered' ? new Date() : null,
+                        price
+                    }
+                });
+            }
 
             console.log(
                 `[SMPP] Delivery receipt processed: ${messageId} -> ${status}`

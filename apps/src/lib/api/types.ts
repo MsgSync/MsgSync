@@ -112,7 +112,9 @@ export interface Organization {
   id: string;
   name: string;
   type: string;
+  parentId: string | null;
   balance: number;
+  suspended: boolean;
   maxDailySpend: number;
   allowedCountries: string[];
   ratePlanId: string | null;
@@ -122,6 +124,7 @@ export interface Organization {
   companyName: string | null;
   billingEmail: string | null;
   billingCycle: string;
+  billingPolicy: 'ON_ATTEMPT' | 'ON_SUBMISSION' | 'ON_DELIVERY';
   invoiceFormat: string;
   createdAt: string;
   updatedAt: string;

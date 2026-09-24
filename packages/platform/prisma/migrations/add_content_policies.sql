@@ -1,0 +1,8 @@
+ALTER TABLE "Organization" ADD COLUMN "contentScreeningEnabled" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN "modifyContentEnabled" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "allowedProfiles" TEXT[] DEFAULT ARRAY['TRANSACTIONAL', 'PROMOTIONAL', 'OTP'],
+ADD COLUMN "allowedSmsTypes" TEXT[] DEFAULT ARRAY['TRANSACTIONAL', 'PROMOTIONAL', 'OTP'],
+ADD COLUMN "allowedSenderIds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "blockedKeywords" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "blockedUrlDomains" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "modificationRules" JSONB;

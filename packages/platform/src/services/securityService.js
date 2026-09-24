@@ -99,12 +99,16 @@ class SecurityService {
     /**
    * Checks if a message request is valid based on security rules.
    */
-    async validateRequest(apiKey, organization, recipient, content, remoteIp) {
+    async validateRequest(apiKey, organization, recipient, content, remoteIp, metadata = {}) {
     // 1. IP Whitelisting
         if (apiKey.allowedIps && apiKey.allowedIps.length > 0) {
             if (!apiKey.allowedIps.includes(remoteIp)) {
                 return { valid: false, reason: 'IP_NOT_ALLOWED' };
             }
+        }
+
+        if (organization.suspended || parseFloat(organization.balance) <= 0) {
+            return { valid: false, reason: 'BALANCE_EXHAUSTED' };
         }
 
         // 2. Spending Limit
@@ -125,13 +129,35 @@ class SecurityService {
             return { valid: false, reason: 'DAILY_SPEND_LIMIT_REACHED' };
         }
 
-        // 3. Simple Spam/Fraud Detection
         const isSpam = this.checkForSpam(content);
-        if (isSpam) {
-            return { valid: false, reason: 'CONTENT_REJECTED_SPAM' };
-        }
+        if (isSpam) return { valid: false, reason: 'CONTENT_REJECTED_SPAM' };
 
-        return { valid: true };
+        const contentPolicy = this.applyContentPolicy(organization, content, { profile: metadata.profile || 'TRANSACTIONAL', senderId: metadata.senderId || metadata.sender });
+        if (!contentPolicy.valid) return contentPolicy;
+        content = contentPolicy.content;
+
+        return { valid: true, content };
+    }
+
+    applyContentPolicy(organization, content, context = {}) {
+        if (organization.contentScreeningEnabled === false) return { valid: true, content };
+        const profile = context.profile || 'TRANSACTIONAL';
+        const allowedProfiles = organization.allowedProfiles || ['TRANSACTIONAL', 'PROMOTIONAL', 'OTP'];
+        const allowedTypes = organization.allowedSmsTypes || allowedProfiles;
+        if (allowedProfiles.length > 0 && !allowedProfiles.includes(profile)) return { valid: false, reason: 'PROFILE_NOT_ALLOWED' };
+        if (allowedTypes.length > 0 && !allowedTypes.includes(profile)) return { valid: false, reason: 'SMS_TYPE_NOT_ALLOWED' };
+
+        const senderId = context.senderId;
+        if (senderId && (organization.allowedSenderIds || []).length > 0 && !organization.allowedSenderIds.includes(senderId)) return { valid: false, reason: 'SENDER_NOT_ALLOWED' };
+
+        const blockedKeywords = organization.blockedKeywords || [];
+        const matchedKeyword = blockedKeywords.find(keyword => content.toLowerCase().includes(String(keyword).toLowerCase()));
+        if (matchedKeyword && !organization.modifyContentEnabled) return { valid: false, reason: 'CONTENT_REJECTED_KEYWORD' };
+        let modifiedContent = matchedKeyword && organization.modifyContentEnabled ? content.replace(new RegExp(matchedKeyword.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'), 'gi'), '[REDACTED]') : content;
+        const blockedDomains = organization.blockedUrlDomains || [];
+        const urlMatch = modifiedContent.match(/https?:\\/\\/[^\\s]+/gi) || [];
+        if (urlMatch.some(url => blockedDomains.some(domain => url.toLowerCase().includes(String(domain).toLowerCase())))) return { valid: false, reason: 'CONTENT_REJECTED_URL' };
+        return { valid: true, content: modifiedContent, modified: modifiedContent !== content };
     }
 
     /**
@@ -152,6 +178,37 @@ class SecurityService {
         return blacklist.some((term) => lowerContent.includes(term));
     }
 
+    async getContentPolicy(organizationId) {
+        return await prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: {
+                contentScreeningEnabled: true,
+                modifyContentEnabled: true,
+                allowedProfiles: true,
+                allowedSmsTypes: true,
+                allowedSenderIds: true,
+                blockedKeywords: true,
+                blockedUrlDomains: true,
+                modificationRules: true
+            }
+        });
+    }
+
+    async updateContentPolicy(organizationId, data) {
+        return await prisma.organization.update({
+            where: { id: organizationId },
+            data: {
+                contentScreeningEnabled: data.contentScreeningEnabled,
+                modifyContentEnabled: data.modifyContentEnabled,
+                allowedProfiles: data.allowedProfiles,
+                allowedSmsTypes: data.allowedSmsTypes,
+                allowedSenderIds: data.allowedSenderIds,
+                blockedKeywords: data.blockedKeywords,
+                blockedUrlDomains: data.blockedUrlDomains,
+                modificationRules: data.modificationRules
+            }
+        });
+    }
     async updateOrganizationSecurity(orgId, data) {
         return await prisma.organization.update({
             where: { id: orgId },

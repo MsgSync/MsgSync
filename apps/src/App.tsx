@@ -21,11 +21,15 @@ const DashboardScreen = lazy(() => import('./screens/DashboardScreen').then(modu
 const SettingsScreen = lazy(() => import('./screens/SettingsScreen').then(module => ({ default: module.SettingsScreen })));
 const LiveMonitorScreen = lazy(() => import('./screens/LiveMonitorScreen').then(module => ({ default: module.LiveMonitorScreen })));
 const SmppScreen = lazy(() => import('./screens/SmppScreen').then(module => ({ default: module.SmppScreen })));
+const MultiProtocolSupportScreen = lazy(() => import('./screens/MultiProtocolSupportScreen').then(module => ({ default: module.MultiProtocolSupportScreen })));
+const RoamingDataPackagesScreen = lazy(() => import('./screens/RoamingDataPackagesScreen').then(module => ({ default: module.RoamingDataPackagesScreen })));
 const Ss7Screen = lazy(() => import('./screens/Ss7Screen').then(module => ({ default: module.Ss7Screen })));
 const RoutingScreen = lazy(() => import('./screens/RoutingScreen').then(module => ({ default: module.RoutingScreen })));
 const MessageCenterScreen = lazy(() => import('./screens/MessageCenterScreen').then(module => ({ default: module.MessageCenterScreen })));
 const HlrLookupScreen = lazy(() => import('./screens/HlrLookupScreen').then(module => ({ default: module.HlrLookupScreen })));
 const BillingScreen = lazy(() => import('./screens/BillingScreen').then(module => ({ default: module.BillingScreen })));
+const PricingRateManagementScreen = lazy(() => import('./screens/PricingRateManagementScreen').then(module => ({ default: module.PricingRateManagementScreen })));
+const BundleManagementScreen = lazy(() => import('./screens/BundleManagementScreen').then(module => ({ default: module.BundleManagementScreen })));
 const DeveloperPortalScreen = lazy(() => import('./screens/DeveloperPortalScreen').then(module => ({ default: module.DeveloperPortalScreen })));
 const OtpServiceScreen = lazy(() => import('./screens/OtpServiceScreen').then(module => ({ default: module.OtpServiceScreen })));
 const CampaignsScreen = lazy(() => import('./screens/CampaignsScreen').then(module => ({ default: module.CampaignsScreen })));
@@ -38,6 +42,7 @@ const UserManagementScreen = lazy(() => import('./screens/UserManagementScreen')
 const RoleManagementScreen = lazy(() => import('./screens/RoleManagementScreen').then(module => ({ default: module.RoleManagementScreen })));
 const SecurityCenterScreen = lazy(() => import('./screens/SecurityCenterScreen').then(module => ({ default: module.SecurityCenterScreen })));
 const ObservabilityScreen = lazy(() => import('./screens/ObservabilityScreen').then(module => ({ default: module.ObservabilityScreen })));
+const AdvancedAnalyticsReportingScreen = lazy(() => import('./screens/AdvancedAnalyticsReportingScreen').then(module => ({ default: module.AdvancedAnalyticsReportingScreen })));
 
 type AuthenticatedUser = NonNullable<ReturnType<typeof useAuth>['user']>;
 
@@ -99,12 +104,16 @@ function AuthenticatedApp({ user }: { user: AuthenticatedUser }) {
       case 'dashboard': return <DashboardScreen onNavigate={handleNavigate} onShowToast={showToast} />;
       case 'dashboard-settings': return <SettingsScreen onShowToast={showToast} />;
       case 'live-monitor': return <LiveMonitorScreen onShowToast={showToast} />;
+      case 'roaming-data-packages': return <RoamingDataPackagesScreen onShowToast={showToast} />;
+      case 'multi-protocol-support': return <MultiProtocolSupportScreen onShowToast={showToast} />;
       case 'smpp-connections': return <SmppScreen trunks={[]} onShowToast={showToast} />;
       case 'ss7-sigtran': return <Ss7Screen onShowToast={showToast} />;
       case 'intelligent-routing': return <RoutingScreen onShowToast={showToast} />;
       case 'message-center': return <MessageCenterScreen onShowToast={showToast} />;
       case 'hlr-mnp-lookup': return <HlrLookupScreen onShowToast={showToast} />;
       case 'billing-and-credit-ledger': return <BillingScreen onShowToast={showToast} />;
+      case 'pricing-rate-management': return <PricingRateManagementScreen onShowToast={showToast} />;
+      case 'bundle-management': return <BundleManagementScreen onShowToast={showToast} />;
       case 'developer-portal-and-apis': return <DeveloperPortalScreen onShowToast={showToast} />;
       case 'otp-service': return <OtpServiceScreen onShowToast={showToast} />;
       case 'campaigns': return <CampaignsScreen onShowToast={showToast} />;
@@ -114,10 +123,11 @@ function AuthenticatedApp({ user }: { user: AuthenticatedUser }) {
       case 'sms-gateways': return <SmsGatewaysScreen onShowToast={showToast} />;
       case 'organizations-and-tenants': return <OrganizationsScreen onShowToast={showToast} />;
       case 'user-management': return <UserManagementScreen onShowToast={showToast} />;
-      case 'role-management': return <RoleManagementScreen />;
+      case 'role-management': return <RoleManagementScreen onShowToast={showToast} />;
       case 'iam-security': return <OperatorProfileScreen sessions={[]} currentUser={user} onRevokeSessions={handleRevokeSessions} onShowToast={showToast} />;
       case 'security-center': return <SecurityCenterScreen onShowToast={showToast} />;
       case 'observability-and-queues': return <ObservabilityScreen onShowToast={showToast} />;
+      case 'advanced-analytics-reporting': return <AdvancedAnalyticsReportingScreen onShowToast={showToast} />;
       default: return null;
     }
   }, [currentScreen, handleNavigate, handleRevokeSessions, showToast, user]);

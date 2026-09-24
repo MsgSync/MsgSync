@@ -10,6 +10,9 @@ interface CampaignsScreenProps {
 export const CampaignsScreen: React.FC<CampaignsScreenProps> = ({ onShowToast }) => {
   const { campaigns, loading, createCampaign, startCampaign, pauseCampaign, resumeCampaign, deleteCampaign, contactLists, refetch } = useCampaigns();
   const [showCreate, setShowCreate] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [senderMode, setSenderMode] = useState<'sender' | 'number'>('sender');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [formData, setFormData] = useState({ name: '', template: '', contactListId: '', senderId: '', scheduledAt: '' });
 
@@ -42,6 +45,11 @@ export const CampaignsScreen: React.FC<CampaignsScreenProps> = ({ onShowToast })
     }
   }, [startCampaign, pauseCampaign, resumeCampaign, deleteCampaign, onShowToast, refetch]);
 
+  const filteredCampaigns = (campaigns || []).filter(campaign => (statusFilter === 'all' || campaign.status === statusFilter) && campaign.name.toLowerCase().includes(search.toLowerCase()));
+  const totalRecipients = (campaigns || []).reduce((sum, campaign: any) => sum + Number(campaign.contactList?.contacts?.length || campaign.totalRecipients || 0), 0);
+  const activeCount = (campaigns || []).filter(campaign => campaign.status === 'running').length;
+  const scheduledCount = (campaigns || []).filter(campaign => campaign.status === 'scheduled').length;
+
   return (
     <div className="flex flex-col w-full space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#3d494c]">
@@ -60,6 +68,9 @@ export const CampaignsScreen: React.FC<CampaignsScreenProps> = ({ onShowToast })
           <span>Create Campaign</span>
         </button>
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg border border-[#3d494c] bg-[#1c2028] p-3"><div className="text-[10px] uppercase text-[#869397]">Active campaigns</div><div className="mt-1 font-code-metric text-[22px] text-[#4edea3]">{activeCount}</div><div className="text-[10px] text-[#869397]">currently processing</div></div><div className="rounded-lg border border-[#3d494c] bg-[#1c2028] p-3"><div className="text-[10px] uppercase text-[#869397]">Scheduled</div><div className="mt-1 font-code-metric text-[22px] text-[#4cd7f6]">{scheduledCount}</div><div className="text-[10px] text-[#869397]">queued launches</div></div><div className="rounded-lg border border-[#3d494c] bg-[#1c2028] p-3"><div className="text-[10px] uppercase text-[#869397]">Audience size</div><div className="mt-1 font-code-metric text-[22px] text-[#d0bcff]">{totalRecipients.toLocaleString()}</div><div className="text-[10px] text-[#869397]">contacts in campaigns</div></div></div>
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded border border-[#3d494c] bg-[#1c2028] p-3"><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search campaigns..." className="min-w-48 flex-1 rounded border border-[#3d494c] bg-[#0a0e16] px-3 py-1.5 text-[11px] text-[#dfe2ee] outline-none focus:border-[#4cd7f6]" /><select value={statusFilter} onChange={event => setStatusFilter(event.target.value)} className="rounded border border-[#3d494c] bg-[#0a0e16] px-2.5 py-1.5 text-[10px] text-[#bcc9cd]"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="running">Running</option><option value="paused">Paused</option><option value="completed">Completed</option></select></div>
 
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f131c]/80 backdrop-blur-sm p-4">
@@ -85,8 +96,13 @@ export const CampaignsScreen: React.FC<CampaignsScreenProps> = ({ onShowToast })
                 </select>
               </div>
               <div>
-                <label className="text-[10px] uppercase tracking-wider text-[#869397] font-semibold block mb-1">Sender ID</label>
-                <input value={formData.senderId} onChange={(e) => setFormData({...formData, senderId: e.target.value})} className="w-full px-3 py-1.5 rounded bg-[#0a0e16] border border-[#3d494c] text-[#dfe2ee] text-[12px] focus:outline-none focus:border-[#4cd7f6]" placeholder="Optional" />
+                <label className="text-[10px] uppercase tracking-wider text-[#869397] font-semibold block mb-1">Sender customization</label>
+                <div className="mb-2 flex gap-1"><button type="button" onClick={() => setSenderMode('sender')} className={`rounded px-2 py-1 text-[10px] ${senderMode === 'sender' ? 'bg-[#06b6d4] text-[#00424f]' : 'bg-[#262a33] text-[#869397]'}`}>Sender ID</button><button type="button" onClick={() => setSenderMode('number')} className={`rounded px-2 py-1 text-[10px] ${senderMode === 'number' ? 'bg-[#06b6d4] text-[#00424f]' : 'bg-[#262a33] text-[#869397]'}`}>Virtual number</button></div>
+                <input value={formData.senderId} onChange={(e) => setFormData({...formData, senderId: e.target.value})} className="w-full px-3 py-1.5 rounded bg-[#0a0e16] border border-[#3d494c] text-[#dfe2ee] text-[12px] focus:outline-none focus:border-[#4cd7f6]" placeholder={senderMode === 'number' ? '+12025550194' : 'ALERTS'} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-[#869397] font-semibold block mb-1">Launch schedule</label>
+                <input type="datetime-local" value={formData.scheduledAt} onChange={(e) => setFormData({...formData, scheduledAt: e.target.value})} className="w-full px-3 py-1.5 rounded bg-[#0a0e16] border border-[#3d494c] text-[#dfe2ee] text-[12px] focus:outline-none focus:border-[#4cd7f6]" />
               </div>
               <div className="flex items-center justify-end gap-2">
                 <button type="button" onClick={() => setShowCreate(false)} className="px-3.5 py-1.5 rounded bg-[#262a33] border border-[#3d494c] text-[#dfe2ee] text-[12px]">Cancel</button>
@@ -113,7 +129,7 @@ export const CampaignsScreen: React.FC<CampaignsScreenProps> = ({ onShowToast })
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#3d494c]">
-                {campaigns?.map((c: Campaign) => (
+                 {filteredCampaigns.map((c: Campaign) => (
                   <tr key={c.id} className="hover:bg-[#262a33]/60 transition-colors">
                     <td className="py-3">
                       <span className="text-[#dfe2ee] font-semibold">{c.name}</span>

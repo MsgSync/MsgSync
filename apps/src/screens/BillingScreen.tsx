@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useBilling } from '../hooks/useBilling';
 
 interface BillingScreenProps {
   onShowToast: (msg: string, type?: 'success' | 'warning' | 'error' | 'info') => void;
@@ -7,6 +8,9 @@ interface BillingScreenProps {
 export const BillingScreen: React.FC<BillingScreenProps> = ({ onShowToast }) => {
   const [balance, setBalance] = useState(384910.42);
   const [adjustAmount, setAdjustAmount] = useState('');
+  const { organization, transactions: ledgerTransactions } = useBilling('root');
+  const displayBalance = organization?.balance ?? balance;
+  const suspended = organization?.suspended || displayBalance <= 0;
   const [adjustReason, setAdjustReason] = useState('Wholesale volume rebate Q3');
   const [transactions, setTransactions] = useState([
     { id: 'tx-88912', desc: 'Prepaid Wire Deposit (JPMorgan)', amount: 150000.0, time: 'Today 11:20 UTC', type: 'credit' },
@@ -58,6 +62,8 @@ export const BillingScreen: React.FC<BillingScreenProps> = ({ onShowToast }) => 
         </div>
       </div>
 
+      {suspended && <div className="flex items-start gap-3 rounded-lg border border-[#ffb4ab]/40 bg-[#ffb4ab]/10 p-3 text-[11px] text-[#ffb4ab]"><span className="material-symbols-outlined text-[18px]">pause_circle</span><div><div className="font-semibold">Service suspended — balance exhausted</div><div className="mt-1 text-[#bcc9cd]">New message delivery is blocked automatically. Add credit below to restore service; accounts can never enter a negative balance.</div></div></div>}
+
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
         {/* Ledger Adjustment (5 cols) */}
         <div className="xl:col-span-5 rounded bg-[#1c2028] border border-[#3d494c] p-4 shadow-sm">
@@ -65,7 +71,8 @@ export const BillingScreen: React.FC<BillingScreenProps> = ({ onShowToast }) => 
             Carrier Available Ledger Balance
           </div>
           <div className="text-[32px] font-bold font-code-metric text-[#4edea3] mb-4">
-            ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+             {suspended && <div className="mb-2 text-[10px] font-semibold text-[#ffb4ab]">SERVICE SUSPENDED</div>}
+             ${displayBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
 
           <div className="pt-3 border-t border-[#3d494c]">

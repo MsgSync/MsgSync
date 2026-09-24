@@ -35,6 +35,35 @@ exports.create = async (req, res) => {
     }
 };
 
+exports.updateBillingSettings = async (req, res) => {
+    try {
+        const validPolicies = ['ON_ATTEMPT', 'ON_SUBMISSION', 'ON_DELIVERY'];
+        const validCycles = ['MONTHLY', 'QUARTERLY', 'ANNUAL'];
+        const validFormats = ['PDF', 'EXCEL', 'BOTH'];
+        const { billingPolicy, billingEmail, billingCycle, invoiceFormat, ratePlanId } = req.body;
+        if (billingPolicy && !validPolicies.includes(billingPolicy)) {
+            return res.status(400).json({ error: 'Invalid billing policy' });
+        }
+        if (billingCycle && !validCycles.includes(billingCycle)) {
+            return res.status(400).json({ error: 'Invalid billing cycle' });
+        }
+        if (invoiceFormat && !validFormats.includes(invoiceFormat)) {
+            return res.status(400).json({ error: 'Invalid invoice format' });
+        }
+        await requireOrganizationAccess(req, req.params.id);
+        const organization = await organizationService.updateBillingSettings(req.params.id, {
+            billingPolicy,
+            billingEmail,
+            billingCycle,
+            invoiceFormat,
+            ratePlanId: ratePlanId || null
+        });
+        res.json(organization);
+    } catch (error) {
+        res.status(error.status || 500).json({ error: error.message });
+    }
+};
+
 exports.getById = async (req, res) => {
     try {
         await requireOrganizationAccess(req, req.params.id);

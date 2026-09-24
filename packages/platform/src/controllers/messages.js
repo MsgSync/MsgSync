@@ -7,7 +7,8 @@ const { getOrganizationScope, organizationScopeWhere } = require('../services/au
  * Sends a new message by adding it to the processing queue.
  */
 async function sendMessage(req, res) {
-    const { recipient, content, metadata, scheduledAt } = req.body;
+    const { recipient, metadata, scheduledAt } = req.body;
+    let { content } = req.body;
 
     if (!recipient || !content) {
         return res.status(400).json({
@@ -27,7 +28,8 @@ async function sendMessage(req, res) {
                 req.organization,
                 recipient,
                 content,
-                remoteIp
+                remoteIp,
+                metadata
             );
 
             if (!securityCheck.valid) {
@@ -37,6 +39,7 @@ async function sendMessage(req, res) {
                     message: `Security rejection: ${securityCheck.reason}`
                 });
             }
+            if (securityCheck.content !== undefined) content = securityCheck.content;
         }
 
         const scheduleDate = scheduledAt ? new Date(scheduledAt) : new Date();

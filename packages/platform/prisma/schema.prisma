@@ -45,7 +45,8 @@ model Organization {
   id          String         @id @default(uuid())
   name        String
   type        String         @default("CLIENT") // ADMIN, RESELLER, CLIENT
-  balance     Decimal        @default(0.0)
+  balance        Decimal      @default(0.0)
+  suspended      Boolean      @default(false)
   maxDailySpend Decimal      @default(100.0)
   allowedCountries String[]  @default([]) // ISO Country Codes
   parentId    String?
@@ -65,6 +66,14 @@ model Organization {
   billingCycle   String         @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
   invoiceFormat  String         @default("PDF")     // PDF, EXCEL, BOTH
   billingPolicy  String         @default("ON_SUBMISSION") // ON_ATTEMPT, ON_SUBMISSION, ON_DELIVERY
+  contentScreeningEnabled Boolean @default(true)
+  modifyContentEnabled Boolean @default(false)
+  allowedProfiles   String[] @default(["TRANSACTIONAL", "PROMOTIONAL", "OTP"])
+  allowedSmsTypes   String[] @default(["TRANSACTIONAL", "PROMOTIONAL", "OTP"])
+  allowedSenderIds  String[] @default([])
+  blockedKeywords   String[] @default([])
+  blockedUrlDomains String[] @default([])
+  modificationRules Json?
   
   apiKeys     ApiKey[]
   messages    Message[]
@@ -325,8 +334,9 @@ model RoutingRule {
   providerId     String
   provider       Provider  @relation(fields: [providerId], references: [id])
   priority       Int       @default(1)
-  active         Boolean   @default(true)
-  createdAt      DateTime  @default(now())
+  active        Boolean  @default(true)
+  senderIdOverride String?
+  createdAt     DateTime @default(now())
   updatedAt      DateTime  @updatedAt
 
   @@unique([prefix, mcc, mnc, organizationId, providerId])

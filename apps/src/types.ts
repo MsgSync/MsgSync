@@ -8,6 +8,8 @@ export type ScreenId =
   | 'campaigns'
   | 'contacts-and-segments'
   | 'sender-ids'
+  | 'roaming-data-packages'
+  | 'multi-protocol-support'
   | 'smpp-connections'
   | 'ss7-sigtran'
   | 'providers'
@@ -20,7 +22,10 @@ export type ScreenId =
   | 'role-management'
   | 'developer-portal-and-apis'
   | 'security-center'
-  | 'observability-and-queues';
+  | 'observability-and-queues'
+  | 'advanced-analytics-reporting'
+  | 'pricing-rate-management'
+  | 'bundle-management';
 
 export interface ClusterSession {
   id: string;
@@ -349,6 +354,8 @@ export const SCREEN_METADATA: ScreenMetadata[] = [
   { id: 'campaigns', label: 'Campaigns', icon: 'campaign', section: 'MESSAGING', requiresAuth: true, permissions: [] },
   { id: 'contacts-and-segments', label: 'Contacts & Segments', icon: 'group', section: 'MESSAGING', requiresAuth: true, permissions: [] },
   { id: 'sender-ids', label: 'Sender IDs', icon: 'badge', section: 'MESSAGING', requiresAuth: true, permissions: [] },
+  { id: 'roaming-data-packages', label: 'Roaming Data Packages', icon: 'travel_explore', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
+  { id: 'multi-protocol-support', label: 'Multi-Protocol Support', icon: 'hub', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'smpp-connections', label: 'SMPP Connections', icon: 'settings_ethernet', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'ss7-sigtran', label: 'SS7 / SIGTRAN', icon: 'hub', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'providers', label: 'Providers', icon: 'lan', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
@@ -356,6 +363,8 @@ export const SCREEN_METADATA: ScreenMetadata[] = [
   { id: 'intelligent-routing', label: 'Intelligent Routing', icon: 'alt_route', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'hlr-mnp-lookup', label: 'HLR / MNP Lookup', icon: 'find_in_page', section: 'TELECOM & ROUTING', requiresAuth: true, permissions: [] },
   { id: 'billing-and-credit-ledger', label: 'Billing & Credit Ledger', icon: 'account_balance_wallet', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
+  { id: 'pricing-rate-management', label: 'Pricing & Rate Management', icon: 'payments', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
+  { id: 'bundle-management', label: 'Bundle / Package Management', icon: 'inventory_2', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
   { id: 'organizations-and-tenants', label: 'Organizations & Tenants', icon: 'corporate_fare', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
   { id: 'user-management', label: 'User Management', icon: 'group', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
   { id: 'role-management', label: 'Role Management', icon: 'admin_panel_settings', section: 'MANAGEMENT & BILLING', requiresAuth: true, permissions: [] },
@@ -363,6 +372,7 @@ export const SCREEN_METADATA: ScreenMetadata[] = [
   { id: 'iam-security', label: 'IAM & Security', icon: 'security', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: ['LEVEL_4_TOP_SECRET'] },
   { id: 'security-center', label: 'Security Center', icon: 'shield', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: [] },
   { id: 'observability-and-queues', label: 'Observability & Queues', icon: 'bar_chart', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: [] },
+  { id: 'advanced-analytics-reporting', label: 'Advanced Analytics & Reporting', icon: 'query_stats', section: 'DEVELOPER & PLATFORM', requiresAuth: true, permissions: [] },
 ];
 
 export function getScreenMetadata(id: ScreenId): ScreenMetadata | undefined {

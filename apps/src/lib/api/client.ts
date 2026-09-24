@@ -128,6 +128,26 @@ export class ApiClient {
     return this.get<{ data: any }>('/api/analytics/stats');
   }
 
+  async getAnalyticsTrends() {
+    return this.get<{ data: any[] }>('/api/analytics/trends');
+  }
+
+  async getVolumeByProvider() {
+    return this.get<{ data: any[] }>('/api/analytics/volume-by-provider');
+  }
+
+  async getFinancials() {
+    return this.get<{ data: any }>('/api/analytics/financials');
+  }
+
+  async getAnalyticsReports() {
+    return this.get<{ data: any }>('/api/analytics/reports');
+  }
+
+  async getAnalyticsAlerts() {
+    return this.get<{ data: any[] }>('/api/analytics/alerts');
+  }
+
   async getLiveTraffic(limit = 100) {
     return this.get<{ data: any[] }>('/api/analytics/live-traffic', { limit });
   }
@@ -257,6 +277,9 @@ export class ApiClient {
     return this.get<{ data: any[] }>('/api/lookups/configs');
   }
 
+  async testHlrConfig(data: any) {
+    return this.post<any>('/api/lookups/configs/test', data);
+  }
   async saveHlrConfig(data: any) {
     return this.post<ApiResponse>('/api/lookups/configs', data);
   }
@@ -270,6 +293,9 @@ export class ApiClient {
     return this.get<{ data: any }>(`/api/invoices/${id}`);
   }
 
+  async runInvoiceBillingCycle() {
+    return this.post<ApiResponse>('/api/invoices/cycle');
+  }
   async updateInvoiceStatus(id: string, status: string) {
     return this.patch<ApiResponse>(`/api/invoices/${id}/status`, { status });
   }
@@ -283,8 +309,42 @@ export class ApiClient {
     return this.post<ApiResponse>('/api/organizations', data);
   }
 
+  async updateOrganizationBillingSettings(id: string, data: any) {
+    return this.patch<{ data: any }>(`/api/organizations/${id}/billing-settings`, data);
+  }
+
+  async assignRatePlan(organizationId: string, planId: string) {
+    return this.post<ApiResponse>('/api/network/plans/assign', { organizationId, planId });
+  }
+
+  async saveRate(planId: string, data: any) {
+    return this.post<ApiResponse>(`/api/network/rates/${planId}`, data);
+  }
+  async getSubOrganizations(organizationId: string) {
+    return this.get<{ data: any[] }>(`/api/organizations/${organizationId}/sub-orgs`);
+  }
+
+  async getOrganizationReporting(organizationId: string) {
+    return this.get<{ data: any }>(`/api/organizations/${organizationId}/reporting`);
+  }
+
+  async addOrganizationBalance(organizationId: string, amount: number, description: string) {
+    return this.post<ApiResponse>(`/api/organizations/${organizationId}/balance`, { amount, description });
+  }
   async getTransactions(organizationId: string) {
     return this.get<{ data: any[] }>(`/api/organizations/${organizationId}/transactions`);
+  }
+
+  async getContentPolicy() {
+    return this.get<{ data: any }>('/api/security/content-policy');
+  }
+
+  async updateContentPolicy(data: any) {
+    return this.patch<{ data: any }>('/api/security/content-policy', data);
+  }
+
+  async updateSecurityRestrictions(data: any) {
+    return this.post<ApiResponse>('/api/security/restrictions', data);
   }
 
   // Security
@@ -334,10 +394,32 @@ export class ApiClient {
     return this.get<{ data: any[] }>('/api/network/plans');
   }
 
+  async importRates(planId: string, rates: any[]) {
+    return this.post<ApiResponse>('/api/network/rates/import', { planId, rates });
+  }
   async getRates(planId: string) {
     return this.get<{ data: any[] }>(`/api/network/rates/${planId}`);
   }
 
+  async getBundles(includeInactive = false) {
+    return this.get<{ data: any[] }>('/api/bundles', { includeInactive });
+  }
+
+  async createBundle(data: any) {
+    return this.post<{ data: any }>('/api/bundles', data);
+  }
+
+  async updateBundle(id: string, data: any) {
+    return this.patch<{ data: any }>(`/api/bundles/${id}`, data);
+  }
+
+  async subscribeToBundle(data: { organizationId: string; bundleId: string }) {
+    return this.post<{ data: any }>('/api/bundles/subscribe', data);
+  }
+
+  async getBundleHistory(organizationId: string) {
+    return this.get<{ data: any[] }>(`/api/bundles/organization/${organizationId}`);
+  }
   async getSenderIds(orgId: string) {
     return this.get<{ data: any[] }>(`/api/network/sender-ids/${orgId}`);
   }

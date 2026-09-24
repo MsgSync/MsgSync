@@ -24,6 +24,19 @@ class OrganizationService {
         });
     }
 
+    async updateBillingSettings(organizationId, data) {
+        return await prisma.organization.update({
+            where: { id: organizationId },
+            data: {
+                billingPolicy: data.billingPolicy,
+                billingEmail: data.billingEmail,
+                billingCycle: data.billingCycle,
+                invoiceFormat: data.invoiceFormat,
+                ratePlanId: data.ratePlanId
+            },
+            include: { ratePlan: true }
+        });
+    }
     async listSubOrganizations(parentId) {
         return await prisma.organization.findMany({
             where: { parentId },
@@ -51,7 +64,7 @@ class OrganizationService {
 
             const updatedOrg = await tx.organization.update({
                 where: { id: organizationId },
-                data: { balance: newBalance }
+                data: { balance: newBalance, suspended: newBalance <= 0 }
             });
 
             await tx.transaction.create({

@@ -93,6 +93,10 @@ async function createCampaign(req, res) {
             return res.status(404).json({ status: 'error', message: 'Contact list not found' });
         }
 
+        if (scheduledAt && new Date(scheduledAt) <= new Date()) {
+            return res.status(400).json({ status: 'error', message: 'Scheduled time must be in the future' });
+        }
+
         const campaign = await prisma.campaign.create({
             data: {
                 name,
@@ -104,7 +108,7 @@ async function createCampaign(req, res) {
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
                 enableTracking: enableTracking !== undefined ? enableTracking : true,
                 enableWebhooks: enableWebhooks !== undefined ? enableWebhooks : false,
-                status: 'draft'
+                status: scheduledAt ? 'scheduled' : 'draft'
             },
             include: {
                 contactList: {
