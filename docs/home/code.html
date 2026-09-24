@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MsgSync Telecom OS — Carrier-Grade SMS &amp; Interconnect Infrastructure</title>
+<!-- Tailwind CSS CDN with Forms & Container Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            noc: {
+              950: '#070A0F',
+              900: '#0B0F17',
+              850: '#0F131C',
+              800: '#141A26',
+              700: '#1C2436',
+              600: '#2A364F',
+              cyan: '#00E5FF',
+              'cyan-dim': '#06B6D4',
+              emerald: '#10B981',
+              amber: '#F59E0B',
+              rose: '#F43F5E'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'glow-cyan': '0 0 25px -5px rgba(0, 229, 255, 0.35)',
+            'glow-cyan-sm': '0 0 15px -3px rgba(0, 229, 255, 0.25)',
+            'glow-emerald': '0 0 20px -4px rgba(16, 185, 129, 0.35)',
+            'panel-border': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.07)'
+          }
+        }
+      }
+    };
+  </script>
+<!-- Global Base Styles & Custom Utilities -->
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #070A0F;
+      color: #E2E8F0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+<style data-purpose="grid-lines">
+    .telecom-grid-bg {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    .radial-vignette {
+      background: radial-gradient(circle at 50% 20%, rgba(6, 182, 212, 0.08) 0%, rgba(7, 10, 15, 0.95) 75%);
+    }
+  </style>
+<style data-purpose="terminal-animations">
+    @keyframes pulseScan {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.45; }
+    }
+    .pulse-scan {
+      animation: pulseScan 3s infinite ease-in-out;
+    }
+    .code-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .code-scroll::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+
+    /* Live Pipeline Motion Styles */
+    @keyframes flowDashForward {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+    @keyframes flowDashReverse {
+      to {
+        stroke-dashoffset: 40;
+      }
+    }
+    @keyframes pulseAura {
+      0%, 100% { transform: scale(1); opacity: 0.25; }
+      50% { transform: scale(1.18); opacity: 0.65; }
+    }
+    @keyframes coreRadar {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes scanlineSweep {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(640px); }
+    }
+    @keyframes packetFlyLeft {
+      0% { transform: translateX(0); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateX(260px); opacity: 0; }
+    }
+
+    .animate-flow-line {
+      stroke-dasharray: 8 6;
+      animation: flowDashForward 1.2s linear infinite;
+    }
+    .animate-flow-fast {
+      stroke-dasharray: 6 4;
+      animation: flowDashForward 0.8s linear infinite;
+    }
+    .animate-flow-alt {
+      stroke-dasharray: 8 6;
+      animation: flowDashReverse 1.5s linear infinite;
+    }
+    .core-pulse-aura {
+      animation: pulseAura 2.2s ease-in-out infinite;
+      transform-origin: center;
+    }
+    .core-radar-spin {
+      animation: coreRadar 8s linear infinite;
+      transform-origin: 600px 300px;
+    }
+    .scanline-bar {
+      animation: scanlineSweep 4.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Reduce motion compliance */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-flow-line,
+      .animate-flow-fast,
+      .animate-flow-alt,
+      .core-pulse-aura,
+      .core-radar-spin,
+      .scanline-bar,
+      .pulse-scan {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-noc-950 text-slate-200 antialiased overflow-x-hidden selection:bg-noc-cyan selection:text-noc-950">
+<!-- BEGIN: TopGlobalNavigation -->
+<header class="sticky top-0 z-50 w-full border-b border-noc-700/80 bg-noc-900/90 backdrop-blur-md">
+<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+<!-- Brand Logo & Telecom Identifier -->
+<div class="flex items-center gap-6">
+<a aria-label="MsgSync Home" class="flex items-center gap-3 transition-opacity hover:opacity-95" href="#">
+<div class="h-9 w-auto flex items-center">
+<!-- Inline SVG Logo matching asset https://lh3.googleusercontent.com/aida/AEtjO1Vky7RuuoFQdFt39nn2jXJxgr8Yh4KU2grfL6VzZzPvav_ePZlhRfK2jFVz3-93_U3I8BbJofQ9axOYzXyOTng7j2ULArk4lVqFQqjxlVITNMyk4FKw66RkyKlTE-wUUAm28-MGpQMbA80khvNAvaKhthTLkFGC5ejUPgCmUBHPPbsFdTeFhG8rTyiwSCGPnRRyocfvwn2-79fpu40-jkCmn_hJpKa3xmbtpdzO9B-Z -->
+<svg class="h-8 w-auto" fill="none" viewbox="0 0 160 40" xmlns="http://www.w3.org/2000/svg">
+<rect fill="#0E1726" height="36" rx="8" stroke="#00E5FF" stroke-width="1.5" width="36"></rect>
+<path d="M10 24L15 14L21 22L26 12" stroke="#00E5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<circle cx="26" cy="12" fill="#10B981" r="2.5"></circle>
+<circle cx="10" cy="24" fill="#00E5FF" r="2"></circle>
+<path d="M14 26C18 28 22 28 26 26" stroke="#38BDF8" stroke-dasharray="2 2" stroke-width="1.5"></path>
+<text fill="#FFFFFF" font-family="Inter, sans-serif" font-size="18" font-weight="800" letter-spacing="-0.5" x="46" y="24">Msg<tspan fill="#00E5FF">Sync</tspan></text>
+<text fill="#64748B" font-family="JetBrains Mono, monospace" font-size="8" font-weight="600" letter-spacing="1.5" x="46" y="33">TELECOM OS</text>
+</svg>
+</div>
+</a>
+<!-- Status Pill in Nav -->
+<div class="hidden xl:flex items-center gap-2.5 pl-4 border-l border-noc-700 font-mono text-xs text-slate-400"><div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-noc-950 border border-emerald-800/60"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-noc-emerald opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-noc-emerald"></span></span><span class="text-[11px] font-semibold text-noc-emerald tracking-wide">ALL CIRCUITS NOMINAL</span></div><span class="text-slate-600">•</span><span class="text-[11px] font-medium text-slate-300 flex items-center gap-1"><span class="text-xs">🇧🇩</span> Dhaka Mohakhali PoP <span class="text-[10px] text-noc-cyan/90 bg-noc-850 px-1 py-0.2 rounded border border-noc-700">(BD-IX Active)</span></span></div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden lg:flex items-center gap-6 font-sans text-[13px] font-medium tracking-tight text-slate-300"><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group" href="#protocols"><span class="">Messaging Tech</span><span class="absolute bottom-0 left-0 w-0 h-0.5 bg-noc-cyan transition-all duration-200 group-hover:w-full"></span></a><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group" href="#why-msgsync"><span class="">Why MsgSync</span><span class="absolute bottom-0 left-0 w-0 h-0.5 bg-noc-cyan transition-all duration-200 group-hover:w-full"></span></a><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group" href="#topology"><span class="">LCR Routing</span><span class="absolute bottom-0 left-0 w-0 h-0.5 bg-noc-cyan transition-all duration-200 group-hover:w-full"></span></a><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group" href="#developer"><span class="">Developer SDKs</span><span class="absolute bottom-0 left-0 w-0 h-0.5 bg-noc-cyan transition-all duration-200 group-hover:w-full"></span></a><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group flex items-center gap-1.5" href="#noc-telemetry"><span class="w-1.5 h-1.5 rounded-full bg-noc-cyan animate-pulse"></span><span class="">NOC Telemetry</span></a><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group" href="#pricing"><span class="">Pricing</span><span class="absolute bottom-0 left-0 w-0 h-0.5 bg-noc-cyan transition-all duration-200 group-hover:w-full"></span></a><a class="hover:text-noc-cyan transition-all duration-200 py-1 px-1 relative group" href="#interconnect"><span class="">Interconnect</span><span class="absolute bottom-0 left-0 w-0 h-0.5 bg-noc-cyan transition-all duration-200 group-hover:w-full"></span></a></nav>
+<!-- Right CTAs -->
+<div class="flex items-center gap-3"><a class="hidden sm:inline-flex items-center px-3.5 py-1.5 rounded-lg border border-noc-600/80 bg-noc-850 hover:bg-noc-800 hover:border-noc-cyan/50 text-xs font-mono font-medium text-slate-200 transition-all duration-200 shadow-panel-border" href="#console"><svg class="w-3.5 h-3.5 mr-1.5 text-noc-cyan" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="tracking-tight">NOC Console Login</span></a><a class="inline-flex items-center px-4 py-1.5 rounded-lg font-mono text-xs font-semibold bg-noc-cyan hover:bg-noc-cyan-dim text-noc-950 transition-all duration-200 shadow-glow-cyan-sm hover:shadow-glow-cyan tracking-tight" href="#interconnect"><span class="">Request Interconnect</span><svg class="w-3.5 h-3.5 ml-1.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg></a></div>
+</div>
+</header>
+<!-- END: TopGlobalNavigation -->
+<main>
+<!-- BEGIN: HeroSection -->
+<section class="relative pt-16 pb-20 overflow-hidden telecom-grid-bg border-b border-noc-800/80">
+<div class="absolute inset-0 radial-vignette pointer-events-none"></div>
+<!-- Top Neon Glow Orb -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[340px] bg-noc-cyan/10 blur-[130px] rounded-full pointer-events-none"></div>
+<div class="relative max-w-[1440px] mx-auto px-6">
+<div class="flex flex-col items-center text-center max-w-4xl mx-auto space-y-6"><div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-noc-850 border border-noc-700/90 shadow-panel-border"><span class="inline-block w-2 h-2 rounded-full bg-noc-cyan animate-pulse"></span><span class="font-mono text-xs text-noc-cyan font-medium tracking-wide">🇧🇩 BANGLADESH &amp; GLOBAL TELECOM CLUSTER // MULTI-PROTOCOL OS // BTRC &amp; DLT READY</span></div><h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.12]">Where Messaging Traffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-noc-cyan via-teal-200 to-noc-emerald">Becomes Revenue</span></h1><p class="text-base sm:text-lg text-slate-300 max-w-3xl leading-relaxed font-normal">A next-generation messaging platform with cloud-scale architecture, multi-protocol and SIGTRAN support, and intelligent automation, designed to handle millions of messages per hour while managing SMS and WhatsApp campaigns from a single platform.</p><div class="flex flex-wrap items-center justify-center gap-4 pt-2"><a class="inline-flex items-center px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-wider font-bold bg-noc-cyan hover:bg-noc-cyan-dim text-noc-950 shadow-glow-cyan transition-all" href="#developer"><span class="">Deploy Sandbox Trunk</span><svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg></a><a class="inline-flex items-center px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-wider font-semibold border border-noc-600 bg-noc-850 hover:bg-noc-800 text-slate-200 hover:border-noc-cyan/50 transition-all shadow-panel-border" href="#topology"><svg class="w-4 h-4 mr-2 text-noc-cyan" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span>Explore Live Architecture</span></a><a class="inline-flex items-center px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-wider font-semibold bg-emerald-950/80 border border-emerald-800 hover:border-noc-emerald text-noc-emerald transition-all" href="#interconnect"><span class="">Request Interconnect &amp; Demo</span></a></div><div class="flex items-center gap-4 pt-2 text-[11px] font-mono text-slate-400"><span class="flex items-center gap-1.5"><span class="text-noc-emerald">✓</span> Millions/Hour Throughput</span><span class="text-slate-600">•</span><span class="flex items-center gap-1.5"><span class="text-noc-emerald">✓</span> SMS &amp; WhatsApp Omnichannel</span><span class="text-slate-600">•</span><span class="flex items-center gap-1.5"><span class="text-noc-emerald">✓</span> Sub-18ms Local Delivery</span></div></div>
+<!-- Live Telemetry KPI Bar -->
+<div class="mt-14 max-w-5xl mx-auto rounded-xl border border-noc-700/80 bg-noc-900/90 p-4 lg:p-6 shadow-2xl backdrop-blur-md">
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 lg:gap-6 divide-y md:divide-y-0 md:divide-x divide-noc-800"><div class="px-2 pt-2 md:pt-0"><div class="flex items-center justify-between text-[11px] font-mono text-slate-400 uppercase"><span class="">Total BD Volume</span><span class="text-noc-cyan">▲ 24.8%</span></div><div class="text-2xl font-bold font-mono text-white mt-1">24,850,210</div><div class="text-[11px] text-slate-400 mt-0.5">Dhaka &amp; Chittagong SMS</div></div><div class="px-2 pt-2 md:pt-0 md:pl-4"><div class="flex items-center justify-between text-[11px] font-mono text-slate-400 uppercase"><span class="">BD LCR Decision</span><span class="text-noc-emerald">OPTIMAL</span></div><div class="text-2xl font-bold font-mono text-noc-emerald mt-1" id="hero-lcr-val">0.40 ms</div><div class="text-[11px] text-slate-400 mt-0.5">Median routing latency</div></div><div class="px-2 pt-2 md:pt-0 md:pl-4"><div class="flex items-center justify-between text-[11px] font-mono text-slate-400 uppercase"><span class="">DLR Delivery</span><span class="text-noc-cyan">99.96%</span></div><div class="text-2xl font-bold font-mono text-white mt-1">99.96%</div><div class="text-[11px] text-slate-400 mt-0.5">MNO Carrier Verified</div></div><div class="px-2 pt-2 md:pt-0 md:pl-4"><div class="flex items-center justify-between text-[11px] font-mono text-slate-400 uppercase"><span class="">Local MNOs</span><span class="text-noc-emerald">4/4 UP</span></div><div class="text-2xl font-bold font-mono text-white mt-1">GP, Robi, BL, TT</div><div class="text-[11px] text-slate-400 mt-0.5">SS7 &amp; SMPP Directs</div></div><div class="px-2 pt-2 md:pt-0 md:pl-4"><div class="flex items-center justify-between text-[11px] font-mono text-slate-400 uppercase"><span class="">Transit p99</span><span class="text-noc-cyan">p99</span></div><div class="text-2xl font-bold font-mono text-noc-cyan mt-1">16 ms</div><div class="text-[11px] text-slate-400 mt-0.5">Dhaka PoP to Handset</div></div></div>
+</div>
+</div>
+</section>
+<!-- END: HeroSection -->
+<!-- BEGIN: ArchitectureTopology (Live Dynamic Telecom Pipeline) -->
+<section class="py-20 bg-noc-900 border-b border-noc-800 relative" id="topology">
+<div class="max-w-[1440px] mx-auto px-6">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-noc-800 gap-4">
+<div>
+<div class="font-mono text-xs text-noc-cyan uppercase tracking-wider mb-2 flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-noc-cyan opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-noc-cyan"></span>
+</span>
+              Autonomous Telecom Matrix // Real-Time Signal Plane
+            </div>
+<h2 class="text-3xl font-extrabold text-white">Bangladesh Packet Routing &amp; MNO LCR Matrix</h2>
+<p class="text-slate-400 text-sm mt-1 max-w-2xl">Zero-lag message pipeline orchestrating high-speed REST ingresses, SEA-ME-WE 4/5 subsea fiber backhaul, and direct SS7/SMPP handoffs to Grameenphone, Robi Axiata, Banglalink, and Teletalk.</p>
+</div>
+<!-- Interactive Topology State Toggle & Simulation Controls -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Simulation Play/Pause State Button -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-noc-700 bg-noc-950 font-mono text-xs text-slate-300 hover:border-noc-cyan transition-colors" id="btn-toggle-sim" onclick="toggleSimulation()">
+<span class="w-2 h-2 rounded-full bg-noc-emerald animate-pulse" id="sim-status-dot"></span>
+<span class="" id="sim-status-text">LIVE STREAM: ১,৩১৬ MPS</span>
+</button>
+<!-- Interactive Topology Mode Buttons -->
+<div class="flex items-center bg-noc-950 p-1 rounded-lg border border-noc-700 font-mono text-xs" role="tablist">
+<button class="px-3 py-1.5 rounded text-slate-400 hover:text-white transition-colors" id="tab-btn-flow" onclick="switchTopologyMode('flow')">
+                Pipeline Flow
+              </button>
+<button class="px-3 py-1.5 rounded bg-noc-800 text-amber-400 font-semibold border border-amber-600/60 transition-all" id="tab-btn-failover" onclick="switchTopologyMode('failover')">
+                Failover Ring
+              </button>
+<button class="px-3 py-1.5 rounded text-slate-400 hover:text-white transition-colors" id="tab-btn-hsm" onclick="switchTopologyMode('hsm')">
+                HSM Security
+              </button>
+</div>
+</div>
+</div>
+<!-- Embedded Topology Visual Card -->
+<div class="rounded-xl border border-noc-700 bg-noc-950/90 p-4 lg:p-6 shadow-2xl relative overflow-hidden">
+<!-- Subtle Top Radar Scanline Effect Layer -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+<div class="w-full h-1 bg-gradient-to-r from-transparent via-noc-cyan to-transparent scanline-bar blur-[1px]"></div>
+</div>
+<!-- Top Telemetry Status Strip with Dynamic Jittering Counters -->
+<div class="flex flex-wrap items-center justify-between text-xs font-mono pb-4 mb-4 border-b border-noc-800 gap-3 relative z-10">
+<div class="flex items-center gap-3">
+<span class="text-slate-400">INGRESS RATE:</span>
+<span class="text-noc-cyan font-bold tabular-nums" id="live-ingress-val">১,৩১৬ MPS</span>
+<span class="text-slate-600">|</span>
+<span class="text-slate-400">DRAIN RATE:</span>
+<span class="text-noc-emerald font-bold tabular-nums" id="live-drain-val">১,২৮০ MPS</span>
+</div>
+<div class="flex items-center gap-4 text-slate-400">
+<span class="">BUFFER SATURATION: <strong class="text-noc-emerald tabular-nums" id="live-buffer-val">4.8% (Nominal)</strong></span>
+<span class="">QUEUE LAG: <strong class="text-white tabular-nums" id="live-queue-val">0 ms</strong></span>
+</div>
+</div>
+<!-- SVG Architecture Dynamic Canvas Container -->
+<div class="w-full aspect-[1200/540] max-h-[540px] rounded-lg overflow-hidden border border-noc-800 bg-[#080C14] flex items-center justify-center relative shadow-inner">
+<!-- Floating Live Packet Badge Overlay Gliding Across Topology -->
+<div class="absolute top-6 left-6 z-20 pointer-events-none transition-all duration-700 bg-noc-900/90 backdrop-blur-md border border-noc-cyan/40 rounded px-3 py-1.5 shadow-glow-cyan-sm text-[11px] font-mono flex items-center gap-2" id="packet-flight-badge"><span class="w-2 h-2 rounded-full bg-noc-cyan animate-ping"></span><span class="text-slate-400">IN-FLIGHT PDU:</span><span class="text-noc-cyan font-bold">[OTP 2FA]</span><span class="text-slate-500">→</span><span class="text-noc-emerald font-medium" id="badge-route-desc">LCR: Vodafone Carrier (39ms, $0.0076)</span></div>
+<!-- Mode State Banner -->
+<div class="absolute top-6 right-6 z-20 pointer-events-none transition-all duration-300 font-mono text-[11px] px-3 py-1 rounded bg-noc-900/90 border border-noc-700 text-slate-300 flex items-center gap-2" id="mode-state-tag">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400" id="mode-state-bullet"></span>
+<span class="" id="mode-state-title">MODE: SCTP DUAL-HOMING FAILOVER RING ACTIVE</span>
+</div>
+<!-- Live Interactive SVG Diagram -->
+<svg class="w-full h-full object-contain select-none" fill="none" id="topology-svg-canvas" viewbox="0 0 1200 640" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Gradients -->
+<lineargradient id="gridGlow" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15"></stop>
+<stop offset="50%" stop-color="#3b82f6" stop-opacity="0.05"></stop>
+<stop offset="100%" stop-color="#0284c7" stop-opacity="0.2"></stop>
+</lineargradient>
+<lineargradient id="lineGradCyan" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#06b6d4" stop-opacity="0.2"></stop>
+<stop offset="45%" stop-color="#00e5ff" stop-opacity="0.95"></stop>
+<stop offset="100%" stop-color="#10b981" stop-opacity="0.95"></stop>
+</lineargradient>
+<lineargradient id="lineGradFailover" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"></stop>
+<stop offset="50%" stop-color="#f59e0b" stop-opacity="0.9"></stop>
+<stop offset="100%" stop-color="#10b981" stop-opacity="0.9"></stop>
+</lineargradient>
+<radialgradient cx="50%" cy="50%" id="meshCenter" r="50%">
+<stop offset="0%" stop-color="#06b6d4" stop-opacity="0.28"></stop>
+<stop offset="100%" stop-color="#06b6d4" stop-opacity="0"></stop>
+</radialgradient>
+<filter height="180%" id="glowBlur" width="180%" x="-40%" y="-40%">
+<fegaussianblur result="blur" stddeviation="6"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+<filter height="200%" id="heavyGlow" width="200%" x="-50%" y="-50%">
+<fegaussianblur result="blur" stddeviation="12"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+</defs>
+<!-- Dark canvas background with radial mesh center -->
+<rect fill="#080c14" height="640" width="1200"></rect>
+<circle cx="600" cy="300" fill="url(#meshCenter)" r="340"></circle>
+<!-- Rotating subtle radar sweep around core -->
+<g class="core-radar-spin pointer-events-none opacity-40">
+<line stroke="#00e5ff" stroke-dasharray="4 4" stroke-opacity="0.5" stroke-width="1.5" x1="600" x2="880" y1="300" y2="300"></line>
+<circle cx="600" cy="300" fill="none" r="280" stroke="#00e5ff" stroke-opacity="0.15" stroke-width="1"></circle>
+</g>
+<!-- Isometric / Topology Grid Lines -->
+<g stroke="#1e293b" stroke-opacity="0.65" stroke-width="1">
+<line x1="100" x2="1100" y1="80" y2="80"></line>
+<line x1="100" x2="1100" y1="180" y2="180"></line>
+<line x1="100" x2="1100" y1="280" y2="280"></line>
+<line x1="100" x2="1100" y1="380" y2="380"></line>
+<line x1="100" x2="1100" y1="480" y2="480"></line>
+<line x1="100" x2="1100" y1="580" y2="580"></line>
+<line x1="200" x2="200" y1="50" y2="600"></line>
+<line x1="400" x2="400" y1="50" y2="600"></line>
+<line x1="600" x2="600" y1="50" y2="600"></line>
+<line x1="800" x2="800" y1="50" y2="600"></line>
+<line x1="1000" x2="1000" y1="50" y2="600"></line>
+</g>
+<!-- Live Animated Packet Transit Arcs -->
+<!-- Base Glow Arc -->
+<path d="M 180 320 C 320 180, 480 180, 600 300 S 880 440, 1020 320" fill="none" filter="url(#glowBlur)" stroke="url(#lineGradCyan)" stroke-width="3"></path>
+<!-- Flow Stream 1 (Upper Transit Arc): Moving animated dashes -->
+<path class="animate-flow-fast" d="M 180 320 C 320 180, 480 180, 600 300 S 880 180, 1020 220" fill="none" id="path-upper-flow" stroke="#00e5ff" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Flow Stream 2 (Lower Transit Arc): Moving animated dashes -->
+<path class="animate-flow-line" d="M 180 320 C 320 440, 460 420, 600 300 S 840 460, 1020 420" fill="none" id="path-lower-flow" stroke="#38bdf8" stroke-linecap="round" stroke-opacity="0.85" stroke-width="2"></path>
+<!-- Dynamic Failover Ring Layer (Activated in Failover mode) -->
+<g class="transition-opacity duration-500 opacity-20" id="group-failover-ring" style="opacity: 1;">
+<ellipse cx="600" cy="320" fill="none" rx="420" ry="170" stroke="#f59e0b" stroke-dasharray="10 6" stroke-width="2.5"></ellipse>
+<path class="animate-flow-alt" d="M 180 320 C 180 120, 1020 120, 1020 220" fill="none" stroke="#f59e0b" stroke-width="2"></path>
+<rect fill="#141a26" height="24" rx="4" stroke="#f59e0b" width="170" x="515" y="138"></rect>
+<text fill="#f59e0b" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" text-anchor="middle" x="600" y="154">⚡ SCTP BACKUP PATH B</text>
+</g>
+<!-- Dynamic HSM Security Layer (Activated in HSM mode) -->
+<g class="transition-opacity duration-500 opacity-0" id="group-hsm-security" style="opacity: 0;">
+<circle cx="600" cy="300" fill="none" r="95" stroke="#d0bcff" stroke-dasharray="6 4" stroke-width="2"></circle>
+<rect fill="#1e1538" height="26" rx="6" stroke="#a78bfa" width="220" x="490" y="222"></rect>
+<text fill="#e9ddff" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" text-anchor="middle" x="600" y="239">🔒 HARDWARE HSM : FIPS 140-3</text>
+<!-- Floating crypto keys -->
+<text fill="#b395ff" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle" x="380" y="220">HMAC-SHA256 [VALID]</text>
+<text fill="#b395ff" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle" x="820" y="220">PDU ENCRYPTED (AES-GCM)</text>
+</g>
+<!-- Real-time Animated Transit Particles (SVG animateMotion for high performance) -->
+<!-- Packet 1: REST Ingress -> Core LCR Engine -->
+<g id="packet-motion-1">
+<circle fill="#00e5ff" filter="url(#heavyGlow)" r="6">
+<animatemotion dur="2.4s" path="M 180 320 C 320 180, 480 180, 600 300" repeatcount="indefinite"></animatemotion>
+</circle>
+<circle fill="#ffffff" r="2.5">
+<animatemotion dur="2.4s" path="M 180 320 C 320 180, 480 180, 600 300" repeatcount="indefinite"></animatemotion>
+</circle>
+</g>
+<!-- Packet 2: SMPP Ingress -> Core LCR Engine (Staggered offset) -->
+<g id="packet-motion-2">
+<circle fill="#38bdf8" filter="url(#heavyGlow)" r="5">
+<animatemotion begin="1.2s" dur="2.4s" path="M 180 320 C 320 440, 460 420, 600 300" repeatcount="indefinite"></animatemotion>
+</circle>
+<circle fill="#ffffff" r="2">
+<animatemotion begin="1.2s" dur="2.4s" path="M 180 320 C 320 440, 460 420, 600 300" repeatcount="indefinite"></animatemotion>
+</circle>
+</g>
+<!-- Packet 3: Core LCR Engine -> Tier-1 Telco Interconnects -->
+<g id="packet-motion-3">
+<circle fill="#10b981" filter="url(#heavyGlow)" r="6">
+<animatemotion begin="0.4s" dur="2.0s" path="M 600 300 S 880 180, 1020 220" repeatcount="indefinite"></animatemotion>
+</circle>
+<circle fill="#ffffff" r="2.5">
+<animatemotion begin="0.4s" dur="2.0s" path="M 600 300 S 880 180, 1020 220" repeatcount="indefinite"></animatemotion>
+</circle>
+</g>
+<!-- Packet 4: Core LCR Engine -> SMS-C Aggregators -->
+<g id="packet-motion-4">
+<circle fill="#00e5ff" filter="url(#heavyGlow)" r="5.5">
+<animatemotion begin="1.3s" dur="2.2s" path="M 600 300 S 840 460, 1020 420" repeatcount="indefinite"></animatemotion>
+</circle>
+<circle fill="#ffffff" r="2">
+<animatemotion begin="1.3s" dur="2.2s" path="M 600 300 S 840 460, 1020 420" repeatcount="indefinite"></animatemotion>
+</circle>
+</g>
+<!-- INGRESS NODE (Left) -->
+<g class="cursor-pointer transition-transform duration-200 hover:scale-105" onclick="triggerNodeInspect('ingress')" transform="translate(180, 320)"><circle class="core-pulse-aura" fill="#06b6d4" r="44"></circle><circle fill="#0f172a" r="36" stroke="#06b6d4" stroke-width="2.5"></circle><circle fill="#06b6d4" filter="url(#glowBlur)" r="12"></circle><circle fill="#ffffff" r="5"></circle><text fill="#94a3b8" font-family="Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="0.5" text-anchor="middle" x="0" y="56">DHAKA INGRESS / BD-IX</text><rect fill="#080c14" height="18" rx="4" stroke="#06b6d4" stroke-opacity="0.4" width="112" x="-56" y="64"></rect><text fill="#00e5ff" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" text-anchor="middle" x="0" y="77">SMW4/5 + 50k MPS</text></g>
+<!-- CORE MATRIX NODE (Center: Autonomous LCR Engine) -->
+<g class="cursor-pointer transition-transform duration-200 hover:scale-105" onclick="triggerNodeInspect('lcr')" transform="translate(600, 300)">
+<!-- Pulsing Glow Ring Behind Kernel -->
+<rect class="core-pulse-aura" fill="#00e5ff" height="106" rx="18" width="136" x="-68" y="-53"></rect>
+<rect fill="#0b1329" height="96" rx="14" stroke="#38bdf8" stroke-width="2.5" width="128" x="-64" y="-48"></rect>
+<!-- Center Microchip Icon -->
+<circle cx="0" cy="-12" fill="#06b6d4" fill-opacity="0.25" r="15"></circle>
+<path d="M-9 -12 L9 -12 M0 -21 L0 -3" stroke="#00e5ff" stroke-linecap="round" stroke-width="2.5"></path>
+<circle cx="0" cy="-12" fill="#ffffff" r="3"></circle>
+<text fill="#ffffff" font-family="Inter, sans-serif" font-size="13" font-weight="800" text-anchor="middle" x="0" y="15">LCR Engine</text>
+<!-- Dynamic Ticking Decision Badge -->
+<rect fill="#080c14" height="18" rx="4" stroke="#10b981" stroke-opacity="0.6" width="102" x="-51" y="21"></rect>
+<text fill="#10b981" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" id="svg-lcr-decision-text" text-anchor="middle" x="0" y="34">&lt; 0.40ms Decision</text>
+</g>
+<!-- EGRESS NODE 1: Tier-1 Telco Interconnects (Right Top) -->
+<g class="cursor-pointer transition-transform duration-200 hover:scale-105" onclick="triggerNodeInspect('telco')" transform="translate(1020, 220)"><circle class="core-pulse-aura" fill="#10b981" r="34"></circle><circle fill="#0f172a" r="28" stroke="#10b981" stroke-width="2.5"></circle><circle fill="#10b981" filter="url(#glowBlur)" r="8"></circle><circle fill="#ffffff" r="3"></circle><text fill="#94a3b8" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle" x="0" y="46">Grameenphone (470-01)</text><rect fill="#080c14" height="16" rx="4" stroke="#10b981" stroke-opacity="0.4" width="138" x="-69" y="52"></rect><text fill="#10b981" font-family="JetBrains Mono, monospace" font-size="9" font-weight="600" text-anchor="middle" x="0" y="64">GP Direct SS7 &amp; SMPP</text></g>
+<!-- EGRESS NODE 2: Global SMS-C Aggregators (Right Bottom) -->
+<g class="cursor-pointer transition-transform duration-200 hover:scale-105" onclick="triggerNodeInspect('aggregator')" transform="translate(1020, 420)"><circle class="core-pulse-aura" fill="#38bdf8" r="34"></circle><circle fill="#0f172a" r="28" stroke="#38bdf8" stroke-width="2.5"></circle><circle fill="#38bdf8" filter="url(#glowBlur)" r="8"></circle><circle fill="#ffffff" r="3"></circle><text fill="#94a3b8" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle" x="0" y="46">Robi &amp; Banglalink MNO</text><rect fill="#080c14" height="16" rx="4" stroke="#38bdf8" stroke-opacity="0.4" width="144" x="-72" y="52"></rect><text fill="#38bdf8" font-family="JetBrains Mono, monospace" font-size="9" font-weight="600" text-anchor="middle" x="0" y="64">Robi (470-02) / BL (470-03)</text></g>
+</svg>
+</div>
+<!-- Topology Legend Details with Active Step Switching Highlights -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"><div class="p-3.5 rounded-lg bg-noc-900 border border-noc-800 transition-all hover:border-noc-cyan" id="step-card-ingress"><div class="text-xs font-mono text-noc-cyan font-bold uppercase mb-1 flex items-center justify-between"><span class="">1. Dhaka PoP Ingress</span><span class="text-[10px] px-1.5 py-0.5 rounded bg-noc-800 text-noc-cyan border border-noc-700">0.04ms Ingress</span></div><p class="text-xs text-slate-400">REST API v2.4, gRPC, and SMPP transceivers connected via SEA-ME-WE 4 &amp; 5 Cox's Bazar backhaul to BDHub &amp; Summit IX.</p></div><div class="p-3.5 rounded-lg bg-noc-900 border border-noc-800 transition-all hover:border-noc-cyan" id="step-card-kernel"><div class="text-xs font-mono text-white font-bold uppercase mb-1 flex items-center justify-between"><span class="">2. BDT LCR Routing Matrix</span><span class="text-[10px] px-1.5 py-0.5 rounded bg-noc-800 text-noc-emerald border border-noc-700" id="step-card-decision-badge">0.40ms LCR</span></div><p class="text-xs text-slate-400">Dynamic least-cost carrier switching across GP, Robi, BL, and Teletalk with automated BTRC sender ID whitelist caching.</p></div><div class="p-3.5 rounded-lg bg-noc-900 border border-noc-800 transition-all hover:border-noc-emerald" id="step-card-egress"><div class="text-xs font-mono text-noc-emerald font-bold uppercase mb-1 flex items-center justify-between"><span class="">3. Direct MNO Egress</span><span class="text-[10px] px-1.5 py-0.5 rounded bg-noc-800 text-noc-emerald border border-noc-700">4 MNO Direct Binds</span></div><p class="text-xs text-slate-400">Direct multi-homed SCTP associations terminating directly at Grameenphone, Robi, Banglalink, and Teletalk SMSCs.</p></div></div>
+</div>
+</div>
+<!-- Dynamic Topology Script -->
+<script>
+  let isSimActive = true;
+  let activeMode = 'flow';
+  let baseIngress = 1310;
+  let baseDrain = 1287;
+  let packetIdx = 0;
+
+  const mockPackets = [
+    { type: 'OTP 2FA', route: 'LCR: BICS Global (38ms, $0.0078)', color: '#00e5ff' },
+    { type: 'AUTH PIN', route: 'LCR: Tata Direct-TX (42ms, $0.0074)', color: '#10b981' },
+    { type: 'ALERT 10DLC', route: 'LCR: Orange Wholesale (35ms, $0.0081)', color: '#38bdf8' },
+    { type: 'NOTIF PUSH', route: 'LCR: Vodafone Carrier (39ms, $0.0076)', color: '#00e5ff' }
+  ];
+
+  // Dynamic Telemetry Jitter Loop
+  setInterval(() => {
+    if (!isSimActive) return;
+
+    // Ingress / Drain slight realistic jitter
+    const ingressDelta = Math.floor((Math.random() - 0.48) * 18);
+    const drainDelta = Math.floor((Math.random() - 0.5) * 16);
+    const currentIngress = Math.max(1280, baseIngress + ingressDelta);
+    const currentDrain = Math.max(1260, baseDrain + drainDelta);
+
+    const ingressEl = document.getElementById('live-ingress-val');
+    const drainEl = document.getElementById('live-drain-val');
+    if (ingressEl) ingressEl.innerText = `${currentIngress.toLocaleString()} MPS`;
+    if (drainEl) drainEl.innerText = `${currentDrain.toLocaleString()} MPS`;
+
+    // Decision time jitter (0.36ms - 0.41ms)
+    const microLatency = (0.36 + Math.random() * 0.05).toFixed(2);
+    const svgLcrText = document.getElementById('svg-lcr-decision-text');
+    const heroLcr = document.getElementById('hero-lcr-val');
+    const stepLcrBadge = document.getElementById('step-card-decision-badge');
+    if (svgLcrText) svgLcrText.textContent = `< ${microLatency}ms Decision`;
+    if (heroLcr) heroLcr.textContent = `${microLatency} ms`;
+    if (stepLcrBadge) stepLcrBadge.textContent = `${microLatency}ms LCR`;
+
+    // Update simulation status label if live
+    const simLabel = document.getElementById('sim-status-text');
+    if (simLabel && isSimActive) {
+      simLabel.textContent = `LIVE STREAM: ${currentIngress.toLocaleString()} MPS`;
+    }
+  }, 1600);
+
+  // Rotate sample packet badge
+  setInterval(() => {
+    if (!isSimActive) return;
+    packetIdx = (packetIdx + 1) % mockPackets.length;
+    const p = mockPackets[packetIdx];
+    const badgeRoute = document.getElementById('badge-route-desc');
+    const flightBadge = document.getElementById('packet-flight-badge');
+    if (badgeRoute && flightBadge) {
+      flightBadge.classList.add('opacity-40');
+      setTimeout(() => {
+        badgeRoute.textContent = p.route;
+        flightBadge.classList.remove('opacity-40');
+      }, 300);
+    }
+  }, 4200);
+
+  // Switch Modes
+  function switchTopologyMode(mode) {
+    activeMode = mode;
+    const tabFlow = document.getElementById('tab-btn-flow');
+    const tabFailover = document.getElementById('tab-btn-failover');
+    const tabHsm = document.getElementById('tab-btn-hsm');
+
+    const failoverGroup = document.getElementById('group-failover-ring');
+    const hsmGroup = document.getElementById('group-hsm-security');
+    const modeStateTag = document.getElementById('mode-state-tag');
+    const modeStateBullet = document.getElementById('mode-state-bullet');
+    const modeStateTitle = document.getElementById('mode-state-title');
+
+    // Reset base button styles
+    [tabFlow, tabFailover, tabHsm].forEach(btn => {
+      btn.className = 'px-3 py-1.5 rounded text-slate-400 hover:text-white transition-colors';
+    });
+
+    if (mode === 'flow') {
+      tabFlow.className = 'px-3 py-1.5 rounded bg-noc-800 text-noc-cyan font-semibold border border-noc-600/60 transition-all';
+      failoverGroup.style.opacity = '0.2';
+      hsmGroup.style.opacity = '0';
+      modeStateBullet.className = 'w-1.5 h-1.5 rounded-full bg-noc-cyan';
+      modeStateTitle.textContent = 'MODE: DYNAMIC PIPELINE ACTIVE';
+    } else if (mode === 'failover') {
+      tabFailover.className = 'px-3 py-1.5 rounded bg-noc-800 text-amber-400 font-semibold border border-amber-600/60 transition-all';
+      failoverGroup.style.opacity = '1';
+      hsmGroup.style.opacity = '0';
+      modeStateBullet.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+      modeStateTitle.textContent = 'MODE: SCTP DUAL-HOMING FAILOVER RING ACTIVE';
+    } else if (mode === 'hsm') {
+      tabHsm.className = 'px-3 py-1.5 rounded bg-noc-800 text-purple-300 font-semibold border border-purple-500/60 transition-all';
+      failoverGroup.style.opacity = '0.1';
+      hsmGroup.style.opacity = '1';
+      modeStateBullet.className = 'w-1.5 h-1.5 rounded-full bg-purple-400';
+      modeStateTitle.textContent = 'MODE: HSM HARDWARE ACCELERATION & HMAC VERIFY';
+    }
+  }
+
+  // Toggle Live Simulation Play / Pause
+  function toggleSimulation() {
+    isSimActive = !isSimActive;
+    const dot = document.getElementById('sim-status-dot');
+    const txt = document.getElementById('sim-status-text');
+    const motions = ['packet-motion-1', 'packet-motion-2', 'packet-motion-3', 'packet-motion-4'];
+
+    if (isSimActive) {
+      dot.className = 'w-2 h-2 rounded-full bg-noc-emerald animate-pulse';
+      txt.textContent = 'LIVE STREAM: 1,320 MPS';
+      motions.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'block';
+      });
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+      txt.textContent = 'SIMULATION PAUSED';
+      motions.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
+  }
+
+  // Highlight step card when a node is clicked
+  function triggerNodeInspect(type) {
+    const cardMap = {
+      'ingress': 'step-card-ingress',
+      'lcr': 'step-card-kernel',
+      'telco': 'step-card-egress',
+      'aggregator': 'step-card-egress'
+    };
+    const targetId = cardMap[type];
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+      targetEl.classList.add('ring-2', 'ring-noc-cyan', 'bg-noc-800');
+      setTimeout(() => {
+        targetEl.classList.remove('ring-2', 'ring-noc-cyan', 'bg-noc-800');
+      }, 1500);
+    }
+  }
+</script>
+</section>
+<!-- END: ArchitectureTopology -->
+<!-- BEGIN: ProtocolComparison -->
+<section class="py-20 bg-noc-950 border-b border-noc-800" id="protocols"><div class="max-w-[1440px] mx-auto px-6"><div class="text-center max-w-3xl mx-auto mb-14"><div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-noc-900 border border-noc-700 text-noc-cyan font-mono text-xs uppercase tracking-wider font-semibold mb-3"><span class="w-1.5 h-1.5 rounded-full bg-noc-cyan animate-pulse"></span> Platform Capabilities</div><h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Messaging Technology</h2><p class="text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">Unlock the full potential of text messaging with the top-notch features of our futuristic platform. Whether promotional campaigns or transactional/service SMS, get it done with ease and accuracy.</p></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all hover:shadow-glow-cyan-sm group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-cyan-950/60 border border-cyan-800/60 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-cyan border border-noc-700">Core Protocol</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Multi-Protocol Support</h3><p class="text-xs text-slate-400 leading-relaxed">SMPP 3.4/5.0, SS7/SIGTRAN M3UA, HTTP REST v2.4, gRPC streaming, and official WhatsApp Business Cloud API with seamless protocol translation.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-cyan flex items-center justify-between"><span class="text-slate-400">PARITY</span><span>0-Hop Transcoding</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-emerald transition-all hover:shadow-glow-emerald group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-emerald-950/60 border border-emerald-800/60 text-noc-emerald"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-emerald border border-noc-700">Omnichannel</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-emerald transition-colors">Effortless Campaign Management</h3><p class="text-xs text-slate-400 leading-relaxed">Unified scheduler for promotional blasts and transactional flows with dynamic template tags, A/B variant testing, and coordinated WhatsApp fallback.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-emerald flex items-center justify-between"><span class="text-slate-400">CAPACITY</span><span>100k MPS Batch</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all hover:shadow-glow-cyan-sm group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-cyan-950/60 border border-cyan-800/60 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-cyan border border-noc-700">Intelligence</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Advanced Routing Capabilities</h3><p class="text-xs text-slate-400 leading-relaxed">Dynamic least-cost routing (LCR), quality-based routing (QBR), latency ceilings, weight-based distribution, and zero-hop circuit failover rings.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-cyan flex items-center justify-between"><span class="text-slate-400">DECISION</span><span>&lt; 0.36ms Latency</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-noc-800 border border-noc-700 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-slate-300 border border-noc-700">Multi-Tenant</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Multi-Level Client Management</h3><p class="text-xs text-slate-400 leading-relaxed">Hierarchical admin, wholesale aggregator, sub-reseller, and enterprise tenant structures with granular role-based permissions and sub-account controls.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-slate-400 flex items-center justify-between"><span>HIERARCHY</span><span class="text-white font-bold">Unlimited Resellers</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-noc-800 border border-noc-700 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-slate-300 border border-noc-700">Monetization</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Bundle &amp; Package Management</h3><p class="text-xs text-slate-400 leading-relaxed">Custom SMS volume tiers, expiration rules, automated bundle rollover, tiered discounts, and hybrid SMS plus WhatsApp quota packages.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-slate-400 flex items-center justify-between"><span>FLEXIBILITY</span><span class="text-noc-cyan font-bold">Hybrid Quotas</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-amber-400 transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-amber-950/50 border border-amber-800/50 text-amber-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-amber-400 border border-noc-700">Compliance</span></div><h3 class="text-base font-bold text-white group-hover:text-amber-400 transition-colors">Content Whitelisting &amp; Filtering</h3><p class="text-xs text-slate-400 leading-relaxed">Automated BTRC / DLT header and template validation, regex anti-phishing filters, blacklisted keyword traps, and dynamic sender ID transformation.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-amber-400 flex items-center justify-between"><span class="text-slate-400">STANDARDS</span><span>BTRC &amp; DLT 100%</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-emerald transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-emerald-950/60 border border-emerald-800/60 text-noc-emerald"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-emerald border border-noc-700">Signal Core</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-emerald transition-colors">MNP Dipping &amp; HLR Lookup</h3><p class="text-xs text-slate-400 leading-relaxed">Real-time Mobile Number Portability cache, live HLR queries, and SRI-SM dipping to eliminate misrouted traffic across GP, Robi, BL, and Teletalk.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-emerald flex items-center justify-between"><span class="text-slate-400">ACCURACY</span><span>Real-Time SRI-SM</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-cyan-950/60 border border-cyan-800/60 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-cyan border border-noc-700">Tariffs</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Pricing &amp; Rate Management</h3><p class="text-xs text-slate-400 leading-relaxed">Seamless CSV/Excel carrier rate-sheet ingestion, automated currency conversions, future-effective date scheduling, and min-margin thresholds.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-cyan flex items-center justify-between"><span class="text-slate-400">RATES</span><span>Multi-Currency BDT/USD</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-noc-800 border border-noc-700 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-slate-300 border border-noc-700">Finance</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Invoice &amp; Billing Cycles</h3><p class="text-xs text-slate-400 leading-relaxed">Automated PDF/NDJSON tax invoicing, CDR export reconciliation, custom billing periods, credit limit notifications, and settlement logs.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-slate-400 flex items-center justify-between"><span>OUTPUT</span><span class="text-white font-bold">Auto Tax Invoices</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-emerald transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-emerald-950/60 border border-emerald-800/60 text-noc-emerald"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-emerald border border-noc-700">Ledger</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-emerald transition-colors">Multiple Billing Logic</h3><p class="text-xs text-slate-400 leading-relaxed">Support for Prepaid wallet deduction, Postpaid credit limit, Pay-as-you-go, Per-message, Per-second billing, and committed volume tiers.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-emerald flex items-center justify-between"><span class="text-slate-400">MODELS</span><span>Prepaid &amp; Postpaid</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-cyan-950/60 border border-cyan-800/60 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-cyan border border-noc-700">Deep NOC</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Advanced Analytics &amp; Reports</h3><p class="text-xs text-slate-400 leading-relaxed">PDU-level audit trail, delivery latency curves, regional carrier heatmaps, error-code breakdown, and scheduled executive email digests.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-cyan flex items-center justify-between"><span class="text-slate-400">RESOLUTION</span><span>Microsecond PDU Logs</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-purple-400 transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-noc-800 border border-noc-700 text-purple-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-purple-400 border border-noc-700">Zero-Trust</span></div><h3 class="text-base font-bold text-white group-hover:text-purple-400 transition-colors">Security &amp; Access Control</h3><p class="text-xs text-slate-400 leading-relaxed">FIDO2 / WebAuthn MFA, strict IP/CIDR allowlisting, end-to-end TLS 1.3 encryption, carrier-grade HMAC webhook signing, and immutable audit logs.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-purple-400 flex items-center justify-between"><span class="text-slate-400">AUTH</span><span>FIDO2 &amp; IP Allowlist</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-emerald transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-emerald-950/60 border border-emerald-800/60 text-noc-emerald"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-emerald border border-noc-700">Gateways</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-emerald transition-colors">Online Payment Support</h3><p class="text-xs text-slate-400 leading-relaxed">Direct integration with bKash, Nagad, Stripe, SSLCommerz, and automated bank wire reconciliation for instant automated balance top-ups.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-emerald flex items-center justify-between"><span class="text-slate-400">INTEGRATION</span><span>bKash, Nagad, Stripe</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-cyan-950/60 border border-cyan-800/60 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-noc-cyan border border-noc-700">Risk Engine</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Never Go Negative</h3><p class="text-xs text-slate-400 leading-relaxed">Sub-millisecond atomic balance reservations prevent overdraft across concurrent high-frequency SMPP binds and REST bursts.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-noc-cyan flex items-center justify-between"><span class="text-slate-400">PROTECTION</span><span>Atomic Balance Lock</span></div></div><div class="rounded-xl border border-noc-700 bg-noc-900 p-5 flex flex-col justify-between hover:border-noc-cyan transition-all group"><div class="space-y-2.5"><div class="flex items-center justify-between"><span class="p-2 rounded bg-noc-800 border border-noc-700 text-noc-cyan"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span><span class="font-mono text-[10px] uppercase px-2 py-0.5 rounded bg-noc-800 text-slate-300 border border-noc-700">Global Telco</span></div><h3 class="text-base font-bold text-white group-hover:text-noc-cyan transition-colors">Roaming Data Packages</h3><p class="text-xs text-slate-400 leading-relaxed">Intelligent outbound roaming subscriber detection, dynamic MCC/MNC bundle routing, and cross-border partner tariff synchronization.</p></div><div class="mt-4 pt-3 border-t border-noc-800 text-[11px] font-mono text-slate-400 flex items-center justify-between"><span>CORRIDOR</span><span class="text-white font-bold">MCC/MNC Auto-Detect</span></div></div></div></div></section>
+<!-- END: ProtocolComparison -->
+<!-- BEGIN: LiveConsoleShowcase -->
+<section class="py-20 bg-noc-900 border-b border-noc-800 relative" id="noc-telemetry">
+<div class="max-w-[1440px] mx-auto px-6">
+<div class="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-8 gap-4">
+<div>
+<span class="text-xs font-mono text-noc-cyan uppercase tracking-wider font-semibold">Live Operational Visibility</span>
+<h2 class="text-3xl font-extrabold text-white mt-1">Carrier Network Operations Center (NOC)</h2>
+<p class="text-slate-400 text-sm mt-2 max-w-2xl">
+              Inspect upstream SMPP throughput, delivery latency curves, regional MNO success rates, and live message ingestion down to the individual hex PDU.
+            </p>
+</div>
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-950/80 border border-emerald-800 text-noc-emerald font-mono text-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-noc-emerald animate-ping"></span>
+              STREAMING 50 EPS
+            </span>
+<a class="px-4 py-1.5 rounded border border-noc-cyan bg-noc-cyan/10 hover:bg-noc-cyan text-noc-cyan hover:text-noc-950 font-mono text-xs font-semibold transition-all" href="#console">
+              Launch Live NOC Console
+            </a>
+</div>
+</div>
+<!-- Dashboard Image Frame Representation based on {{DATA:SCREEN:SCREEN_26}} -->
+<div class="relative rounded-2xl border-2 border-noc-700/80 bg-noc-950 p-2 lg:p-3 shadow-2xl overflow-hidden group">
+<!-- Decorative Top Bar mimicking Browser / NOC OS window header -->
+<div class="flex items-center justify-between px-3 py-2 bg-noc-900 rounded-t-lg border-b border-noc-800 font-mono text-xs text-slate-400"><div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-rose-500/80"></span><span class="w-3 h-3 rounded-full bg-amber-500/80"></span><span class="w-3 h-3 rounded-full bg-emerald-500/80"></span><span class="ml-2 text-slate-300">MsgSync NOC Telemetry [Cluster: BD-DHK-01 (Dhaka Mohakhali DC) // SMW5 / SMW4 Redundant]</span></div><div class="flex items-center gap-4 text-[11px]"><span class="text-noc-cyan">DLR: 99.96%</span><span class="text-noc-emerald">Protocols: SMPP 3.4 + SS7 M3UA</span><span class="text-slate-500">UTC 14:32:08.419</span></div></div>
+<!-- NOC Dashboard Snapshot container with mock UI mirroring screenshot -->
+<div class="relative bg-noc-950 rounded-b-lg overflow-hidden border border-noc-800/80">
+<!-- Snapshot Preview Mockup matching layout of SCREEN_26 -->
+<div class="p-4 lg:p-6 grid grid-cols-12 gap-5 font-sans">
+<!-- Metrics Row (Top 6 cards) -->
+<div class="col-span-12 grid grid-cols-2 md:grid-cols-6 gap-3 font-mono"><div class="bg-noc-900 border border-noc-800 p-3 rounded"><div class="text-[10px] text-slate-400 uppercase">TOTAL BD SENT (TODAY)</div><div class="text-lg font-bold text-white mt-1">24,850,210</div><div class="text-[10px] text-noc-emerald">▲ +18.4% vs yest.</div></div><div class="bg-noc-900 border border-noc-800 p-3 rounded"><div class="text-[10px] text-slate-400 uppercase">DLR CONFIRMED</div><div class="text-lg font-bold text-noc-emerald mt-1">24,840,269</div><div class="text-[10px] text-slate-400">Rate: 99.96% | SLA 99.5%</div></div><div class="bg-noc-900 border border-noc-800 p-3 rounded"><div class="text-[10px] text-slate-400 uppercase">PEAK THROUGHPUT</div><div class="text-lg font-bold text-noc-cyan mt-1">2,140 <span class="text-xs font-normal">MPS</span></div><div class="text-[10px] text-slate-400">Dhaka Core | 42.8% cap</div></div><div class="bg-noc-900 border border-noc-800 p-3 rounded"><div class="text-[10px] text-slate-400 uppercase">MNOs CONNECTED</div><div class="text-lg font-bold text-noc-emerald mt-1">4/4 <span class="text-xs">ALL UP</span></div><div class="text-[10px] text-slate-400">GP • Robi • BL • Teletalk</div></div><div class="bg-noc-900 border border-noc-800 p-3 rounded"><div class="text-[10px] text-slate-400 uppercase">LATENCY P95</div><div class="text-lg font-bold text-white mt-1">18 ms</div><div class="text-[10px] text-slate-400">GP: 14ms | Robi: 16ms</div></div><div class="bg-noc-900 border border-noc-800 p-3 rounded"><div class="text-[10px] text-slate-400 uppercase">SPEND (MTD)</div><div class="text-lg font-bold text-white mt-1">৳5.96M</div><div class="text-[10px] text-noc-emerald">▼ -6.2% via LCR</div></div></div>
+<!-- Center Chart & Ingest Distribution -->
+<div class="col-span-12 lg:col-span-8 bg-noc-900 border border-noc-800 rounded-lg p-4">
+<div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-noc-800 mb-3">
+<div class="flex items-center gap-4">
+<span class="text-white font-bold">Real-Time MPS &amp; Delivery Latency Stream</span>
+<span class="text-noc-cyan flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-noc-cyan inline-block"></span> Throughput (MPS)</span>
+<span class="text-purple-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-400 inline-block"></span> p95 Latency (ms)</span>
+</div>
+<span class="text-slate-500 font-mono">1s sampling rate</span>
+</div>
+<!-- Stylized Wave SVG mimicking screen chart -->
+<div class="h-44 w-full relative flex items-end">
+<svg class="w-full h-full preserve-3d" fill="none" viewbox="0 0 700 150">
+<defs>
+<lineargradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#00E5FF" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#00E5FF" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Background Grid Lines -->
+<line stroke="#1C2436" stroke-dasharray="3 3" x1="0" x2="700" y1="30" y2="30"></line>
+<line stroke="#1C2436" stroke-dasharray="3 3" x1="0" x2="700" y1="75" y2="75"></line>
+<line stroke="#1C2436" stroke-dasharray="3 3" x1="0" x2="700" y1="120" y2="120"></line>
+<!-- Throughput Area & Line -->
+<path d="M0,130 Q120,110 200,95 T400,60 T550,45 T700,30 L700,150 L0,150 Z" fill="url(#chartGrad)"></path>
+<path d="M0,130 Q120,110 200,95 T400,60 T550,45 T700,30" stroke="#00E5FF" stroke-width="2.5"></path>
+<!-- Latency Dotted Line -->
+<path d="M0,100 Q150,115 300,110 T500,95 T700,75" stroke="#A78BFA" stroke-dasharray="4 3" stroke-width="2"></path>
+</svg>
+</div>
+<div class="grid grid-cols-4 gap-2 pt-3 border-t border-noc-800 text-[11px] font-mono text-slate-400">
+<div class="">QUEUE LAG: <span class="text-white">142 msgs</span></div>
+<div class="">INGEST: <span class="text-noc-emerald">1,310 MPS</span></div>
+<div class="">DRAIN: <span class="text-noc-cyan">1,287 MPS</span></div>
+<div class="">BUFFER: <span class="text-noc-emerald">4.8% Nominal</span></div>
+</div>
+</div>
+<!-- Protocol Distribution Donut Panel -->
+<div class="col-span-12 lg:col-span-4 bg-noc-900 border border-noc-800 rounded-lg p-4 flex flex-col justify-between"><div><div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-noc-800 mb-3"><span class="text-white font-bold">MNO Traffic &amp; Encoding</span><span class="text-slate-500">UCS-2 / GSM7</span></div><div class="flex items-center justify-center py-2"><div class="relative w-32 h-32 flex items-center justify-center"><svg class="w-full h-full -rotate-90" viewbox="0 0 36 36"><circle cx="18" cy="18" fill="none" r="14" stroke="#1C2436" stroke-width="4"></circle><circle cx="18" cy="18" fill="none" r="14" stroke="#00E5FF" stroke-dasharray="46, 100" stroke-linecap="round" stroke-width="4"></circle><circle cx="18" cy="18" fill="none" r="14" stroke="#10B981" stroke-dasharray="30, 100" stroke-dashoffset="-46" stroke-linecap="round" stroke-width="4"></circle><circle cx="18" cy="18" fill="none" r="14" stroke="#F59E0B" stroke-dasharray="18, 100" stroke-dashoffset="-76" stroke-linecap="round" stroke-width="4"></circle><circle cx="18" cy="18" fill="none" r="14" stroke="#D0BCFF" stroke-dasharray="6, 100" stroke-dashoffset="-94" stroke-linecap="round" stroke-width="4"></circle></svg><div class="absolute text-center font-mono"><div class="text-xs font-bold text-white">100%</div><div class="text-[9px] text-slate-400">BTRC SYNC</div></div></div></div></div><div class="space-y-1.5 font-mono text-xs pt-2"><div class="flex justify-between items-center text-slate-300"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-noc-cyan"></span> Grameenphone (GP)</span><span class="font-bold text-white">46.2%</span></div><div class="flex justify-between items-center text-slate-300"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-noc-emerald"></span> Robi Axiata</span><span class="font-bold text-white">30.1%</span></div><div class="flex justify-between items-center text-slate-300"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Banglalink (BL)</span><span class="font-bold text-white">18.4%</span></div><div class="flex justify-between items-center text-slate-300"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span> Teletalk (470-04)</span><span class="font-bold text-white">5.3%</span></div></div></div>
+<!-- Upstream Carrier State & Live Message Ingest Table -->
+<div class="col-span-12 bg-noc-900 border border-noc-800 rounded-lg p-4">
+<div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-noc-800 mb-3">
+<span class="text-white font-bold">Active Message Feed (Live Transit Snapshot)</span>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-noc-800 text-noc-cyan text-[11px]">ALL (50)</span>
+<span class="px-2 py-0.5 rounded text-slate-400 hover:text-white text-[11px]">DELIVERED</span>
+<span class="px-2 py-0.5 rounded text-slate-400 hover:text-white text-[11px]">FAILED</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-mono text-xs">
+<thead>
+<tr class="text-slate-400 border-b border-noc-800 text-[11px]">
+<th class="pb-2 font-medium">TIMESTAMP (UTC)</th>
+<th class="pb-2 font-medium">MESSAGE ID</th>
+<th class="pb-2 font-medium">DESTINATION</th>
+<th class="pb-2 font-medium">PROTOCOL</th>
+<th class="pb-2 font-medium">UPSTREAM ROUTE</th>
+<th class="pb-2 font-medium">STATUS</th>
+<th class="pb-2 font-medium text-right">LATENCY</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-noc-800/60 text-slate-300"><tr><td class="py-2 text-slate-400">14:32:08.419</td><td class="text-noc-cyan">msg_gp_8a19cd</td><td class="">+880 1711-******</td><td class="">SMPP 3.4</td><td class="">Grameenphone Direct</td><td class=""><span class="px-1.5 py-0.5 rounded bg-emerald-950 text-noc-emerald border border-emerald-800 text-[10px]">DELIVERED</span></td><td class="text-right text-noc-emerald">14ms</td></tr><tr><td class="py-2 text-slate-400">14:32:08.384</td><td class="text-noc-cyan">msg_rb_77c210</td><td class="">+880 1819-******</td><td class="">HTTP-REST</td><td class="">Robi Axiata Trunk</td><td class=""><span class="px-1.5 py-0.5 rounded bg-emerald-950 text-noc-emerald border border-emerald-800 text-[10px]">DELIVERED</span></td><td class="text-right text-noc-emerald">16ms</td></tr><tr><td class="py-2 text-slate-400">14:32:08.210</td><td class="text-noc-cyan">msg_bl_4901f4</td><td class="">+880 1912-******</td><td class="">SS7-M3UA</td><td class="">Banglalink Direct</td><td class=""><span class="px-1.5 py-0.5 rounded bg-emerald-950 text-noc-emerald border border-emerald-800 text-[10px]">DELIVERED</span></td><td class="text-right text-noc-emerald">18ms</td></tr><tr><td class="py-2 text-slate-400">14:32:08.095</td><td class="text-noc-cyan">msg_tt_012e88</td><td class="">+880 1552-******</td><td class="">SMPP 3.4</td><td class="">Teletalk Gov Gateway</td><td class=""><span class="px-1.5 py-0.5 rounded bg-cyan-950 text-noc-cyan border border-cyan-800 text-[10px]">SENT</span></td><td class="text-right text-slate-300">22ms</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Feature Callout Cards Layered Below Preview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-noc-800"><div class="flex items-start gap-3 p-2"><span class="text-noc-cyan text-lg">⚡</span><div><h4 class="text-xs font-bold font-mono text-white">BDT Least-Cost Routing (LCR)</h4><p class="text-[11px] text-slate-400 mt-0.5">Autonomous penny-shaving algorithm switches between GP, Robi, BL, and Teletalk within 0.32ms.</p></div></div><div class="flex items-start gap-3 p-2"><span class="text-noc-emerald text-lg">🛡️</span><div><h4 class="text-xs font-bold font-mono text-white">BTRC Sender ID Whitelist Sync</h4><p class="text-[11px] text-slate-400 mt-0.5">Instant real-time validation against the BTRC alphanumeric registry preventing carrier spoofing rejections.</p></div></div><div class="flex items-start gap-3 p-2"><span class="text-purple-400 text-lg">🔍</span><div><h4 class="text-xs font-bold font-mono text-white">Bangla Unicode (UCS-2) Engine</h4><p class="text-[11px] text-slate-400 mt-0.5">Automatic concatenation, 70-char segment boundary alignment, and zero-corrupt Bengali typography.</p></div></div></div>
+</div>
+</div>
+</section>
+<!-- END: LiveConsoleShowcase -->
+<!-- BEGIN: DeveloperSection -->
+<section class="py-20 bg-noc-950 border-b border-noc-800" id="developer">
+<div class="max-w-[1440px] mx-auto px-6">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+<!-- Left Column: Value Proposition -->
+<div class="lg:col-span-5 space-y-6">
+<span class="text-xs font-mono text-noc-cyan uppercase tracking-wider font-semibold">Engineered For Developers</span>
+<h2 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+              Built for Engineers Who Care About Every PDU Packet
+            </h2>
+<p class="text-slate-300 text-sm leading-relaxed">
+              Integrate carrier-grade SMS routing in under 10 lines of code. Configure bidirectional DLR webhooks with cryptographic HMAC signatures and instant delivery receipts.
+            </p>
+<div class="space-y-4 pt-2">
+<div class="flex items-start gap-3">
+<div class="p-1 rounded bg-noc-800 text-noc-emerald border border-noc-700">✓</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase font-mono">SDK Support in 6 Languages</h4>
+<p class="text-xs text-slate-400">Node.js, Go, Python, Java, Rust, and C++ SMPP libraries with built-in connection pooling.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-1 rounded bg-noc-800 text-noc-emerald border border-noc-700">✓</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase font-mono">Real-Time DLR Webhooks</h4>
+<p class="text-xs text-slate-400">Sub-second notification delivery with automatic exponential backoff retry policies.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-1 rounded bg-noc-800 text-noc-emerald border border-noc-700">✓</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase font-mono">OpenAPI 3.1 &amp; AsyncAPI Spec</h4>
+<p class="text-xs text-slate-400">Fully typed schemas and auto-generated mocks for your continuous CI/CD pipelines.</p>
+</div>
+</div>
+</div>
+<!-- Terminal Links -->
+<div class="pt-4 flex items-center gap-4">
+<a class="text-xs font-mono text-noc-cyan hover:underline flex items-center gap-1 font-semibold" href="#docs">
+                Explore Full API Docs →
+              </a>
+<span class="text-slate-600">|</span>
+<a class="text-xs font-mono text-slate-400 hover:text-white flex items-center gap-1" href="#openapi">
+                Download OpenAPI Spec
+              </a>
+</div>
+</div>
+<!-- Right Column: Interactive Code Sandbox -->
+<div class="lg:col-span-7">
+<div class="rounded-xl border border-noc-700 bg-noc-900 shadow-2xl overflow-hidden font-mono text-xs">
+<!-- Tab Header -->
+<div class="flex items-center justify-between px-4 py-2.5 bg-noc-950 border-b border-noc-800">
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 rounded bg-noc-800 text-noc-cyan border border-noc-700 font-semibold text-[11px]">cURL</button>
+<button class="px-3 py-1 rounded text-slate-400 hover:text-white text-[11px]">Node.js</button>
+<button class="px-3 py-1 rounded text-slate-400 hover:text-white text-[11px]">Python</button>
+<button class="px-3 py-1 rounded text-slate-400 hover:text-white text-[11px]">Go</button>
+</div>
+<div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-noc-emerald"></span>
+                  POST /v2.4/messages/otp
+                </div>
+</div>
+<!-- Code Body -->
+<div class="p-5 code-scroll overflow-x-auto text-slate-300 leading-relaxed bg-[#080C14]"><pre><code><span class="text-slate-500"># Dispatch Bangladesh 2FA OTP with UCS-2 Bengali Encoding &amp; LCR</span>
+curl -X POST https://api.msgsync.telecom.io/v2.4/messages/dispatch \
+  -H <span class="text-noc-cyan">"Authorization: Bearer ms_live_bd_89f02b3a1"</span> \
+  -H <span class="text-noc-cyan">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="text-noc-cyan">"sender_id"</span>: <span class="text-noc-emerald">"BKASH-VERIFY"</span>,
+    <span class="text-noc-cyan">"destination"</span>: <span class="text-noc-emerald">"+8801712345678"</span>,
+    <span class="text-noc-cyan">"body"</span>: <span class="text-white">"আপনার MsgSync যাচাইকরণ কোড হলো 892-411। মেয়াদ ৫ মিনিট।"</span>,
+    <span class="text-noc-cyan">"encoding"</span>: <span class="text-noc-cyan">"UCS-2"</span>,
+    <span class="text-noc-cyan">"priority"</span>: <span class="text-amber-400">"FLASH_HIGH"</span>,
+    <span class="text-noc-cyan">"routing_policy"</span>: {
+      <span class="text-noc-cyan">"engine"</span>: <span class="text-noc-emerald">"LCR_BANGLADESH_BDT"</span>,
+      <span class="text-noc-cyan">"max_latency_ms"</span>: <span class="text-purple-400">40</span>,
+      <span class="text-noc-cyan">"allowed_mno"</span>: [<span class="text-noc-emerald">"GRAMEENPHONE"</span>, <span class="text-noc-emerald">"ROBI_AXIATA"</span>, <span class="text-noc-emerald">"BANGLALINK"</span>]
+    },
+    <span class="text-noc-cyan">"webhook_dlr"</span>: <span class="text-noc-emerald">"https://fintech.dhaka.com.bd/hooks/dlr"</span>
+  }'</code></pre></div>
+<!-- Terminal Response Output Preview -->
+<div class="p-4 bg-noc-950 border-t border-noc-800 text-[11px] text-slate-400"><div class="text-slate-400 font-bold mb-1 flex items-center justify-between"><span class="text-noc-emerald">✓ 202 ACCEPTED (Queued for Bangladesh MNO Trunk)</span><span class="text-slate-500">Time: 0.31ms</span></div><div class="text-slate-400">{ <span class="text-noc-cyan">"message_id"</span>: <span class="text-white">"msg_bd_8a19cd"</span>, <span class="text-noc-cyan">"route_assigned"</span>: <span class="text-noc-emerald">"TRUNK_GP_DIRECT_DHAKA"</span>, <span class="text-noc-cyan">"dlt_status"</span>: <span class="text-white">"BTRC_WHITELIST_APPROVED"</span>, <span class="text-noc-cyan">"encoding"</span>: <span class="text-noc-cyan">"UCS-2_BANGLA"</span> }</div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: DeveloperSection -->
+<!-- BEGIN: CarrierInterconnectNetwork -->
+<section class="py-20 bg-noc-950 border-b border-noc-800 relative" id="why-msgsync"><div class="max-w-[1440px] mx-auto px-6"><div class="text-center max-w-3xl mx-auto mb-14"><span class="text-xs font-mono text-noc-cyan uppercase tracking-wider font-semibold">Strategic Advantage</span><h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2 tracking-tight">Why MsgSync</h2><p class="text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">Watch this quick overview to discover how the MsgSync SMS Platform can revolutionize your SMS business.</p></div><div class="mb-16 rounded-2xl border border-noc-700 bg-noc-900 shadow-2xl overflow-hidden"><div class="flex items-center justify-between px-4 py-2.5 bg-noc-950 border-b border-noc-800 font-mono text-xs text-slate-400"><div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-rose-500/80"></span><span class="w-3 h-3 rounded-full bg-amber-500/80"></span><span class="w-3 h-3 rounded-full bg-emerald-500/80"></span><span class="ml-2 text-slate-300 font-semibold">MsgSync OS — Telecom Architecture &amp; Campaign Orchestration Tour</span></div><div class="hidden sm:flex items-center gap-3 text-[11px]"><span class="px-2 py-0.5 rounded bg-noc-800 border border-noc-700 text-noc-cyan">4K UHD 60FPS</span><span class="text-noc-emerald">NOC OVERVIEW</span></div></div><div class="relative aspect-[16/9] max-h-[500px] w-full bg-[#080C14] flex items-center justify-center telecom-grid-bg overflow-hidden group"><div class="absolute inset-0 bg-gradient-to-t from-noc-950 via-transparent to-transparent opacity-80 pointer-events-none"></div><div class="absolute top-6 left-6 z-10 font-mono text-xs space-y-1 text-slate-400"><div class="text-white font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-noc-emerald animate-pulse"></span> ARCHITECTURE SIMULATION</div><div class="text-[11px] text-slate-400">Cluster: Dhaka Central • Multi-Tenant Kernel • SIGTRAN + REST</div></div><div class="absolute top-6 right-6 z-10 font-mono text-xs text-right text-slate-400"><div class="text-noc-cyan font-bold">99.999% SLA</div><div class="text-[11px] text-slate-400">Millions SMS/Hour</div></div><div class="relative z-20 flex flex-col items-center text-center p-6"><button class="w-20 h-20 rounded-full bg-noc-cyan/20 border-2 border-noc-cyan flex items-center justify-center text-noc-cyan shadow-glow-cyan hover:scale-110 hover:bg-noc-cyan hover:text-noc-950 transition-all duration-300 cursor-pointer"><svg class="w-8 h-8 translate-x-0.5" fill="currentColor" viewbox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></button><div class="mt-4 font-mono text-sm font-semibold text-white tracking-wide">Launch Interactive Product Tour</div><div class="text-xs text-slate-400 mt-1 max-w-md">See how our high-velocity engine routes SMS &amp; WhatsApp campaigns, verifies DLT whitelisting, and prevents negative balances in real time.</div></div><div class="absolute bottom-0 inset-x-0 bg-noc-950/90 border-t border-noc-800 p-3 flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-slate-400"><div class="flex items-center gap-4"><span>ENGINE: <strong class="text-white">K8s + BullMQ</strong></span><span class="text-slate-600">|</span><span>ENCODING: <strong class="text-noc-cyan">UCS-2 Bengali</strong></span><span class="text-slate-600">|</span><span>LCR: <strong class="text-noc-emerald">&lt; 0.40ms</strong></span></div><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-noc-cyan animate-ping"></span><span class="text-noc-cyan">LIVE DEMO READY</span></div></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-cyan transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-cyan">01</div><h4 class="font-bold text-white group-hover:text-noc-cyan transition-colors">User-Friendly Interface</h4></div><p class="text-xs text-slate-400 leading-relaxed">Engineered with dual ergonomics: intuitive campaign creation for business marketers and dense telemetry controls for telecom NOC engineers.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-emerald transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-emerald">02</div><h4 class="font-bold text-white group-hover:text-noc-emerald transition-colors">Telco-Grade Solution</h4></div><p class="text-xs text-slate-400 leading-relaxed">Zero-downtime rolling deploys, automated failover rings, and a verified 99.999% carrier-availability SLA ensuring uninterrupted message transit.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-cyan transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-cyan">03</div><h4 class="font-bold text-white group-hover:text-noc-cyan transition-colors">Bare-Metal Server / Cloud</h4></div><p class="text-xs text-slate-400 leading-relaxed">Full architectural agility: deploy on public cloud, Equinix carrier colocation facilities, or direct on-premise telecom hardware appliance.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-cyan transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-cyan">04</div><h4 class="font-bold text-white group-hover:text-noc-cyan transition-colors">Flexible &amp; Scalable</h4></div><p class="text-xs text-slate-400 leading-relaxed">Distributed micro-cluster topology powered by Kubernetes and Redis/BullMQ, scaling dynamically to handle tens of millions of messages per hour.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-emerald transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-emerald">05</div><h4 class="font-bold text-white group-hover:text-noc-emerald transition-colors">Campaign Versatility</h4></div><p class="text-xs text-slate-400 leading-relaxed">Seamlessly orchestrate high-throughput promotional marketing, mission-critical 2FA transactional OTP, flash alerts, and interactive WhatsApp chat.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-cyan transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-cyan">06</div><h4 class="font-bold text-white group-hover:text-noc-cyan transition-colors">Integrated Payment Flexibility</h4></div><p class="text-xs text-slate-400 leading-relaxed">Native multi-currency support, multi-tier pricing, prepaid wallet top-ups, and automated postpaid credit limits with automated invoice generation.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-amber-400 transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-amber-400">07</div><h4 class="font-bold text-white group-hover:text-amber-400 transition-colors">Intelligent Routing &amp; Delivery</h4></div><p class="text-xs text-slate-400 leading-relaxed">Real-time cost and latency optimization with penny-shaving algorithms that dynamically pick the best route across Grameenphone, Robi, BL, and Teletalk.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-cyan transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-cyan">08</div><h4 class="font-bold text-white group-hover:text-noc-cyan transition-colors">24/7 Technical Support</h4></div><p class="text-xs text-slate-400 leading-relaxed">Dedicated Tier-3 telecom network engineers stationed in Dhaka and international NOC centers providing round-the-clock live routing assistance.</p></div><div class="p-5 rounded-xl border border-noc-700 bg-noc-900 hover:border-noc-emerald transition-all group"><div class="flex items-center gap-3 mb-3"><div class="w-8 h-8 rounded-lg bg-noc-800 border border-noc-700 flex items-center justify-center font-mono font-bold text-xs text-noc-emerald">09</div><h4 class="font-bold text-white group-hover:text-noc-emerald transition-colors">Licensed or Hosted Model</h4></div><p class="text-xs text-slate-400 leading-relaxed">Choose between an on-premise perpetual carrier license with direct source control or a fully managed, hands-off cloud SaaS deployment.</p></div></div></div></section><section class="py-16 bg-noc-900 border-b border-noc-800" id="interconnect">
+<div class="max-w-[1440px] mx-auto px-6 text-center"><p class="font-mono text-xs uppercase tracking-widest text-slate-400 mb-8">Direct Tier-1 Interconnects &amp; Subsea Fiber Landing Stations Across Bangladesh</p><div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center"><div class="p-4 rounded-lg bg-noc-950/60 border border-noc-800 flex flex-col items-center justify-center hover:border-noc-cyan transition-colors"><span class="font-extrabold text-white text-base tracking-wider font-mono">GRAMEENPHONE</span><span class="text-[10px] font-mono text-noc-cyan mt-1">Telenor Group • 470-01</span></div><div class="p-4 rounded-lg bg-noc-950/60 border border-noc-800 flex flex-col items-center justify-center hover:border-noc-cyan transition-colors"><span class="font-extrabold text-white text-base tracking-wider font-mono">ROBI AXIATA</span><span class="text-[10px] font-mono text-noc-emerald mt-1">Axiata Group • 470-02</span></div><div class="p-4 rounded-lg bg-noc-950/60 border border-noc-800 flex flex-col items-center justify-center hover:border-noc-cyan transition-colors"><span class="font-extrabold text-white text-base tracking-wider font-mono">BANGLALINK</span><span class="text-[10px] font-mono text-noc-cyan mt-1">VEON Telecom • 470-03</span></div><div class="p-4 rounded-lg bg-noc-950/60 border border-noc-800 flex flex-col items-center justify-center hover:border-noc-cyan transition-colors"><span class="font-extrabold text-white text-base tracking-wider font-mono">TELETALK</span><span class="text-[10px] font-mono text-noc-emerald mt-1">State Operator • 470-04</span></div><div class="p-4 rounded-lg bg-noc-950/60 border border-noc-800 flex flex-col items-center justify-center hover:border-noc-cyan transition-colors"><span class="font-extrabold text-white text-base tracking-wider font-mono">SUMMIT COMM</span><span class="text-[10px] font-mono text-noc-cyan mt-1">National ICX &amp; Fiber</span></div><div class="p-4 rounded-lg bg-noc-950/60 border border-noc-800 flex flex-col items-center justify-center hover:border-noc-cyan transition-colors"><span class="font-extrabold text-white text-base tracking-wider font-mono">BTCL / SMW-5</span><span class="text-[10px] font-mono text-noc-emerald mt-1">Cox's Bazar Cable Landing</span></div></div></div>
+</section>
+<!-- END: CarrierInterconnectNetwork -->
+<!-- BEGIN: PricingAndTrunkTiers -->
+<section class="py-20 bg-noc-950 border-b border-noc-800" id="pricing"><div class="max-w-[1440px] mx-auto px-6"><div class="text-center max-w-3xl mx-auto mb-14"><span class="text-xs font-mono text-noc-cyan uppercase tracking-wider font-semibold">Transparent Billing &amp; Trunks</span><h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2 tracking-tight">Elastic Throughput. No Middleman Markup.</h2><p class="text-slate-400 text-sm mt-3">From growing CPaaS applications to global mobile network operators routing 500M SMS per month.</p></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch"><div class="rounded-xl border border-noc-800 bg-noc-900 p-6 flex flex-col justify-between hover:border-noc-700 transition-all"><div class="space-y-4"><div class="text-xs font-mono uppercase text-slate-400 font-semibold">Bangladesh Sandbox</div><div class="flex items-baseline gap-1"><span class="text-3xl font-extrabold font-mono text-white">৳0</span><span class="text-xs text-slate-400 font-mono">/trunk</span></div><p class="text-xs text-slate-400 leading-relaxed">Test SMPP client binds, verify Bangla UCS-2 encoding, and mock BTRC DLT callbacks.</p><ul class="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-noc-800"><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> Up to 50 MPS ingress</li><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> 1x SMPP 3.4 Transceiver bind</li><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> Bangla UCS-2 auto-simulator</li><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> Synthetic MNO (GP/Robi/BL) test suite</li></ul></div><div class="mt-8 pt-4"><a class="w-full inline-flex items-center justify-center py-2.5 rounded bg-noc-800 hover:bg-noc-700 text-white font-mono text-xs font-semibold transition-colors" href="#developer">Deploy Sandbox</a></div></div><div class="rounded-xl border-2 border-noc-cyan bg-noc-900 p-6 flex flex-col justify-between shadow-glow-cyan-sm relative"><div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-noc-cyan text-noc-950 font-mono text-[10px] font-bold uppercase tracking-wider">MOST POPULAR</div><div class="space-y-4"><div class="text-xs font-mono uppercase text-noc-cyan font-semibold">Bangladesh Production Trunk</div><div class="flex items-baseline gap-1"><span class="text-3xl font-extrabold font-mono text-white">৳4,500</span><span class="text-xs text-slate-400 font-mono">/mo + wholesale usage</span></div><p class="text-xs text-slate-400 leading-relaxed">Direct access to all 4 MNOs with autonomous BDT least-cost routing enabled.</p><ul class="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-noc-800"><li class="flex items-center gap-2"><span class="text-noc-emerald">✓</span> GP ৳0.24 • Robi ৳0.25 • BL ৳0.23 • TT ৳0.21</li><li class="flex items-center gap-2"><span class="text-noc-emerald">✓</span> Up to 2,500 MPS continuous throughput</li><li class="flex items-center gap-2"><span class="text-noc-emerald">✓</span> Automated BTRC Sender ID Whitelist sync</li><li class="flex items-center gap-2"><span class="text-noc-emerald">✓</span> Full Dhaka NOC dashboard access</li><li class="flex items-center gap-2"><span class="text-noc-emerald">✓</span> 99.99% Availability SLA</li></ul></div><div class="mt-8 pt-4"><a class="w-full inline-flex items-center justify-center py-2.5 rounded bg-noc-cyan hover:bg-noc-cyan-dim text-noc-950 font-mono text-xs font-bold transition-all shadow-glow-cyan-sm" href="#interconnect">Provision Production Trunk</a></div></div><div class="rounded-xl border border-noc-800 bg-noc-900 p-6 flex flex-col justify-between hover:border-noc-700 transition-all"><div class="space-y-4"><div class="text-xs font-mono uppercase text-slate-400 font-semibold">Enterprise &amp; Telco Infrastructure</div><div class="flex items-baseline gap-1"><span class="text-3xl font-extrabold font-mono text-white">Custom</span><span class="text-xs text-slate-400 font-mono">SLA</span></div><p class="text-xs text-slate-400 leading-relaxed">Direct cross-connect at Dhaka BDHub / Summit IX and SS7/SIGTRAN M3UA peering.</p><ul class="space-y-2 text-xs font-mono text-slate-300 pt-2 border-t border-noc-800"><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> 50,000+ MPS ultra-scale capacity</li><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> Direct MNO Point Codes &amp; GTT routing</li><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> Physical 10G SFP+ BD-IX Cross-Connect</li><li class="flex items-center gap-2"><span class="text-noc-cyan">✓</span> Dedicated Dhaka NOC Engineer 24/7/365</li></ul></div><div class="mt-8 pt-4"><a class="w-full inline-flex items-center justify-center py-2.5 rounded bg-noc-800 hover:bg-noc-700 text-white font-mono text-xs font-semibold transition-colors" href="#interconnect">Speak with Telco Architect</a></div></div></div></div></section>
+<!-- END: PricingAndTrunkTiers -->
+<!-- BEGIN: CallToActionBanner -->
+<section class="py-16 bg-gradient-to-b from-noc-900 to-noc-950 border-b border-noc-800 relative">
+<div class="max-w-[1440px] mx-auto px-6 text-center">
+<div class="max-w-3xl mx-auto space-y-6">
+<h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Ready to route telecom traffic without protocol friction?
+          </h2>
+<p class="text-slate-300 text-sm">
+            Spin up a sandbox SMPP bind in under 60 seconds or initiate a carrier interconnect with our global NOC engineering team.
+          </p>
+<div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+<a class="px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-wider font-bold bg-noc-cyan hover:bg-noc-cyan-dim text-noc-950 shadow-glow-cyan transition-all" href="#sandbox">
+              Initialize Sandbox Bind
+            </a>
+<a class="px-6 py-3 rounded-lg font-mono text-xs uppercase tracking-wider font-semibold border border-noc-600 bg-noc-850 hover:bg-noc-800 text-slate-200 transition-colors" href="#interconnect">
+              Request Carrier SLA Proposal
+            </a>
+</div>
+</div>
+</div>
+</section>
+<!-- END: CallToActionBanner -->
+</main>
+<!-- BEGIN: MainFooter -->
+<footer class="bg-noc-950 text-slate-400 text-xs border-t border-noc-800/80">
+<div class="max-w-[1440px] mx-auto px-6 py-14">
+<div class="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-noc-800">
+<!-- Brand Summary Column -->
+<div class="col-span-2 space-y-4"><div class="h-8 flex items-center"><svg class="h-7 w-auto" fill="none" viewbox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><rect fill="#0E1726" height="36" rx="8" stroke="#00E5FF" stroke-width="1.5" width="36"></rect><path d="M10 24L15 14L21 22L26 12" stroke="#00E5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path><circle cx="26" cy="12" fill="#10B981" r="2.5"></circle><circle cx="10" cy="24" fill="#00E5FF" r="2"></circle><text fill="#FFFFFF" font-family="Inter, sans-serif" font-size="18" font-weight="800" letter-spacing="-0.5" x="46" y="24">Msg<tspan fill="#00E5FF">Sync</tspan></text><text fill="#64748B" font-family="JetBrains Mono, monospace" font-size="8" font-weight="600" letter-spacing="1.5" x="46" y="33">TELECOM OS</text></svg></div><p class="text-slate-400 text-xs max-w-sm leading-relaxed font-sans">The next-generation telecom operating system unifying SMPP 3.4, SS7 / SIGTRAN, and high-velocity APIs with automated least-cost routing across Bangladesh MNOs.</p><div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-noc-900 border border-noc-800 font-mono text-[10px] text-slate-300 shadow-panel-border"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-noc-emerald opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-noc-emerald"></span></span><span class="text-noc-emerald font-semibold uppercase tracking-wider">SYSTEM HEALTH:</span><span class="text-slate-300">DHAKA &amp; CHITTAGONG PoPs OPERATIONAL (BTRC SYNC OK)</span></div></div>
+<!-- Links: Platform -->
+<div><h4 class="font-mono text-[11px] font-bold text-noc-cyan uppercase tracking-widest mb-4 flex items-center gap-1.5"><span class="text-noc-cyan/50">//</span> TELECOM PLATFORM</h4><ul class="space-y-2 font-sans text-xs"><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#topology">Least Cost Routing (LCR)</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#protocols">SMPP 3.4 / 5.0 Gateway</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#protocols">SS7 / SIGTRAN M3UA</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#protocols">SCTP Multi-Homing Failover</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#noc-telemetry">Hex PDU Protocol Sniffer</a></li></ul></div>
+<!-- Links: Developers -->
+<div><h4 class="font-mono text-[11px] font-bold text-noc-cyan uppercase tracking-widest mb-4 flex items-center gap-1.5"><span class="text-noc-cyan/50">//</span> DEVELOPERS &amp; APIS</h4><ul class="space-y-2 font-sans text-xs"><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#docs">REST API Reference v2.4</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#docs">DLR Webhook Security</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#docs">Node.js / Go SDKs</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#docs">OpenAPI 3.1 Specs</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#docs">Postman Collection</a></li></ul></div>
+<!-- Links: Carrier & Compliance -->
+<div><h4 class="font-mono text-[11px] font-bold text-noc-cyan uppercase tracking-widest mb-4 flex items-center gap-1.5"><span class="text-noc-cyan/50">//</span> COMPLIANCE &amp; NOC</h4><ul class="space-y-2 font-sans text-xs"><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#interconnect">Equinix Cross-Connects</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#compliance">SOC2 Type II &amp; ISO 27001</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#compliance">HIPAA &amp; GDPR Telecom</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#compliance">10DLC Campaign Registry</a></li><li class="flex items-center gap-1.5 group"><span class="text-[10px] text-slate-600 group-hover:text-noc-cyan transition-colors font-mono">▹</span><a class="text-slate-400 hover:text-white transition-colors duration-150" href="#noc-telemetry">Live NOC Status Stream</a></li></ul></div>
+</div>
+<!-- Copyright & Bottom Disclaimers -->
+<div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-[11px] text-slate-500"><div class="flex items-center gap-2"><span class="text-slate-400">© 2025 MsgSync Telecom Technologies, Inc.</span><span class="text-slate-600">•</span><span class="text-slate-500">All rights reserved.</span></div><div class="flex items-center gap-6"><a class="text-slate-400 hover:text-noc-cyan transition-colors duration-150" href="#terms">Telecom Carrier Agreement</a><a class="text-slate-400 hover:text-noc-cyan transition-colors duration-150" href="#privacy">Data Privacy</a><a class="text-slate-400 hover:text-noc-cyan transition-colors duration-150" href="#security">Security Whitepaper</a></div></div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+</body></html>
