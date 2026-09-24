@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  externalId      String?  @unique
+  source          String
+  sourceType      String   // sms, email, push, webhook
+  sender          String
+  recipient       String
+  content         String
+  normalizedAt    DateTime @default(now())
+  originalPayload Json
+  status          String   @default("aggregated") // aggregated, processed, failed
+  analyticsData   Json?
+}
+
+model Source {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  type      String   // sms, email, push, webhook
+  config    Json
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

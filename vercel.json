@@ -1,0 +1,1 @@
+{"buildCommand":"pnpm --filter react-example build","devCommand":"pnpm --filter react-example dev","installCommand":"pnpm install","framework":"vite","outputDirectory":"apps/dist"}

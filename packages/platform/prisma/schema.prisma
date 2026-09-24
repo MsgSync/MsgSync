@@ -1,0 +1,354 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  name           String?
+  ssoId          String?      @unique
+  ssoProvider    String?      // google, github
+  avatarUrl      String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  twoFactorEnabled Boolean    @default(false)
+  twoFactorSecret  String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  action         String       // e.g., UPDATE_BRANDING, CREATE_API_KEY
+  entity         String       // e.g., Organization, ApiKey
+  entityId       String
+  userId         String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  metadata       Json?        // Old/New values or request context
+  ipAddress      String?
+  createdAt      DateTime     @default(now())
+}
+
+model Organization {
+  id          String         @id @default(uuid())
+  name        String
+  type        String         @default("CLIENT") // ADMIN, RESELLER, CLIENT
+  balance     Decimal        @default(0.0)
+  maxDailySpend Decimal      @default(100.0)
+  allowedCountries String[]  @default([]) // ISO Country Codes
+  parentId    String?
+  parent      Organization?  @relation("OrgHierarchy", fields: [parentId], references: [id])
+  subOrgs     Organization[] @relation("OrgHierarchy")
+  
+  ratePlanId  String?
+  ratePlan    RatePlan?      @relation(fields: [ratePlanId], references: [id])
+  ownedPlans  RatePlan[]     @relation("OwnedPlans")
+  
+  customDomain String?       @unique
+  logoUrl      String?
+  primaryColor String?       @default("#8b5cf6")
+  companyName  String?
+  
+  billingEmail   String?
+  billingCycle   String         @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
+  invoiceFormat  String         @default("PDF")     // PDF, EXCEL, BOTH
+  billingPolicy  String         @default("ON_SUBMISSION") // ON_ATTEMPT, ON_SUBMISSION, ON_DELIVERY
+  
+  apiKeys     ApiKey[]
+  messages    Message[]
+  campaigns   Campaign[]
+  contactLists ContactList[]
+  transactions Transaction[]
+  subscriptions BundleSubscription[]
+  senderIds   SenderId[]
+  users       User[]
+  auditLogs   AuditLog[]
+  invoices    Invoice[]
+  alerts      Alert[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Invoice {
+  id             String       @id @default(uuid())
+  number         String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  amount         Decimal      @default(0.0)
+  tax            Decimal      @default(0.0)
+  total          Decimal      @default(0.0)
+  currency       String       @default("USD")
+  status         String       @default("UNPAID") // UNPAID, PAID, VOID, OVERDUE
+  dueDate        DateTime
+  periodStart    DateTime
+  periodEnd      DateTime
+  pdfUrl         String?
+  excelUrl       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model RatePlan {
+  id             String         @id @default(uuid())
+  name           String
+  description    String?
+  currency       String         @default("USD")
+  ownerId        String?
+  owner          Organization?  @relation("OwnedPlans", fields: [ownerId], references: [id])
+  organizations  Organization[]
+  rates          Rate[]
+  isPublic       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Bundle {
+  id              String         @id @default(uuid())
+  name            String
+  description     String?
+  price           Decimal        @default(0.0)
+  smsLimit        Int            @default(0)
+  validityDays    Int            @default(30)
+  smsType         String         @default("ALL") // PROMOTIONAL, TRANSACTIONAL, OTP, ALL
+  senderIdType    String         @default("ALL") // ALPHANUMERIC, NUMERIC, SHORTCODE, ALL
+  active          Boolean        @default(true)
+  subscriptions   BundleSubscription[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model BundleSubscription {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  bundleId       String
+  bundle         Bundle       @relation(fields: [bundleId], references: [id])
+  smsRemaining   Int
+  expiresAt      DateTime
+  status         String       @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Transaction {
+  id             String       @id @default(uuid())
+  amount         Decimal
+  type           String       // CREDIT, DEBIT
+  status         String       @default("PENDING") // PENDING, COMPLETED, FAILED
+  description    String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+model Message {
+  id            String       @id @default(uuid())
+  recipient     String
+  content       String
+  provider      String?
+  status        String       @default("queued") // queued, sending, sent, delivered, failed
+  externalId    String?      @unique
+  error         String?
+  scheduledAt   DateTime     @default(now())
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  cost          Decimal      @default(0.0) // Carrier cost
+  price         Decimal      @default(0.0) // Client price
+  profile       String       @default("TRANSACTIONAL") // TRANSACTIONAL, PROMOTIONAL, OTP
+  sentiment     String?      // positive, neutral, negative
+  sentimentScore Float?      // 0.0 to 1.0
+  metadata      Json?
+  apiKeyId      String?
+  apiKey        ApiKey?      @relation(fields: [apiKeyId], references: [id])
+  campaignId    String?
+  campaign      Campaign?    @relation(fields: [campaignId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+}
+
+model ApiKey {
+  id             String         @id @default(uuid())
+  key            String         @unique
+  name           String
+  active         Boolean        @default(true)
+  allowedIps     String[]       @default([]) // IP Whitelisting
+  rateLimit      Int            @default(5)  // Messages per second
+  messages       Message[]
+  contactLists   ContactList[]
+  campaigns      Campaign[]
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Contact {
+  id        String       @id @default(uuid())
+  phone     String
+  firstName String?
+  lastName  String?
+  email     String?
+  attributes Json?       // Dynamic custom variables
+  lists     ContactList[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([phone])
+}
+
+model ContactList {
+  id             String       @id @default(uuid())
+  name           String
+  apiKeyId       String
+  apiKey         ApiKey       @relation(fields: [apiKeyId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  contacts       Contact[]
+  campaigns      Campaign[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Campaign {
+  id             String       @id @default(uuid())
+  name           String
+  template       String       // e.g. "Hello {{firstName}}, check out our sale!"
+  senderId       String?      // Custom sender ID or virtual number (e.g., "BRAND" or "+1234567890")
+  status         String       @default("draft") // draft, scheduled, running, completed, paused
+  scheduledAt    DateTime?
+  completedAt    DateTime?
+  enableTracking Boolean      @default(true)
+  enableWebhooks Boolean      @default(false)
+  apiKeyId       String
+  apiKey         ApiKey       @relation(fields: [apiKeyId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  contactListId  String
+  contactList    ContactList  @relation(fields: [contactListId], references: [id])
+  messages       Message[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Rate {
+  id             String   @id @default(uuid())
+  country        String
+  prefix         String   // e.g., "44"
+  mcc            String?  // Mobile Country Code
+  mnc            String?  // Mobile Network Code
+  networkName    String?  // e.g., "Vodafone"
+  pricePerSms    Decimal  @default(0.01) // Price charged to client
+  profile        String   @default("TRANSACTIONAL") // TRANSACTIONAL, PROMOTIONAL, OTP
+  planId         String
+  plan           RatePlan @relation(fields: [planId], references: [id])
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([planId, prefix, mcc, mnc, profile])
+}
+
+model Network {
+  id             String   @id @default(uuid())
+  country        String
+  countryCode    String   // ISO alpha-2
+  prefix         String
+  mcc            String
+  mnc            String
+  networkName    String
+  createdAt      DateTime @default(now())
+}
+
+model SenderId {
+  id             String       @id @default(uuid())
+  name           String       // e.g., "MSG_SYNC"
+  type           String       @default("ALPHANUMERIC") // ALPHANUMERIC, NUMERIC
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  status         String       @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([name, organizationId])
+}
+
+model Lookup {
+  id             String   @id @default(uuid())
+  phone          String   @unique
+  isValid        Boolean  @default(true)
+  carrier        String?
+  mcc            String?  // Mobile Country Code
+  mnc            String?  // Mobile Network Code
+  type           String?  // mobile, landline, voip
+  isPorted       Boolean  @default(false)
+  isRoaming      Boolean  @default(false)
+  lastCheckedAt  DateTime @default(now())
+  createdAt      DateTime @default(now())
+}
+
+model Provider {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  type        String   // twilio, nexmo, generic-http, smpp, ss7
+  config      Json
+  active      Boolean  @default(true)
+  priority    Int      @default(1)
+  weight      Int      @default(100)
+  costPerSms  Decimal  @default(0.005) // Our cost from the carrier
+  supportedPrefixes String[] // Optional: restrict to certain prefixes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  routingRules RoutingRule[]
+}
+
+model RoutingRule {
+  id             String    @id @default(uuid())
+  name           String
+  prefix         String?   // Global if null
+  mcc            String?   // Mobile Country Code (from HLR)
+  mnc            String?   // Mobile Network Code (from HLR)
+  organizationId String?   // Global if null
+  providerId     String
+  provider       Provider  @relation(fields: [providerId], references: [id])
+  priority       Int       @default(1)
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([prefix, mcc, mnc, organizationId, providerId])
+}
+model HlrConfig {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  baseUrl        String
+  method         String   @default("GET") // GET, POST
+  apiKey         String?
+  apiSecret      String?
+  active         Boolean  @default(true)
+  mapping        Json?    // Response mapping (e.g. { "carrier": "data.carrier_name", "ported": "data.is_ported" })
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+model Alert {
+  id             String       @id @default(uuid())
+  name           String
+  type           String       // BALANCE_LOW, DELIVERY_FAILURE_HIGH, VOLUME_SPIKE
+  threshold      Float
+  status         String       @default("ACTIVE") // ACTIVE, TRIGGERED, DISABLED
+  notificationEmail String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}

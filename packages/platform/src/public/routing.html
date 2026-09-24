@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Routing | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-failover {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            width: 500px;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo"><i data-lucide="zap"></i><span>MsgSync Console</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item active"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1>Intelligent Routing Rules</h1>
+                <p>Define Least-Cost Routing (LCR) and provider failover priorities.</p>
+            </div>
+            <button class="btn btn-primary" onclick="showModal()"><i data-lucide="plus"></i> Add Rule</button>
+        </header>
+
+        <div class="glass-card">
+            <h2>Active Routing Rules</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rule Name</th>
+                        <th>Target Prefix</th>
+                        <th>MCC / MNC</th>
+                        <th>Preferred Provider</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="rules-table">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="glass-card">
+            <h2>Provider Health & Latency</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem;"
+                id="provider-stats">
+                <!-- Mock stats -->
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="ruleModal">
+        <div class="modal-content" style="width: 600px;">
+            <h2 style="margin-bottom: 1.5rem;">Configure Routing Rule</h2>
+            <form id="ruleForm">
+                <input type="hidden" id="ruleId">
+                <div class="form-group">
+                    <label>Rule Name</label>
+                    <input type="text" id="name" placeholder="e.g. US Least Cost" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Prefix (Optional)</label>
+                        <input type="text" id="prefix" placeholder="e.g. 44">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div class="form-group">
+                            <label>MCC</label>
+                            <input type="text" id="mcc" placeholder="e.g. 234">
+                        </div>
+                        <div class="form-group">
+                            <label>MNC</label>
+                            <input type="text" id="mnc" placeholder="e.g. 15">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Target Provider</label>
+                    <select id="providerId" required>
+                        <!-- Loaded via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority (1 is highest)</label>
+                    <input type="number" id="priority" value="1" min="1" required>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="hideModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Rule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        async function loadData() {
+            const [rulesRes, providersRes] = await Promise.all([
+                fetch('/api/routing'),
+                fetch('/api/routing/providers')
+            ]);
+
+            const rules = await rulesRes.json();
+            const providers = await providersRes.json();
+
+            renderRules(rules);
+            renderProviders(providers);
+            updateProviderSelect(providers);
+        }
+
+        function renderRules(rules) {
+            const list = document.getElementById('rules-table');
+            list.innerHTML = rules.length ? rules.map(r => `
+                <tr>
+                    <td><strong>${r.name}</strong></td>
+                    <td style="font-family: monospace;">${r.prefix ? '+' + r.prefix : '-'}</td>
+                    <td style="font-family: monospace;">${(r.mcc || r.mnc) ? (r.mcc || '???') + ' / ' + (r.mnc || '???') : '-'}</td>
+                    <td>${r.provider.name} <span style="font-size: 0.7rem; opacity: 0.6">(${r.provider.type})</span></td>
+                    <td><span class="badge badge-failover">P${r.priority}</span></td>
+                    <td><span class="badge badge-active">${r.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+                    <td>
+                        <button class="btn" style="padding: 0.4rem; background: rgba(255,255,255,0.05);" onclick="deleteRule('${r.id}')"><i data-lucide="trash-2" style="width: 14px; color: var(--error)"></i></button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No custom routing rules defined. Using default priority.</td></tr>';
+            lucide.createIcons({ props: { parent: list } });
+        }
+
+        function renderProviders(provs) {
+            const container = document.getElementById('provider-stats');
+            if (!provs.length) {
+                container.innerHTML = '<p style="color: var(--text-muted); padding: 1rem;">No providers configured.</p>';
+                return;
+            }
+            container.innerHTML = provs.map(p => `
+                <div class="glass-card" style="margin-bottom: 0; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h4 style="margin: 0;">${p.name}</h4>
+                            <span style="font-size: 0.65rem; color: var(--text-muted);">${p.type.toUpperCase()}</span>
+                        </div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success)"></div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; font-size: 0.75rem;">
+                        <div>
+                            <div style="color: var(--text-muted)">Priority</div>
+                            <div style="font-weight: 700;">${p.priority}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-muted)">Cost</div>
+                            <div style="font-weight: 700;">$${parseFloat(p.costPerSms).toFixed(3)}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateProviderSelect(provs) {
+            const select = document.getElementById('providerId');
+            select.innerHTML = provs.map(p => `<option value="${p.id}">${p.name} (${p.type})</option>`).join('');
+        }
+
+        function showModal() {
+            document.getElementById('ruleForm').reset();
+            document.getElementById('ruleId').value = '';
+            document.getElementById('ruleModal').style.display = 'flex';
+        }
+        function hideModal() { document.getElementById('ruleModal').style.display = 'none'; }
+
+        document.getElementById('ruleForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                prefix: document.getElementById('prefix').value || null,
+                mcc: document.getElementById('mcc').value || null,
+                mnc: document.getElementById('mnc').value || null,
+                providerId: document.getElementById('providerId').value,
+                priority: parseInt(document.getElementById('priority').value)
+            };
+
+            const method = 'POST'; // We could implement PUT/PATCH later
+            const res = await fetch('/api/routing', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                hideModal();
+                loadData();
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Failed to save rule');
+            }
+        };
+
+        async function deleteRule(id) {
+            if (confirm('Delete this routing rule?')) {
+                await fetch(`/api/routing/${id}`, { method: 'DELETE' });
+                loadData();
+            }
+        }
+
+        loadData();
+
+        loadData();
+    </script>
+</body>
+
+</html>

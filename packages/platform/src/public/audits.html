@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs | MsgSync Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            padding: 1rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            max-width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo"><i data-lucide="zap"></i><span>MsgSync</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item active"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="margin-bottom: 2.5rem;">
+            <h1>Audit Logs</h1>
+            <p style="color: var(--text-muted);">Traceable record of all administrative actions and security events.</p>
+        </header>
+
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <h3>System Activity</h3>
+                    <select id="log-filter" class="form-group"
+                        style="margin-bottom: 0; padding: 0.4rem; font-size: 0.8rem; width: auto;"
+                        onchange="loadLogs()">
+                        <option value="org">My Organization</option>
+                        <option value="system">System Wide (Admin)</option>
+                    </select>
+                </div>
+                <button onclick="loadLogs()" class="nav-item"
+                    style="padding: 0.5rem; background: var(--border);">Refresh</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>User / IP</th>
+                        <th>Timestamp</th>
+                        <th>Metadata</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-table">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        async function loadLogs() {
+            const table = document.getElementById('audit-table');
+            const filter = document.getElementById('log-filter').value;
+            const isSystem = filter === 'system';
+
+            try {
+                const res = await fetch(`/api/audit?system=${isSystem}`, {
+                    headers: { 'X-API-Key': 'demo-api-key' }
+                });
+                const logs = await res.json();
+
+                if (!Array.isArray(logs) || logs.length === 0) {
+                    table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No activity recorded yet.</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = logs.map(log => `
+                    <tr>
+                        <td><span class="badge" style="${log.organizationId === 'SYSTEM' ? 'background: rgba(16, 185, 129, 0.1); color: var(--success);' : ''}">${log.action}</span></td>
+                        <td>${log.entity} <br/><small style="color:var(--text-muted)">${log.entityId}</small></td>
+                        <td>${log.organizationId === 'SYSTEM' ? 'PLATFORM' : 'ORG'} / ${log.userId ? log.userId.slice(0, 8) : 'System'}</td>
+                        <td>${new Date(log.createdAt).toLocaleString()}</td>
+                        <td><pre>${JSON.stringify(log.metadata, null, 2)}</pre></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+                table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--error);">Failed to load logs.</td></tr>';
+            }
+        }
+
+        loadLogs();
+    </script>
+</body>
+
+</html>

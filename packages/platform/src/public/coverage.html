@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coverage & Pricing | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: white;
+            width: 100%;
+            outline: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .price-tag {
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 2rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 0;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            width: 500px;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo"><i data-lucide="zap"></i><span>MsgSync Console</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item active"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1>Pricing & Rate Management</h1>
+                <p>Manage multiple price lists, network-level costs, and custom margins.</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="showImportModal()"
+                    style="background: rgba(255,255,255,0.05);">
+                    <i data-lucide="upload"></i> Import CSV
+                </button>
+                <button class="btn btn-primary" onclick="showPlanModal()"><i data-lucide="plus-circle"></i> New
+                    Plan</button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchMainTab('plans')">Rate Plans</div>
+            <div class="tab" onclick="switchMainTab('active-rates')">Coverage Explorer</div>
+            <div class="tab" onclick="switchMainTab('sender-ids')">Sender IDs</div>
+        </div>
+
+        <!-- Plan Management View -->
+        <div id="plans-view">
+            <div class="stats-row"
+                style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div
+                        style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                        Active Plans</div>
+                    <div id="plan-count" style="font-size: 1.5rem; font-weight: 700; margin-top: 0.5rem;">0</div>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div
+                        style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                        Direct Routes</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; margin-top: 0.5rem; color: var(--success);">84
+                    </div>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div
+                        style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                        Last Update</div>
+                    <div style="font-size: 0.9rem; font-weight: 500; margin-top: 0.5rem; color: var(--primary);">Today,
+                        14:22</div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Plan Name</th>
+                            <th>Description</th>
+                            <th>Rates</th>
+                            <th>Currency</th>
+                            <th>Visibility</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plans-table">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Coverage Explorer View -->
+        <div id="active-rates-view" style="display: none;">
+            <div class="search-row">
+                <div class="search-box" style="flex: 2;">
+                    <i data-lucide="filter" style="width: 18px; color: var(--primary);"></i>
+                    <select id="plan-selector" onchange="loadRatesForSelectedPlan()"
+                        style="background: none; border: none; color: white; width: 100%; outline: none; cursor: pointer;">
+                        <option value="">Select a Price List...</option>
+                    </select>
+                </div>
+                <div class="search-box" style="flex: 1;">
+                    <i data-lucide="tag" style="width: 18px; color: var(--primary);"></i>
+                    <select id="profile-selector" onchange="loadRatesForSelectedPlan()"
+                        style="background: none; border: none; color: white; width: 100%; outline: none; cursor: pointer;">
+                        <option value="">All Profiles</option>
+                        <option value="TRANSACTIONAL">Transactional</option>
+                        <option value="PROMOTIONAL">Promotional</option>
+                        <option value="OTP">OTP (Priority)</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <i data-lucide="search" style="width: 18px;"></i>
+                    <input type="text" placeholder="Search country, prefix or MCC..." oninput="filterRates(this.value)">
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Country</th>
+                            <th>Prefix</th>
+                            <th>MCC/MNC</th>
+                            <th>Profile</th>
+                            <th>Network</th>
+                            <th>Price ($)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rates-table">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sender IDs View -->
+        <div id="sender-ids-view" style="display: none;">
+            <div class="glass-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Identifier</th>
+                            <th>Type</th>
+                            <th>Organization</th>
+                            <th>Status</th>
+                            <th>Submission Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sids-table">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal" id="planModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="plus-circle" style="color: var(--primary);"></i> Create Rate Plan
+            </h2>
+            <form id="planForm">
+                <div class="form-group">
+                    <label>Plan Name</label>
+                    <input type="text" id="planName" placeholder="e.g. Premium Wholesale" required>
+                </div>
+                <div class="form-group">
+                    <label>Description (Optional)</label>
+                    <input type="text" id="planDesc" placeholder="e.g. Direct corridors for EU">
+                </div>
+                <div class="form-group">
+                    <label>Base Currency</label>
+                    <select id="planCurrency">
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="button" class="btn" style="background: none; color: white;"
+                        onclick="closeModals()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1rem;">Import Price List</h2>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1.5rem;">Upload a CSV file with
+                columns: <b>country, prefix, mcc, mnc, networkName, pricePerSms</b></p>
+            <div class="form-group">
+                <label>Target Plan</label>
+                <select id="importPlanId" required></select>
+            </div>
+            <div class="form-group">
+                <label>CSV Data (JSON Format temporarily)</label>
+                <textarea id="csvData"
+                    style="width: 100%; height: 151px; background: #030712; border: 1px solid var(--border); border-radius: 0.5rem; color: white; padding: 0.75rem; font-family: monospace; font-size: 0.75rem;"
+                    placeholder='[{"country":"UK","prefix":"44","pricePerSms":0.012}]'></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn" style="background: none; color: white;"
+                    onclick="closeModals()">Cancel</button>
+                <button class="btn btn-primary" onclick="processImport()">Start Import</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let allPlans = [];
+        let currentRates = [];
+
+        async function init() {
+            await loadPlans();
+            switchMainTab('plans');
+        }
+
+        async function loadPlans() {
+            const res = await fetch('/api/network/plans');
+            allPlans = await res.json();
+
+            document.getElementById('plan-count').innerText = allPlans.length;
+
+            const table = document.getElementById('plans-table');
+            table.innerHTML = allPlans.map(p => `
+                <tr>
+                    <td style="font-weight: 600; color: var(--primary);">${p.name}</td>
+                    <td style="color: var(--text-muted); font-size: 0.8rem;">${p.description || '--'}</td>
+                    <td><span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary);">${p._count.rates} Active</span></td>
+                    <td>${p.currency}</td>
+                    <td><span class="badge ${p.isPublic ? 'badge-active' : ''}">${p.isPublic ? 'PUBLIC' : 'PRIVATE'}</span></td>
+                    <td style="display: flex; gap: 0.5rem;">
+                        <button class="btn" style="padding: 0.4rem; background: rgba(255,255,255,0.05);" title="Edit Rates" onclick="openExplorer('${p.id}')">
+                            <i data-lucide="eye" style="width: 14px;"></i>
+                        </button>
+                        <button class="btn" style="padding: 0.4rem; background: rgba(255,255,255,0.05);" title="Assign to Client">
+                            <i data-lucide="link" style="width: 14px;"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Update selectors
+            const planSelector = document.getElementById('plan-selector');
+            const importSelector = document.getElementById('importPlanId');
+            const options = allPlans.map(p => `<option value="${p.id}">${p.name} (${p.currency})</option>`).join('');
+
+            planSelector.innerHTML = '<option value="">Select a Price List...</option>' + options;
+            importSelector.innerHTML = options;
+
+            lucide.createIcons({ props: { parent: table } });
+        }
+
+        async function loadRatesForSelectedPlan() {
+            const planId = document.getElementById('plan-selector').value;
+            const profile = document.getElementById('profile-selector').value;
+            if (!planId) return;
+
+            const url = `/api/network/rates/${planId}${profile ? `?profile=${profile}` : ''}`;
+            const res = await fetch(url);
+            currentRates = await res.json();
+            renderRates(currentRates);
+        }
+
+        function renderRates(rates) {
+            const list = document.getElementById('rates-table');
+            list.innerHTML = rates.length ? rates.map(r => `
+                <tr>
+                    <td style="font-weight: 500;">${r.country}</td>
+                    <td style="color: var(--text-muted); font-family: monospace;">+${r.prefix}</td>
+                    <td style="color: var(--text-muted); font-size: 0.7rem;">${r.mcc || '--'}/${r.mnc || '--'}</td>
+                    <td><span class="badge" style="background: rgba(139, 92, 246, 0.05); color: var(--text-muted); border: 1px solid var(--border);">${r.profile}</span></td>
+                    <td style="font-size: 0.8rem;">${r.networkName || 'Any/Direct'}</td>
+                    <td class="price-tag">$${parseFloat(r.pricePerSms).toFixed(4)}</td>
+                    <td><span class="badge badge-active">${r.status}</span></td>
+                </tr>
+            `).join('') : '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No rates found in this plan.</td></tr>';
+        }
+
+        function switchMainTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            // Tab switching logic for main views
+            const views = ['plans', 'active-rates', 'sender-ids'];
+            views.forEach(v => document.getElementById(`${v}-view`).style.display = 'none');
+            document.getElementById(`${tab}-view`).style.display = 'block';
+
+            // Highlight current tab
+            const tabElements = document.querySelectorAll('.tab');
+            if (tab === 'plans') tabElements[0].classList.add('active');
+            if (tab === 'active-rates') tabElements[1].classList.add('active');
+            if (tab === 'sender-ids') {
+                tabElements[2].classList.add('active');
+                loadSenderIds();
+            }
+        }
+
+        function openExplorer(planId) {
+            switchMainTab('active-rates');
+            document.getElementById('plan-selector').value = planId;
+            loadRatesForSelectedPlan();
+        }
+
+        // Modal Handlers
+        function showPlanModal() { document.getElementById('planModal').style.display = 'flex'; }
+        function showImportModal() { document.getElementById('importModal').style.display = 'flex'; }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+        document.getElementById('planForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('planName').value,
+                description: document.getElementById('planDesc').value,
+                currency: document.getElementById('planCurrency').value
+            };
+            const res = await fetch('/api/network/plans', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) { closeModals(); loadPlans(); }
+        };
+
+        async function processImport() {
+            const planId = document.getElementById('importPlanId').value;
+            const rates = JSON.parse(document.getElementById('csvData').value);
+
+            const res = await fetch('/api/network/rates/import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId, rates })
+            });
+
+            if (res.ok) {
+                alert('Import successful!');
+                closeModals();
+                loadPlans();
+            }
+        }
+
+        async function loadSenderIds() {
+            // Re-using simplified version for demo
+            const list = document.getElementById('sids-table');
+            list.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);"><i data-lucide="loader-2" class="spin" style="margin-bottom: 1rem;"></i><br>Fetching active submissions...</td></tr>';
+            lucide.createIcons({ props: { parent: list } });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
