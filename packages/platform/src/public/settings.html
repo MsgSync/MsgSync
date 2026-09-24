@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White-Label Settings | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-family: inherit;
+        }
+
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-top: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+        }
+
+        .preview-pane {
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            background: #000;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo" id="dynamic-logo-sidebar"><i data-lucide="zap"></i><span>MsgSync</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item active"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="margin-bottom: 2.5rem;">
+            <h1>White-Label & Branding</h1>
+            <p>Customize the platform appearance for your clients and resellers.</p>
+        </header>
+
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
+            <div class="glass-card">
+                <h2>Portal Configuration</h2>
+                <form id="branding-form" style="margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" id="companyName" placeholder="My Enterprise SMS">
+                    </div>
+                    <div class="form-group">
+                        <label>Custom Domain (CNAME)</label>
+                        <input type="text" id="customDomain" placeholder="sms.mycompany.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Logo URL</label>
+                        <input type="text" id="logoUrl" placeholder="https://mycompany.com/logo.png">
+                    </div>
+                    <div class="form-group">
+                        <label>Primary Brand Color</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="color" id="primaryColorPick" style="width: 60px; height: 40px; padding: 2px;">
+                            <input type="text" id="primaryColorText" value="#8b5cf6" style="flex: 1;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Save & Apply Branding</button>
+                </form>
+            </div>
+
+            <div>
+                <div class="glass-card">
+                    <h2>Live Preview</h2>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">This is how your logo
+                        and name will appear.</p>
+                    <div class="preview-pane">
+                        <div id="preview-logo"
+                            style="width: 32px; height: 32px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="zap" style="width: 18px; color: white;"></i>
+                        </div>
+                        <span id="preview-name" style="font-weight: 700; font-size: 1.1rem;">MsgSync</span>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.8rem;">Button
+                            Theme</label>
+                        <button class="btn" id="preview-btn" style="width: 100%;">Themed Action Button</button>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="border-color: rgba(139, 92, 246, 0.3);">
+                    <h3>How to setup CNAME?</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.6;">
+                        1. Go to your DNS provider (Cloudflare, GoDaddy).<br>
+                        2. Create a <strong>CNAME</strong> record.<br>
+                        3. Set Host to your domain (e.g. <code>sms</code>).<br>
+                        4. Set Target to <code>portal.msgsync.com</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const form = document.getElementById('branding-form');
+        const colorPick = document.getElementById('primaryColorPick');
+        const colorText = document.getElementById('primaryColorText');
+        const nameInput = document.getElementById('companyName');
+
+        // Sync inputs
+        colorPick.oninput = () => {
+            colorText.value = colorPick.value;
+            updatePreview();
+        };
+        colorText.oninput = () => {
+            colorPick.value = colorText.value;
+            updatePreview();
+        };
+        nameInput.oninput = updatePreview;
+
+        function updatePreview() {
+            const color = colorText.value;
+            const name = nameInput.value || 'MsgSync';
+
+            document.documentElement.style.setProperty('--primary', color);
+            document.getElementById('preview-name').innerText = name;
+            document.getElementById('preview-logo').style.background = color;
+            document.getElementById('preview-btn').style.background = color;
+        }
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                companyName: nameInput.value,
+                customDomain: document.getElementById('customDomain').value,
+                logoUrl: document.getElementById('logoUrl').value,
+                primaryColor: colorText.value
+            };
+
+            // In a real app, we would know the current Org ID from session
+            const orgId = 'demo-org-id';
+
+            alert('Branding updated! In production, this would persist to the database and affect all clients on ' + (data.customDomain || 'this domain'));
+        };
+
+        // Initialize from URL config (Simulation)
+        async function loadCurrentBranding() {
+            const res = await fetch('/api/branding/config');
+            const data = await res.json();
+
+            if (data.organizationId) {
+                nameInput.value = data.companyName;
+                colorText.value = data.primaryColor;
+                colorPick.value = data.primaryColor;
+                document.getElementById('logoUrl').value = data.logoUrl;
+                updatePreview();
+            }
+        }
+
+        loadCurrentBranding();
+    </script>
+</body>
+
+</html>

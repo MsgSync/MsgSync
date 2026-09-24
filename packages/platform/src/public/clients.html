@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients & Resellers | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            z-index: 50;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9375rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 1400px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            width: 500px;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-family: inherit;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .reseller {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+        }
+
+        .client {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        /* Multi-tier breadcrumb */
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb span:hover {
+            color: var(--primary);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo">
+            <i data-lucide="zap"></i>
+            <span>MsgSync Console</span>
+        </div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item active"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+            <a href="/docs" class="nav-item"><i data-lucide="book"></i> API Docs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <div>
+                <div class="breadcrumb" id="breadcrumb">
+                    <span onclick="loadOrganizations('root')">Root</span>
+                </div>
+                <h1>Organization Management</h1>
+                <p>Manage your resellers and clients in a hierarchical structure.</p>
+            </div>
+            <button class="btn btn-primary" onclick="showModal()"><i data-lucide="plus"></i> Add Organization</button>
+        </header>
+
+        <div class="glass-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Balance</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="org-list">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal" id="orgModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">New Organization</h2>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="orgName" placeholder="e.g. Acme Reseller" required>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select id="orgType">
+                    <option value="RESELLER">Reseller</option>
+                    <option value="CLIENT">Client</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Initial Balance</label>
+                <input type="number" id="orgBalance" value="0" step="0.01">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn" onclick="hideModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveOrg()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let currentParentId = null;
+
+        async function loadOrganizations(parentId) {
+            currentParentId = parentId === 'root' ? null : parentId;
+            const endpoint = currentParentId ? `/api/organizations/${currentParentId}/sub-orgs` : '/api/organizations/root/sub-orgs'; // We'll handle 'root' logic in controller
+
+            // For demo purposes, we'll try to fetch. If it fails (no root yet), we might want to seed.
+            try {
+                const res = await fetch(`/api/organizations/${currentParentId || 'root'}/sub-orgs`);
+                const orgs = await res.json();
+                renderOrgs(orgs);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderOrgs(orgs) {
+            const list = document.getElementById('org-list');
+            list.innerHTML = orgs.length ? orgs.map(org => `
+                <tr>
+                    <td style="font-weight: 500; cursor: pointer;" onclick="enterOrg('${org.id}', '${org.name}')">
+                        <i data-lucide="${org.type === 'RESELLER' ? 'layers' : 'user'}" style="width: 14px; margin-right: 8px; vertical-align: middle;"></i>
+                        ${org.name}
+                    </td>
+                    <td><span class="badge ${org.type.toLowerCase()}">${org.type}</span></td>
+                    <td>$${parseFloat(org.balance).toFixed(2)}</td>
+                    <td style="color: var(--text-muted);">${new Date(org.createdAt).toLocaleDateString()}</td>
+                    <td style="display: flex; gap: 0.5rem;">
+                        <button class="btn" style="padding: 0.4rem;" title="Add Balance" onclick="addBalance('${org.id}')"><i data-lucide="plus-circle" style="width: 14px;"></i></button>
+                        <button class="btn" style="padding: 0.4rem;" title="View Report" onclick="location.href='/billing?orgId=${org.id}'"><i data-lucide="bar-chart-2" style="width: 14px;"></i></button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No organizations found here.</td></tr>';
+            lucide.createIcons();
+        }
+
+        function enterOrg(id, name) {
+            const bc = document.getElementById('breadcrumb');
+            bc.innerHTML += ` <i data-lucide="chevron-right" style="width: 12px; height: 12px;"></i> <span onclick="backTo('${id}')">${name}</span>`;
+            lucide.createIcons();
+            loadOrganizations(id);
+        }
+
+        function showModal() { document.getElementById('orgModal').style.display = 'flex'; }
+        function hideModal() { document.getElementById('orgModal').style.display = 'none'; }
+
+        async function saveOrg() {
+            const data = {
+                name: document.getElementById('orgName').value,
+                type: document.getElementById('orgType').value,
+                balance: parseFloat(document.getElementById('orgBalance').value),
+                parentId: currentParentId
+            };
+
+            const res = await fetch('/api/organizations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                hideModal();
+                loadOrganizations(currentParentId || 'root');
+            }
+        }
+
+        async function addBalance(id) {
+            const amount = prompt("Enter amount to credit:");
+            if (!amount) return;
+
+            const res = await fetch(`/api/organizations/${id}/balance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: parseFloat(amount), description: 'Manual Credit' })
+            });
+
+            if (res.ok) loadOrganizations(currentParentId || 'root');
+        }
+
+        loadOrganizations('root');
+    </script>
+</body>
+
+</html>

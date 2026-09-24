@@ -1,0 +1,6 @@
+{
+  "name": "MsgSync NOC Console",
+  "description": "Carrier-grade Network Operations Center console for Tier-1 SMS, SMPP transceiver trunks, SS7/SIGTRAN signaling, and IAM security enclave.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

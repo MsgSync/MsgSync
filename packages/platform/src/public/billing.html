@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing & Reporting | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar similar to other pages */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        .stat-card .label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Payment Form */
+        .payment-options {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .pay-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .pay-btn:hover {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .pay-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo"><i data-lucide="zap"></i><span>MsgSync Console</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item active"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="margin-bottom: 2rem;">
+            <h1 id="orgName">Billing Overview</h1>
+            <p id="orgType">Manage payments and view consumption reports.</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="glass-card stat-card">
+                <span class="label">Balance</span>
+                <div class="value" id="balanceText">$0.00</div>
+            </div>
+            <div class="glass-card stat-card">
+                <span class="label">Messages Sent</span>
+                <div class="value" id="sentCount">0</div>
+            </div>
+            <div class="glass-card stat-card">
+                <span class="label">Failed Delivery</span>
+                <div class="value" id="failedCount" style="color: var(--error)">0</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="glass-card">
+                <h2>Add Credits</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Secure online payment options for your
+                    account.</p>
+                <div class="payment-options">
+                    <div class="pay-btn" onclick="pay('stripe')"><i data-lucide="credit-card"></i> Stripe</div>
+                    <div class="pay-btn" onclick="pay('paypal')"><i data-lucide="wallet"></i> PayPal</div>
+                    <div class="pay-btn" onclick="pay('crypto')"><i data-lucide="bitcoin"></i> Crypto</div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <h2>Usage Report</h2>
+                <div style="height: 200px;">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Recent Transactions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="transaction-list">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Invoices</h2>
+                    <button class="btn" onclick="generateInvoice()" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                        <i data-lucide="refresh-cw"></i> Generate Current
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Period</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-list">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="glass-card">
+                <h2>Billing Settings</h2>
+                <div style="margin-top: 1.5rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Billing Email</label>
+                        <input type="email" id="billingEmail"
+                            style="width: 100%; background: #030712; border: 1px solid var(--border); padding: 0.75rem; border-radius: 0.5rem; color: white; margin-top: 0.25rem;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Billing Cycle</label>
+                        <select id="billingCycle"
+                            style="width: 100%; background: #030712; border: 1px solid var(--border); padding: 0.75rem; border-radius: 0.5rem; color: white; margin-top: 0.25rem;">
+                            <option value="MONTHLY">Monthly</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="QUARTERLY">Quarterly</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Billing Policy</label>
+                        <select id="billingPolicy"
+                            style="width: 100%; background: #030712; border: 1px solid var(--border); padding: 0.75rem; border-radius: 0.5rem; color: white; margin-top: 0.25rem;">
+                            <option value="ON_SUBMISSION">On Submission (Sent)</option>
+                            <option value="ON_ATTEMPT">On Attempt (Charged even if failed)</option>
+                            <option value="ON_DELIVERY">On Delivery (Requires DLR confirmation)</option>
+                        </select>
+                    </div>
+                    <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">Save
+                        Settings</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        const urlParams = new URLSearchParams(window.location.search);
+        const orgId = urlParams.get('orgId') || 'root'; // Default to root for now
+
+        async function loadData() {
+            try {
+                const [reportRes, txRes, orgRes, invRes] = await Promise.all([
+                    fetch(`/api/organizations/${orgId}/reporting`),
+                    fetch(`/api/organizations/${orgId}/transactions`),
+                    fetch(`/api/organizations/${orgId}`),
+                    fetch(`/api/invoices?organizationId=${orgId}`)
+                ]);
+
+                const report = await reportRes.json();
+                const txs = await txRes.json();
+                const org = await orgRes.json();
+                const invoices = await invRes.json();
+
+                if (org) {
+                    document.getElementById('orgName').innerText = `Billing: ${org.name}`;
+                    document.getElementById('orgType').innerText = `${org.type} Account Reporting`;
+                    document.getElementById('balanceText').innerText = `$${parseFloat(org.balance).toFixed(2)}`;
+                    document.getElementById('billingEmail').value = org.billingEmail || '';
+                    document.getElementById('billingCycle').value = org.billingCycle || 'MONTHLY';
+                    document.getElementById('billingPolicy').value = org.billingPolicy || 'ON_SUBMISSION';
+                }
+
+                document.getElementById('sentCount').innerText = report.stats.find(s => s.status === 'sent')?.['_count'] || 0;
+                document.getElementById('failedCount').innerText = report.stats.find(s => s.status === 'failed')?.['_count'] || 0;
+
+                renderTransactions(txs);
+                renderChart(report.stats);
+                renderInvoices(invoices);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderTransactions(txs) {
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = txs.map(tx => `
+                <tr>
+                    <td>${new Date(tx.createdAt).toLocaleDateString()}</td>
+                    <td>${tx.description}</td>
+                    <td><span style="color: ${tx.type === 'CREDIT' ? 'var(--success)' : 'var(--error)'}">${tx.type}</span></td>
+                    <td>$${parseFloat(tx.amount).toFixed(2)}</td>
+                    <td><span style="opacity: 0.7">${tx.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderInvoices(invs) {
+            const list = document.getElementById('invoice-list');
+            list.innerHTML = invs.length ? invs.map(inv => `
+                <tr>
+                    <td style="font-weight: 500;">${inv.number}</td>
+                    <td style="font-size: 0.75rem; color: var(--text-muted);">
+                        ${new Date(inv.periodStart).toLocaleDateString()} - ${new Date(inv.periodEnd).toLocaleDateString()}
+                    </td>
+                    <td style="font-weight: 700;">$${parseFloat(inv.total).toFixed(2)}</td>
+                    <td><span style="color: ${inv.status === 'PAID' ? 'var(--success)' : 'var(--warning)'}; font-size: 0.75rem;">${inv.status}</span></td>
+                    <td style="display: flex; gap: 0.5rem;">
+                        <a href="${inv.pdfUrl}" class="action-btn" title="Download PDF"><i data-lucide="file-text" style="width: 16px;"></i></a>
+                        <a href="${inv.excelUrl}" class="action-btn" title="Download Excel"><i data-lucide="file-spreadsheet" style="width: 16px;"></i></a>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">No invoices generated.</td></tr>';
+            lucide.createIcons({ props: { parent: list } });
+        }
+
+        async function generateInvoice() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+            const end = now.toISOString();
+
+            const res = await fetch('/api/invoices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ organizationId: orgId, periodStart: start, periodEnd: end })
+            });
+
+            if (res.ok) {
+                alert('Invoice generated successfully!');
+                loadData();
+            }
+        }
+
+        async function saveSettings() {
+            const data = {
+                billingEmail: document.getElementById('billingEmail').value,
+                billingCycle: document.getElementById('billingCycle').value,
+                billingPolicy: document.getElementById('billingPolicy').value
+            };
+
+            const res = await fetch(`/api/organizations/${orgId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert('Settings saved!');
+            }
+        }
+
+        function renderChart(stats) {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: stats.map(s => s.status),
+                    datasets: [{
+                        label: 'Messages',
+                        data: stats.map(s => s['_count']),
+                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function pay(method) {
+            const amount = prompt(`Enter amount to pay via ${method}:`);
+            if (!amount) return;
+
+            const res = await fetch(`/api/organizations/${orgId}/balance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: parseFloat(amount), description: `Payment via ${method}` })
+            });
+
+            if (res.ok) {
+                alert("Payment successful!");
+                loadData();
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+
+</html>

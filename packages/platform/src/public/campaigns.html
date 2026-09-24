@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Management | MsgSync</title>
+    <meta name="description"
+        content="Effortlessly manage dynamic SMS campaigns with scheduling, sender ID customization, and real-time analytics">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="campaigns.css">
+</head>
+
+<body>
+    <div id="loading-bar"></div>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="logo">
+            <i data-lucide="zap"></i>
+            <span>MsgSync Console</span>
+        </div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item active"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+            <a href="/docs" target="_blank" class="nav-item"><i data-lucide="book"></i> API Docs</a>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar">AD</div>
+            <div>
+                <div class="user-name">Admin User</div>
+                <div class="user-org">Default Organization</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <header>
+            <div class="welcome">
+                <h1>Campaign Management</h1>
+                <p>Create, schedule, and manage dynamic SMS campaigns effortlessly</p>
+            </div>
+            <div class="actions">
+                <button class="btn" onclick="refreshData()"><i data-lucide="refresh-cw"></i> Refresh</button>
+                <button class="btn btn-primary" onclick="openCampaignModal()"><i data-lucide="plus"></i> New
+                    Campaign</button>
+            </div>
+        </header>
+
+        <!-- Campaign Stats -->
+        <div class="stats-row">
+            <div class="glass-card">
+                <div class="stat-card-inner">
+                    <span class="label">Total Campaigns</span>
+                    <span class="value" id="total-campaigns">0</span>
+                    <span class="trend up"><i data-lucide="trending-up"></i> All time</span>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="stat-card-inner">
+                    <span class="label">Active</span>
+                    <span class="value" id="active-campaigns" style="color: var(--success)">0</span>
+                    <span class="trend up"><i data-lucide="play-circle"></i> Currently running</span>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="stat-card-inner">
+                    <span class="label">Scheduled</span>
+                    <span class="value" id="scheduled-campaigns" style="color: var(--warning)">0</span>
+                    <span class="trend"><i data-lucide="clock"></i> Upcoming</span>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="stat-card-inner">
+                    <span class="label">Reach</span>
+                    <span class="value" id="total-reach">0</span>
+                    <span class="trend up"><i data-lucide="users"></i> Total recipients</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campaign Filters -->
+        <div class="glass-card filter-bar">
+            <div class="filter-group">
+                <i data-lucide="filter"></i>
+                <select id="status-filter" onchange="filterCampaigns()">
+                    <option value="all">All Statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="running">Running</option>
+                    <option value="completed">Completed</option>
+                    <option value="paused">Paused</option>
+                </select>
+            </div>
+            <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="search-input" placeholder="Search campaigns..." oninput="filterCampaigns()">
+            </div>
+        </div>
+
+        <!-- Campaigns Grid -->
+        <div id="campaigns-grid" class="campaigns-grid">
+            <!-- Campaigns will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i data-lucide="mail" style="width: 64px; height: 64px; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <h3>No campaigns yet</h3>
+            <p>Create your first campaign to start engaging with your audience</p>
+            <button class="btn btn-primary" onclick="openCampaignModal()"><i data-lucide="plus"></i> Create
+                Campaign</button>
+        </div>
+    </main>
+
+    <!-- Campaign Modal -->
+    <div id="campaign-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Create New Campaign</h2>
+                <button class="close-btn" onclick="closeCampaignModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="campaign-form">
+                    <div class="form-section">
+                        <h3>Campaign Details</h3>
+                        <div class="form-group">
+                            <label for="campaign-name">Campaign Name *</label>
+                            <input type="text" id="campaign-name" required placeholder="e.g., Summer Sale 2025">
+                        </div>
+                        <div class="form-group">
+                            <label for="sender-id">Sender ID / Virtual Number</label>
+                            <input type="text" id="sender-id" placeholder="e.g., BRAND or +1234567890" maxlength="11">
+                            <small>Alphanumeric (max 11 chars) or phone number format</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Message Template</h3>
+                        <div class="form-group">
+                            <label for="message-template">Message Content *</label>
+                            <textarea id="message-template" required rows="4"
+                                placeholder="Hi {{firstName}}! Use code {{code}} for {{discount}}% off. Valid until {{expiryDate}}."></textarea>
+                            <small>Use {{variableName}} for personalization. Available: firstName, lastName, phone, and
+                                custom attributes</small>
+                        </div>
+                        <div class="template-preview">
+                            <div class="preview-label">Preview:</div>
+                            <div id="template-preview-text">Hi John! Use code SAVE20 for 20% off. Valid until Dec 31.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Recipients</h3>
+                        <div class="form-group">
+                            <label for="contact-list">Contact List *</label>
+                            <select id="contact-list" required>
+                                <option value="">Select a contact list</option>
+                            </select>
+                            <small id="list-count">0 contacts selected</small>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="openContactListModal()">
+                            <i data-lucide="plus"></i> Create New List
+                        </button>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Scheduling</h3>
+                        <div class="schedule-options">
+                            <label class="radio-option">
+                                <input type="radio" name="schedule-type" value="immediate" checked
+                                    onchange="toggleSchedule()">
+                                <div class="radio-content">
+                                    <i data-lucide="zap"></i>
+                                    <div>
+                                        <strong>Send Immediately</strong>
+                                        <p>Start campaign right away</p>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="schedule-type" value="scheduled" onchange="toggleSchedule()">
+                                <div class="radio-content">
+                                    <i data-lucide="clock"></i>
+                                    <div>
+                                        <strong>Schedule for Later</strong>
+                                        <p>Set a specific date and time</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div id="schedule-datetime" class="form-group" style="display: none;">
+                            <label for="scheduled-time">Schedule Date & Time</label>
+                            <input type="datetime-local" id="scheduled-time">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Campaign Settings</h3>
+                        <div class="settings-grid">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="enable-tracking" checked>
+                                <div>
+                                    <strong>Enable Tracking</strong>
+                                    <p>Track delivery and engagement metrics</p>
+                                </div>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="enable-webhooks">
+                                <div>
+                                    <strong>Webhook Notifications</strong>
+                                    <p>Receive real-time status updates</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeCampaignModal()">Cancel</button>
+                <button class="btn btn-secondary" onclick="saveDraft()"><i data-lucide="save"></i> Save Draft</button>
+                <button class="btn btn-primary" onclick="createCampaign()"><i data-lucide="send"></i> Launch
+                    Campaign</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact List Modal -->
+    <div id="contact-list-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Create Contact List</h2>
+                <button class="close-btn" onclick="closeContactListModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="contact-list-form">
+                    <div class="form-group">
+                        <label for="list-name">List Name *</label>
+                        <input type="text" id="list-name" required placeholder="e.g., VIP Customers">
+                    </div>
+                    <div class="form-group">
+                        <label for="contacts-data">Contacts (CSV or JSON) *</label>
+                        <textarea id="contacts-data" rows="8" required
+                            placeholder='[{"phone": "+1234567890", "firstName": "John", "lastName": "Doe", "attributes": {"tier": "gold"}}]'></textarea>
+                        <small>Paste CSV or JSON array with phone, firstName, lastName, and custom attributes</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeContactListModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createContactList()"><i data-lucide="check"></i> Create
+                    List</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Details Modal -->
+    <div id="campaign-details-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="details-campaign-name">Campaign Details</h2>
+                <button class="close-btn" onclick="closeCampaignDetailsModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="campaign-details-content">
+                    <!-- Details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeCampaignDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="campaigns.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

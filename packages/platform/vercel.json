@@ -1,0 +1,1 @@
+{"buildCommand":"npm install && pnpm prisma generate","devCommand":"node src/index.js","installCommand":"npm install","framework":"express","regions":["iad1"]}

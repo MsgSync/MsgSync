@@ -1,0 +1,13 @@
+{
+  "buildCommand": "pnpm --filter react-example build",
+  "devCommand": "pnpm --filter react-example dev",
+  "installCommand": "pnpm install",
+  "framework": "vite",
+  "outputDirectory": "apps/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://platform-seven-woad.vercel.app/api/:path*"
+    }
+  ]
+}

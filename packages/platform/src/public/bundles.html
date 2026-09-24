@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bundle & Package Management | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .bundle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .bundle-card {
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .bundle-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .bundle-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+
+        .bundle-features {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .bundle-features li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .bundle-features i {
+            color: var(--success);
+            width: 16px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            width: 600px;
+            padding: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo"><i data-lucide="zap"></i><span>MsgSync Console</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item active"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>SMS Bundles & Packages</h1>
+                <p>Define automated subscription plans for your clients.</p>
+            </div>
+            <button class="btn btn-primary" style="width: auto; padding: 0.6rem 1.2rem;" onclick="showModal()">
+                <i data-lucide="plus"></i> Create Bundle
+            </button>
+        </header>
+
+        <div class="bundle-grid" id="bundle-container">
+            <!-- Bundles will be loaded here -->
+        </div>
+
+        <div class="glass-card" style="margin-top: 3rem;">
+            <h2>Recent Subscriptions</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1.5rem;">
+                <thead style="text-align: left; border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th style="padding-bottom: 1rem; color: var(--text-muted); font-size: 0.75rem;">CLIENT</th>
+                        <th style="padding-bottom: 1rem; color: var(--text-muted); font-size: 0.75rem;">BUNDLE</th>
+                        <th style="padding-bottom: 1rem; color: var(--text-muted); font-size: 0.75rem;">REMAINING</th>
+                        <th style="padding-bottom: 1rem; color: var(--text-muted); font-size: 0.75rem;">EXPIRES</th>
+                        <th style="padding-bottom: 1rem; color: var(--text-muted); font-size: 0.75rem;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="subscription-list">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal" id="bundleModal">
+        <div class="modal-content">
+            <h2>Add New SMS Package</h2>
+            <form id="bundleForm">
+                <div class="form-group">
+                    <label>Package Name</label>
+                    <input type="text" id="name" placeholder="e.g. Starter Pack" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" placeholder="Perfect for small businesses..."></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Price ($)</label>
+                        <input type="number" id="price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>SMS Quantity</label>
+                        <input type="number" id="smsLimit" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Validity (Days)</label>
+                        <input type="number" id="validityDays" value="30" required>
+                    </div>
+                    <div class="form-group">
+                        <label>SMS Type</label>
+                        <select id="smsType">
+                            <option value="ALL">All Mixed</option>
+                            <option value="TRANSACTIONAL">Transactional Only</option>
+                            <option value="PROMOTIONAL">Promotional Only</option>
+                            <option value="OTP">OTP Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="hideModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Package</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        async function loadBundles() {
+            const res = await fetch('/api/bundles?includeInactive=true');
+            const bundles = await res.json();
+            const container = document.getElementById('bundle-container');
+            container.innerHTML = bundles.map(b => `
+                <div class="glass-card bundle-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span class="badge ${b.active ? 'badge-active' : 'badge-inactive'}">${b.active ? 'Active' : 'Disabled'}</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-outline" style="width: auto; padding: 0.3rem;" onclick="toggleBundle('${b.id}', ${b.active})"><i data-lucide="${b.active ? 'pause' : 'play'}" style="width: 14px;"></i></button>
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 1rem;">${b.name}</h3>
+                    <div class="bundle-price">$${parseFloat(b.price).toFixed(2)}</div>
+                    <ul class="bundle-features">
+                        <li><i data-lucide="check"></i> ${b.smsLimit.toLocaleString()} SMS Credits</li>
+                        <li><i data-lucide="check"></i> ${b.validityDays} Days Validity</li>
+                        <li><i data-lucide="check"></i> ${b.smsType} Messages</li>
+                        <li><i data-lucide="check"></i> Sender Type: ${b.senderIdType}</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="subscribeDemo('${b.id}')">Assign to Demo Org</button>
+                </div>
+            `).join('');
+            lucide.createIcons({ props: { parent: container } });
+        }
+
+        async function loadSubscriptions() {
+            // Demo for root org
+            const res = await fetch('/api/bundles/organization/demo-org-id'); // We'll handle this in a real app with auth
+            const subs = await res.json();
+            const list = document.getElementById('subscription-list');
+            list.innerHTML = subs.length ? subs.map(s => `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 1rem 0;">Demo Client</td>
+                    <td>${s.bundle.name}</td>
+                    <td>${s.smsRemaining} / ${s.bundle.smsLimit}</td>
+                    <td>${new Date(s.expiresAt).toLocaleDateString()}</td>
+                    <td><span class="badge badge-active">${s.status}</span></td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-muted);">No subscription history available.</td></tr>';
+        }
+
+        function showModal() { document.getElementById('bundleModal').style.display = 'flex'; }
+        function hideModal() { document.getElementById('bundleModal').style.display = 'none'; }
+
+        document.getElementById('bundleForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                price: parseFloat(document.getElementById('price').value),
+                smsLimit: parseInt(document.getElementById('smsLimit').value),
+                validityDays: parseInt(document.getElementById('validityDays').value),
+                smsType: document.getElementById('smsType').value
+            };
+
+            const res = await fetch('/api/bundles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                hideModal();
+                loadBundles();
+            }
+        };
+
+        async function toggleBundle(id, currentStatus) {
+            await fetch(`/api/bundles/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active: !currentStatus })
+            });
+            loadBundles();
+        }
+
+        async function subscribeDemo(bundleId) {
+            // Need a real Org ID from DB
+            const orgRes = await fetch('/api/organizations/root/sub-orgs');
+            const orgs = await orgRes.json();
+            if (!orgs.length) return alert("Please create an organization first!");
+
+            const res = await fetch('/api/bundles/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ organizationId: orgs[0].id, bundleId })
+            });
+
+            if (res.ok) {
+                alert("Assigned successfully!");
+                loadSubscriptions(); // This would need the actual Org ID
+            } else {
+                const err = await res.json();
+                alert(err.error);
+            }
+        }
+
+        loadBundles();
+        // loadSubscriptions(); // Need a valid ID
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HLR & Number Verification | MsgSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --bg: #030712;
+            --sidebar-bg: #09090b;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f9fafb;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-area {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-size: 1.1rem;
+            font-family: monospace;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .result-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .loading-spinner {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <div class="logo"><i data-lucide="zap"></i><span>MsgSync Console</span></div>
+        <nav>
+            <a href="/dashboard" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            <a href="/analytics" class="nav-item"><i data-lucide="bar-chart-3"></i> Analytics</a>
+            <a href="/clients" class="nav-item"><i data-lucide="users"></i> Clients</a>
+            <a href="/campaigns" class="nav-item"><i data-lucide="mail"></i> Campaigns</a>
+            <a href="/billing" class="nav-item"><i data-lucide="credit-card"></i> Billing</a>
+            <a href="/bundles" class="nav-item"><i data-lucide="package"></i> Bundles</a>
+            <a href="/coverage" class="nav-item"><i data-lucide="globe"></i> Coverage</a>
+            <a href="/routing" class="nav-item"><i data-lucide="route"></i> Routing</a>
+            <a href="/security" class="nav-item"><i data-lucide="shield-check"></i> Security</a>
+            <a href="/lookups" class="nav-item active"><i data-lucide="search"></i> Verification</a>
+            <a href="/settings" class="nav-item"><i data-lucide="settings"></i> Branding</a>
+            <a href="/audits" class="nav-item"><i data-lucide="scroll-text"></i> Audit Logs</a>
+        </nav>
+    </aside>
+
+    <main>
+        <header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <h1>HLR & MNP Verification</h1>
+                <p>Real-time Mobile Network Portability (MNP) and Home Location Register (HLR) inspection.</p>
+            </div>
+            <div class="tabs" style="margin-bottom: 0;">
+                <div class="tab active" onclick="switchView('lookup')">Number Lookup</div>
+                <div class="tab" onclick="switchView('config')">HLR Config</div>
+            </div>
+        </header>
+
+        <div id="lookup-view">
+            <div class="glass-card">
+                <h2>Real-time Lookup</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Enter a phone number with country code to
+                    identify carrier and status.</p>
+
+                <div class="search-area">
+                    <input type="text" id="phoneInput" class="search-input" placeholder="+447700900123"
+                        value="+447700900123">
+                    <button class="btn" id="lookupBtn" onclick="runLookup()">
+                        <span>Inspect Number</span>
+                    </button>
+                </div>
+
+                <div id="loading" style="text-align: center; margin: 2rem 0; display: none;">
+                    <div class="loading-spinner" style="display: block;"></div>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">Querying global network registries...</p>
+                </div>
+
+                <div id="results" class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">Current Carrier</div>
+                        <div class="result-value" id="res-carrier">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Line Type</div>
+                        <div class="result-value" id="res-type" style="text-transform: capitalize;">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Ported Status</div>
+                        <div class="result-value" id="res-ported">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">MCC / MNC</div>
+                        <div class="result-value" id="res-codes">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h2>Recent Verification History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Phone Number</th>
+                            <th>Network</th>
+                            <th>Type</th>
+                            <th>Ported</th>
+                            <th>Checked At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="config-view" style="display: none;">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div>
+                        <h2>HLR Service Providers</h2>
+                        <p style="color: var(--text-muted);">Configure external HLR/MNP dipping services.</p>
+                    </div>
+                    <button class="btn" onclick="showConfigModal()">Add Provider</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Provider Name</th>
+                            <th>Endpoint URL</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="config-table">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="test-result-area" class="glass-card" style="display: none; border-color: var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>HLR Test Connection Result</h3>
+                    <button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                        onclick="this.parentElement.parentElement.style.display='none'">Dismiss</button>
+                </div>
+                <div id="test-details"
+                    style="margin-top: 1rem; font-family: monospace; font-size: 0.85rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 0.5rem;">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="configModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Add HLR Provider</h2>
+            <form id="configForm">
+                <input type="hidden" id="configId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Provider Name</label>
+                        <input type="text" id="confName" placeholder="Twilio, Nexmo, etc." required>
+                    </div>
+                    <div class="form-group">
+                        <label>HTTP Method</label>
+                        <select id="confMethod">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Base URL</label>
+                    <input type="url" id="confUrl" placeholder="https://api.provider.com/lookup" required>
+                </div>
+                <div class="form-group">
+                    <label>API Key / Client ID</label>
+                    <input type="text" id="confKey" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>API Secret</label>
+                    <input type="password" id="confSecret" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Response Mapping (JSON)</label>
+                    <textarea id="confMapping"
+                        placeholder='{ "carrier": "data.carrier_name", "ported": "data.is_ported" }' rows="3"
+                        style="width: 100%; background: #030712; border: 1px solid var(--border); padding: 0.75rem; border-radius: 0.5rem; color: white;"></textarea>
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">Mapping for: isValid, carrier, mcc,
+                        mnc, type, isPorted</small>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="confActive" checked style="width: auto;"> Active
+                    </label>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn" style="background: var(--border);" onclick="testForm()">Test
+                        Configuration</button>
+                    <button type="button" class="btn" onclick="closeConfigModal()"
+                        style="background: var(--border);">Cancel</button>
+                    <button type="submit" class="btn">Save Configuration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            position: relative;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: #030712;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            color: white;
+        }
+    </style>
+
+    <script>
+        lucide.createIcons();
+        let configs = [];
+
+        async function switchView(view) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (view === 'lookup') {
+                document.getElementById('lookup-view').style.display = 'block';
+                document.getElementById('config-view').style.display = 'none';
+            } else {
+                document.getElementById('lookup-view').style.display = 'none';
+                document.getElementById('config-view').style.display = 'block';
+                await loadConfigs();
+            }
+        }
+
+        async function runLookup() {
+            const phone = document.getElementById('phoneInput').value;
+            if (!phone) return;
+
+            document.getElementById('lookupBtn').disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/lookups/info?phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+
+                document.getElementById('res-carrier').innerText = data.carrier;
+                document.getElementById('res-type').innerText = data.type;
+                document.getElementById('res-ported').innerText = data.isPorted ? 'YES' : 'NO';
+                document.getElementById('res-codes').innerText = `${data.mcc || '-'} / ${data.mnc || '-'}`;
+
+                document.getElementById('results').style.display = 'grid';
+                loadHistory();
+            } catch (e) {
+                alert('Lookup failed');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('lookupBtn').disabled = false;
+            }
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/api/lookups/recent');
+            const data = await res.json();
+            const list = document.getElementById('history-table');
+            list.innerHTML = data.length ? data.map(i => `
+                <tr>
+                    <td style="font-family: monospace; font-weight: 500;">+${i.phone}</td>
+                    <td>${i.carrier || 'Unknown'}</td>
+                    <td style="text-transform: capitalize;">${i.type || 'Unknown'}</td>
+                    <td>${i.isPorted ? '<span style="color: var(--success)">YES</span>' : 'NO'}</td>
+                    <td style="opacity: 0.6;">${new Date(i.lastCheckedAt).toLocaleTimeString()}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">No lookups performed yet.</td></tr>';
+        }
+
+        async function loadConfigs() {
+            const res = await fetch('/api/lookups/configs');
+            configs = await res.json();
+            const list = document.getElementById('config-table');
+            list.innerHTML = configs.length ? configs.map(c => `
+                <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td style="font-size: 0.8rem; opacity: 0.7;">${c.baseUrl}</td>
+                    <td style="font-family: monospace;">${c.method}</td>
+                    <td><span class="badge" style="background: ${c.active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${c.active ? 'var(--success)' : 'var(--error)'}">${c.active ? 'ACTIVE' : 'DISABLED'}</span></td>
+                    <td style="display: flex; gap: 0.5rem;">
+                        <button class="btn" style="padding: 0.4rem; background: var(--border);" onclick="editConfig('${c.id}')"><i data-lucide="edit-2" style="width: 14px;"></i></button>
+                        <button class="btn" style="padding: 0.4rem; background: var(--border);" onclick="deleteConfig('${c.id}')"><i data-lucide="trash-2" style="width: 14px; color: var(--error);"></i></button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No HLR providers configured. Falling back to internal global registry.</td></tr>';
+            lucide.createIcons();
+        }
+
+        function showConfigModal() {
+            document.getElementById('modalTitle').innerText = 'Add HLR Provider';
+            document.getElementById('configId').value = '';
+            document.getElementById('configForm').reset();
+            document.getElementById('configModal').style.display = 'flex';
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        function editConfig(id) {
+            const c = configs.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('modalTitle').innerText = 'Edit HLR Provider';
+            document.getElementById('configId').value = c.id;
+            document.getElementById('confName').value = c.name;
+            document.getElementById('confUrl').value = c.baseUrl;
+            document.getElementById('confMethod').value = c.method;
+            document.getElementById('confKey').value = c.apiKey || '';
+            document.getElementById('confSecret').value = c.apiSecret || '';
+            document.getElementById('confActive').checked = c.active;
+            document.getElementById('confMapping').value = c.mapping ? JSON.stringify(c.mapping, null, 2) : '';
+            document.getElementById('configModal').style.display = 'flex';
+        }
+
+        async function deleteConfig(id) {
+            if (!confirm('Are you sure you want to delete this provider?')) return;
+            await fetch(`/api/lookups/configs/${id}`, { method: 'DELETE' });
+            loadConfigs();
+        }
+
+        async function testForm() {
+            const phone = prompt("Enter a phone number to test with (e.g. 447700900123):");
+            if (!phone) return;
+
+            const mappingVal = document.getElementById('confMapping').value;
+            let mapping = null;
+            if (mappingVal) {
+                try { mapping = JSON.parse(mappingVal); } catch (e) { return alert("Invalid JSON in mapping field"); }
+            }
+
+            const data = {
+                config: {
+                    name: document.getElementById('confName').value,
+                    baseUrl: document.getElementById('confUrl').value,
+                    method: document.getElementById('confMethod').value,
+                    apiKey: document.getElementById('confKey').value,
+                    apiSecret: document.getElementById('confSecret').value,
+                    mapping: mapping
+                },
+                phone: phone
+            };
+
+            const details = document.getElementById('test-details');
+            const area = document.getElementById('test-result-area');
+            details.innerText = "Testing... please wait.";
+            area.style.display = 'block';
+
+            try {
+                const res = await fetch('/api/lookups/configs/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                details.innerText = JSON.stringify(result, null, 2);
+            } catch (e) {
+                details.innerText = "Error: " + e.message;
+            }
+        }
+
+        document.getElementById('configForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const mappingVal = document.getElementById('confMapping').value;
+            let mapping = null;
+            if (mappingVal) {
+                try { mapping = JSON.parse(mappingVal); } catch (e) { return alert("Invalid JSON in mapping field"); }
+            }
+
+            const data = {
+                id: document.getElementById('configId').value || undefined,
+                name: document.getElementById('confName').value,
+                baseUrl: document.getElementById('confUrl').value,
+                method: document.getElementById('confMethod').value,
+                apiKey: document.getElementById('confKey').value,
+                apiSecret: document.getElementById('confSecret').value,
+                active: document.getElementById('confActive').checked,
+                mapping: mapping
+            };
+
+            await fetch('/api/lookups/configs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            closeConfigModal();
+            loadConfigs();
+        };
+
+        loadHistory();
+    </script>
+</body>
+
+</html>
