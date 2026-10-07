@@ -45,7 +45,8 @@ exports.listCustomers = async (req, res) => {
 };
 
 exports.createCustomer = async (req, res) => {
-    const { name, type = 'CUSTOMER', balance = 0 } = req.body;
+    const { name, type = 'CUSTOMER' } = req.body;
+    const balance = req.identityRole === ROLES.ADMIN ? Number(req.body.balance) || 0 : 0;
     if (!name)
         return res.status(400).json({ status: 'error', message: 'Customer name is required' });
     if (
@@ -55,12 +56,10 @@ exports.createCustomer = async (req, res) => {
         return res.status(400).json({ status: 'error', message: 'Invalid customer type' });
     }
     if (req.identityRole === ROLES.AGGREGATOR && ![ROLES.RESELLER, ROLES.CUSTOMER].includes(type)) {
-        return res
-            .status(400)
-            .json({
-                status: 'error',
-                message: 'Aggregators can only create resellers or customers'
-            });
+        return res.status(400).json({
+            status: 'error',
+            message: 'Aggregators can only create resellers or customers'
+        });
     }
     if (
         ![ROLES.AGGREGATOR, ROLES.RESELLER].includes(req.identityRole) &&

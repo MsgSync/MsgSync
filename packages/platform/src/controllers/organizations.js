@@ -9,16 +9,17 @@ exports.create = async (req, res) => {
             req.identityRole === ROLES.ADMIN
                 ? requestedType || 'CUSTOMER'
                 : req.identityRole === ROLES.AGGREGATOR
-                  ? ['RESELLER', 'CUSTOMER'].includes(requestedType)
-                      ? requestedType
-                      : 'CUSTOMER'
-                  : 'CUSTOMER';
+                    ? ['RESELLER', 'CUSTOMER'].includes(requestedType)
+                        ? requestedType
+                        : 'CUSTOMER'
+                    : 'CUSTOMER';
         const parentId =
             req.identityRole === ROLES.ADMIN ? req.body.parentId || null : req.organization.id;
         const org = await organizationService.createOrganization({
             ...req.body,
             type,
-            parentId
+            parentId,
+            balance: req.identityRole === ROLES.ADMIN ? req.body.balance || 0 : 0
         });
 
         // Audit Log
@@ -69,12 +70,25 @@ exports.addBalance = async (req, res) => {
     try {
         const { amount, description } = req.body;
         await requireOrganizationAccess(req, req.params.id);
-        const org = await organizationService.updateBalance(
-            req.params.id,
-            amount,
-            'CREDIT',
-            description
-        );
+        let org;
+        if (req.identityRole === ROLES.ADMIN) {
+            org = await organizationService.updateBalance(
+                req.params.id,
+                amount,
+                'CREDIT',
+                description
+            );
+        } else {
+            if (req.params.id === req.organization.id) {
+                return res.status(403).json({ error: 'You cannot credit your own organization.' });
+            }
+            org = await organizationService.transferBalance(
+                req.organization.id,
+                req.params.id,
+                amount,
+                description
+            );
+        }
 
         // Audit Log
         const auditService = require('../services/auditService');
@@ -83,7 +97,12 @@ exports.addBalance = async (req, res) => {
             entity: 'Organization',
             entityId: req.params.id,
             organizationId: req.params.id,
-            metadata: { amount, type: 'CREDIT', description }
+            metadata: {
+                amount,
+                type: 'CREDIT',
+                description,
+                sourceOrganizationId: req.identityRole === ROLES.ADMIN ? null : req.organization.id
+            }
         });
 
         res.json(org);

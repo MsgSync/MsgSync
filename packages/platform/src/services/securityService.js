@@ -40,6 +40,14 @@ class SecurityService {
      * Generates a 2FA secret and placeholder QR code URL.
      */
     async generate2FASecret(userId, email) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { twoFactorEnabled: true }
+        });
+        if (user?.twoFactorEnabled) {
+            throw new Error('2FA is already enabled. Disable it before setting up a new secret.');
+        }
+
         const secret = speakeasy.generateSecret({
             name: `MsgSync:${email}`
         });
@@ -64,9 +72,20 @@ class SecurityService {
         });
     }
 
-    async enable2FA(userId, secret, token) {
+    async enable2FA(userId, token) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { twoFactorSecret: true, twoFactorEnabled: true }
+        });
+        if (!user?.twoFactorSecret) {
+            throw new Error('No 2FA secret found. Call setup first.');
+        }
+        if (user.twoFactorEnabled) {
+            throw new Error('2FA is already enabled.');
+        }
+
         const verified = speakeasy.totp.verify({
-            secret,
+            secret: user.twoFactorSecret,
             encoding: 'base32',
             token
         });
@@ -87,7 +106,7 @@ class SecurityService {
             select: { twoFactorSecret: true, twoFactorEnabled: true }
         });
 
-        if (!user || !user.twoFactorEnabled) return true;
+        if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) return false;
 
         return speakeasy.totp.verify({
             secret: user.twoFactorSecret,
@@ -108,20 +127,7 @@ class SecurityService {
         }
 
         // 2. Spending Limit
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const spentToday = await prisma.transaction.aggregate({
-            where: {
-                organizationId: organization.id,
-                type: 'DEBIT',
-                createdAt: { gte: today }
-            },
-            _sum: { amount: true }
-        });
-
-        const totalSpent = spentToday._sum.amount || 0;
-        if (parseFloat(totalSpent) >= parseFloat(organization.maxDailySpend)) {
+        if (await this.isDailySpendLimitReached(organization)) {
             return { valid: false, reason: 'DAILY_SPEND_LIMIT_REACHED' };
         }
 
@@ -132,6 +138,23 @@ class SecurityService {
         }
 
         return { valid: true };
+    }
+
+    async isDailySpendLimitReached(organization) {
+        const startOfDay = new Date();
+        startOfDay.setUTCHours(0, 0, 0, 0);
+
+        const spentToday = await prisma.transaction.aggregate({
+            where: {
+                organizationId: organization.id,
+                type: 'DEBIT',
+                createdAt: { gte: startOfDay }
+            },
+            _sum: { amount: true }
+        });
+
+        const totalSpent = spentToday._sum.amount || 0;
+        return parseFloat(totalSpent) >= parseFloat(organization.maxDailySpend);
     }
 
     /**
@@ -179,7 +202,7 @@ class SecurityService {
                 entity: 'Security',
                 entityId: userId || organizationId,
                 userId,
-                organizationId,
+                organizationId: organizationId || null,
                 metadata,
                 ipAddress
             }

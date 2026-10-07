@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
 
   redis:
     image: redis:7-alpine
@@ -26,6 +27,7 @@ services:
       REDIS_URL: "redis://redis:6379"
       PORT: 3001
       NODE_ENV: production
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET must be set}"
     ports:
       - "3001:3001"
     depends_on:

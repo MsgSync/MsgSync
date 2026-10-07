@@ -27,7 +27,8 @@ jest.mock('../src/middleware/auth', () => (req, res, next) => {
 // Mock Rate Limiters to disable them
 jest.mock('../src/middleware/rateLimiter', () => ({
     apiLimiter: (req, res, next) => next(),
-    messageSendLimiter: (req, res, next) => next()
+    messageSendLimiter: (req, res, next) => next(),
+    otpVerifyLimiter: (req, res, next) => next()
 }));
 
 // Mock SecurityService

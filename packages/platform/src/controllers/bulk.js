@@ -127,7 +127,23 @@ async function startCampaign(req, res) {
         if (!campaign) {
             return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
-        // Run in background
+        const securityService = require('../services/securityService');
+        if (securityService.checkForSpam(campaign.template)) {
+            return res.status(403).json({
+                status: 'error',
+                code: 'CONTENT_REJECTED_SPAM',
+                message: 'Security rejection: CONTENT_REJECTED_SPAM'
+            });
+        }
+
+        const started = await campaignService.transition(id, ['draft', 'scheduled'], 'running');
+        if (!started) {
+            return res.status(409).json({
+                status: 'error',
+                message: `Campaign cannot be started from status '${campaign.status}'`
+            });
+        }
+
         campaignService
             .processCampaign(id)
             .catch((err) => console.error('Campaign background error:', err));
@@ -194,10 +210,15 @@ async function pauseCampaign(req, res) {
         if (!existingCampaign) {
             return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
-        const campaign = await prisma.campaign.update({
-            where: { id },
-            data: { status: 'paused' }
-        });
+        const paused = await campaignService.transition(id, ['running', 'scheduled'], 'paused');
+        if (!paused) {
+            return res.status(409).json({
+                status: 'error',
+                message: `Campaign cannot be paused from status '${existingCampaign.status}'`
+            });
+        }
+        await campaignService.pauseMessages(id);
+        const campaign = await prisma.campaign.findUnique({ where: { id } });
 
         // Audit Log
         const auditService = require('../services/auditService');
@@ -224,15 +245,14 @@ async function resumeCampaign(req, res) {
             return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
 
-        const newStatus =
-            campaign.scheduledAt && new Date(campaign.scheduledAt) > new Date()
-                ? 'scheduled'
-                : 'running';
-
-        const updated = await prisma.campaign.update({
-            where: { id },
-            data: { status: newStatus }
-        });
+        const resumed = await campaignService.transition(id, ['paused'], 'running');
+        if (!resumed) {
+            return res.status(409).json({
+                status: 'error',
+                message: `Campaign cannot be resumed from status '${campaign.status}'`
+            });
+        }
+        const updated = await prisma.campaign.findUnique({ where: { id } });
 
         // Audit Log
         const auditService = require('../services/auditService');
@@ -244,12 +264,10 @@ async function resumeCampaign(req, res) {
             metadata: { name: updated.name }
         });
 
-        // If resuming to running, restart campaign processing
-        if (newStatus === 'running') {
-            campaignService
-                .processCampaign(id)
-                .catch((err) => console.error('Campaign resume error:', err));
-        }
+        campaignService
+            .requeuePausedMessages(id)
+            .then(() => campaignService.processCampaign(id))
+            .catch((err) => console.error('Campaign resume error:', err));
 
         res.status(200).json({ status: 'success', data: updated });
     } catch (error) {

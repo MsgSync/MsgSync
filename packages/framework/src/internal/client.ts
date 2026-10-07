@@ -16,7 +16,7 @@ export class MsgSyncClient {
 
   constructor(config: MsgSyncConfig) {
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl || 'https://api.msgsync.com/v1';
+    this.baseUrl = config.baseUrl || 'http://localhost:3001/api';
     this.messages = new MessagesService(this);
     this.ai = new AiSdkService(this);
     this.langchain = new LangchainService(this);
@@ -26,7 +26,7 @@ export class MsgSyncClient {
     const url = `${this.baseUrl}${path}`;
     const headers = {
       'Content-Type': 'application/json',
-      'X-API-Key': this.apiKey,
+      'Authorization': `Bearer ${this.apiKey}`,
       ...options.headers,
     };
 

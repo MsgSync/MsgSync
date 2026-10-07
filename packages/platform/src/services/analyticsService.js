@@ -4,11 +4,29 @@ const prisma = new PrismaClient();
 /**
  * Service to aggregate platform-wide analytics.
  */
+function applyOrganizationFilter(where, organizationId) {
+    if (Array.isArray(organizationId)) {
+        where.organizationId = { in: organizationId };
+    } else if (organizationId) {
+        where.organizationId = organizationId;
+    }
+}
+
+const ALERT_FIELDS = ['name', 'type', 'threshold', 'status', 'notificationEmail'];
+
+function pickAlertFields(data = {}) {
+    const picked = {};
+    for (const field of ALERT_FIELDS) {
+        if (data[field] !== undefined) picked[field] = data[field];
+    }
+    return picked;
+}
+
 class AnalyticsService {
     async getMessageStats(apiKeyId = null, organizationId = null) {
         const where = {};
         if (apiKeyId) where.apiKeyId = apiKeyId;
-        if (organizationId) where.organizationId = organizationId;
+        applyOrganizationFilter(where, organizationId);
 
         const totalMessages = await prisma.message.count({ where });
 
@@ -51,7 +69,7 @@ class AnalyticsService {
             createdAt: { gte: last24h }
         };
         if (apiKeyId) where.apiKeyId = apiKeyId;
-        if (organizationId) where.organizationId = organizationId;
+        applyOrganizationFilter(where, organizationId);
 
         // Simplified: group by hour
         const messages = await prisma.message.findMany({
@@ -86,7 +104,7 @@ class AnalyticsService {
     async getVolumeByProvider(apiKeyId = null, organizationId = null) {
         const where = {};
         if (apiKeyId) where.apiKeyId = apiKeyId;
-        if (organizationId) where.organizationId = organizationId;
+        applyOrganizationFilter(where, organizationId);
 
         const volumeByProvider = await prisma.message.groupBy({
             by: ['provider'],
@@ -106,7 +124,7 @@ class AnalyticsService {
         const where = {
             status: { in: ['sent', 'delivered'] }
         };
-        if (organizationId) where.organizationId = organizationId;
+        applyOrganizationFilter(where, organizationId);
 
         const summary = await prisma.message.aggregate({
             where,
@@ -151,7 +169,7 @@ class AnalyticsService {
      */
     async getDetailedReports(filters = {}, skip = 0, take = 50) {
         const where = {};
-        if (filters.organizationId) where.organizationId = filters.organizationId;
+        applyOrganizationFilter(where, filters.organizationId);
         if (filters.status) where.status = filters.status;
         if (filters.profile) where.profile = filters.profile;
         if (filters.startDate && filters.endDate) {
@@ -182,7 +200,7 @@ class AnalyticsService {
      */
     async getLiveTraffic(organizationId = null, limit = 100) {
         const where = {};
-        if (organizationId) where.organizationId = organizationId;
+        applyOrganizationFilter(where, organizationId);
 
         return await prisma.message.findMany({
             where,
@@ -218,12 +236,12 @@ class AnalyticsService {
         if (alertData.id) {
             return await prisma.alert.update({
                 where: { id: alertData.id, organizationId },
-                data: alertData
+                data: pickAlertFields(alertData)
             });
         }
         return await prisma.alert.create({
             data: {
-                ...alertData,
+                ...pickAlertFields(alertData),
                 organizationId
             }
         });

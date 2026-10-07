@@ -15,23 +15,7 @@
     },
     "private": false,
     "files": [
-        "dist",
-        "express",
-        "h3",
-        "hono",
-        "internal",
-        "lambda",
-        "nest",
-        "next",
-        "nuxt",
-        "remix",
-        "step-resolver",
-        "sveltekit",
-        "validators",
-        "ai-sdk",
-        "langchain",
-        "cards",
-        "README.md"
+        "dist"
     ],
     "exports": {
         ".": {
@@ -42,26 +26,6 @@
             "import": {
                 "types": "./dist/esm/index.d.ts",
                 "default": "./dist/esm/index.js"
-            }
-        },
-        "./jsx-runtime": {
-            "require": {
-                "types": "./dist/cjs/jsx-runtime.d.cts",
-                "default": "./dist/cjs/jsx-runtime.cjs"
-            },
-            "import": {
-                "types": "./dist/esm/jsx-runtime.d.ts",
-                "default": "./dist/esm/jsx-runtime.js"
-            }
-        },
-        "./jsx-dev-runtime": {
-            "require": {
-                "types": "./dist/cjs/jsx-dev-runtime.d.cts",
-                "default": "./dist/cjs/jsx-dev-runtime.cjs"
-            },
-            "import": {
-                "types": "./dist/esm/jsx-dev-runtime.d.ts",
-                "default": "./dist/esm/jsx-dev-runtime.js"
             }
         },
         "./express": {
@@ -164,26 +128,6 @@
                 "default": "./dist/esm/internal/index.js"
             }
         },
-        "./step-resolver": {
-            "require": {
-                "types": "./dist/cjs/step-resolver.d.cts",
-                "default": "./dist/cjs/step-resolver.cjs"
-            },
-            "import": {
-                "types": "./dist/esm/step-resolver.d.ts",
-                "default": "./dist/esm/step-resolver.js"
-            }
-        },
-        "./validators": {
-            "require": {
-                "types": "./dist/cjs/validators.d.cts",
-                "default": "./dist/cjs/validators.cjs"
-            },
-            "import": {
-                "types": "./dist/esm/validators.d.ts",
-                "default": "./dist/esm/validators.js"
-            }
-        },
         "./ai-sdk": {
             "require": {
                 "types": "./dist/cjs/ai-sdk/index.d.cts",
@@ -202,16 +146,6 @@
             "import": {
                 "types": "./dist/esm/langchain/index.d.ts",
                 "default": "./dist/esm/langchain/index.js"
-            }
-        },
-        "./cards": {
-            "require": {
-                "types": "./dist/cjs/cards.d.cts",
-                "default": "./dist/cjs/cards.cjs"
-            },
-            "import": {
-                "types": "./dist/esm/cards.d.ts",
-                "default": "./dist/esm/cards.js"
             }
         }
     },

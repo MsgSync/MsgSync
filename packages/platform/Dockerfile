@@ -13,4 +13,4 @@ COPY packages/platform/ ./packages/platform/
 RUN cd packages/platform && pnpm prisma generate
 
 EXPOSE 3001
-CMD ["node", "packages/platform/src/index.js"]
+CMD ["sh", "-c", "cd packages/platform && pnpm prisma migrate deploy && cd ../.. && node packages/platform/src/index.js"]

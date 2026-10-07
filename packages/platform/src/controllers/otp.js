@@ -1,6 +1,8 @@
 const otpService = require('../services/otpService');
 const { sendMessage } = require('./messages');
 
+const REDACTED_CONTENT = 'Verification code redacted';
+
 /**
  * Handles sending an OTP via SMS.
  */
@@ -12,11 +14,27 @@ async function sendOTP(req, res) {
     }
 
     try {
-        const otp = await otpService.generateOTP(recipient, length, ttl);
+        const organizationId = req.organization?.id || null;
+        const { otp, ttl: effectiveTtl } = await otpService.generateOTP(
+            recipient,
+            length,
+            ttl,
+            organizationId
+        );
 
-        // Wrap the standard sendMessage controller functionality
-        // but customize the content for OTP
-        req.body.content = `Your MsgSync verification code is: ${otp}. It will expire in ${ttl || 300} seconds.`;
+        req.body.content = `Your MsgSync verification code is: ${otp}. It will expire in ${effectiveTtl} seconds.`;
+        req.body.metadata = { ...(req.body.metadata || {}), otp: true };
+
+        const originalJson = res.json.bind(res);
+        res.json = (body) => {
+            if (res.statusCode >= 400) {
+                otpService.discard(recipient, organizationId);
+            }
+            if (body?.data?.content) {
+                body = { ...body, data: { ...body.data, content: REDACTED_CONTENT } };
+            }
+            return originalJson(body);
+        };
 
         return await sendMessage(req, res);
     } catch (error) {
@@ -37,7 +55,11 @@ async function verifyOTP(req, res) {
     }
 
     try {
-        const result = await otpService.validateOTP(recipient, code);
+        const result = await otpService.validateOTP(
+            String(recipient),
+            String(code),
+            req.organization?.id || null
+        );
 
         if (result.valid) {
             res.status(200).json({ status: 'success', message: 'OTP verified successfully' });

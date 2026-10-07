@@ -8,10 +8,7 @@ export default defineConfig({
     'src/internal/client.ts',
     'src/internal/messages.ts',
     'src/ai-sdk/index.ts',
-    'src/langchain/index.ts',
-    'src/cards.ts',
-    'src/validators.ts',
-    'src/step-resolver.ts'
+    'src/langchain/index.ts'
   ],
   format: ['cjs', 'esm'],
   dts: true,

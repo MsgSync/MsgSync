@@ -18,6 +18,7 @@ const invoiceRoutes = require('./routes/invoices');
 const securityRoutes = require('./routes/security');
 const providerRoutes = require('./routes/providers');
 const observabilityRoutes = require('./routes/observability');
+const receiptRoutes = require('./routes/receipts');
 const requestLogger = require('./middleware/logger');
 
 // Load environment variables
@@ -52,6 +53,7 @@ app.use(
     })
 );
 app.use(requestLogger);
+app.use('/api/receipts', receiptRoutes);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -158,8 +160,13 @@ app.get('/health', (req, res) => {
 
 // Start server
 if (require.main === module) {
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
         console.log(`MsgSync Platform listening at http://localhost:${port}`);
+    });
+
+    process.on('SIGTERM', async () => {
+        await require('./services/providers/smppSessionManager').closeAll();
+        server.close(() => process.exit(0));
     });
 }
 

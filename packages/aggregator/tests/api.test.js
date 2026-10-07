@@ -27,6 +27,18 @@ jest.mock('@prisma/client', () => {
 });
 
 describe('Aggregator API', () => {
+    const key = 'test-key';
+
+    beforeEach(() => {
+        process.env.AGGREGATOR_API_KEY = key;
+    });
+
+    afterAll(() => {
+        delete process.env.AGGREGATOR_API_KEY;
+    });
+
+    const auth = (req) => req.set('X-Aggregator-Key', key);
+
     test('GET /health should return ok', async () => {
         const response = await request(app).get('/health');
         expect(response.status).toBe(200);
@@ -34,7 +46,7 @@ describe('Aggregator API', () => {
     });
 
     test('GET /api/sources should return sources', async () => {
-        const response = await request(app).get('/api/sources');
+        const response = await auth(request(app).get('/api/sources'));
         expect(response.status).toBe(200);
         expect(response.body.status).toBe('success');
         expect(response.body.data.length).toBe(1);
@@ -47,14 +59,14 @@ describe('Aggregator API', () => {
             type: 'webhook',
             config: { url: 'http://webhook.com' }
         };
-        const response = await request(app).post('/api/sources').send(newSource);
+        const response = await auth(request(app).post('/api/sources')).send(newSource);
         expect(response.status).toBe(201);
         expect(response.body.status).toBe('success');
         expect(response.body.data.name).toBe('New Source');
     });
 
     test('GET /api/analytics should return summary', async () => {
-        const response = await request(app).get('/api/analytics');
+        const response = await auth(request(app).get('/api/analytics'));
         expect(response.status).toBe(200);
         expect(response.body.status).toBe('success');
         expect(response.body.data.totalMessages).toBe(10);

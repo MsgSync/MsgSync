@@ -15,4 +15,4 @@ COPY packages/sdk-js/ ./packages/sdk-js/
 RUN cd packages/aggregator && pnpm prisma generate
 
 EXPOSE 3000
-CMD ["node", "packages/aggregator/src/index.js"]
+CMD ["sh", "-c", "cd packages/aggregator && pnpm prisma migrate deploy && cd ../.. && node packages/aggregator/src/index.js"]

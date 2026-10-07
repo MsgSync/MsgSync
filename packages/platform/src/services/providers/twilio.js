@@ -13,11 +13,15 @@ class TwilioProvider {
      */
     async send(message) {
         try {
-            const result = await this.client.messages.create({
+            const payload = {
                 body: message.content,
                 to: message.recipient,
                 from: this.fromNumber
-            });
+            };
+            if (process.env.PUBLIC_BASE_URL) {
+                payload.statusCallback = `${process.env.PUBLIC_BASE_URL.replace(/\/$/, '')}/api/receipts/twilio`;
+            }
+            const result = await this.client.messages.create(payload);
 
             return {
                 success: true,

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const prisma = new PrismaClient();
 const { normalizeRole, permissionsForRole } = require('../config/rbac');
+const { getJwtSecret } = require('../config/jwt');
 
 async function authenticate(req, res, next) {
     const apiKeyValue = req.headers['x-api-key'];
@@ -46,7 +47,7 @@ async function authenticate(req, res, next) {
 
         const decoded = jwt.verify(
             bearerToken,
-            process.env.JWT_SECRET || 'msgsync-super-secret-key-change-in-production'
+            getJwtSecret()
         );
 
         if (decoded.type === 'REFRESH' || decoded.type === '2FA_PENDING') {

@@ -1,4 +1,5 @@
 const bundleService = require('../services/bundleService');
+const { requireOrganizationAccess } = require('../services/authorizationService');
 
 exports.createBundle = async (req, res) => {
     try {
@@ -30,18 +31,20 @@ exports.listBundles = async (req, res) => {
 exports.subscribe = async (req, res) => {
     try {
         const { organizationId, bundleId } = req.body;
+        await requireOrganizationAccess(req, organizationId);
         const subscription = await bundleService.subscribe(organizationId, bundleId);
         res.status(201).json(subscription);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(error.status || 400).json({ error: error.message });
     }
 };
 
 exports.getOrgSubscriptions = async (req, res) => {
     try {
+        await requireOrganizationAccess(req, req.params.orgId);
         const history = await bundleService.getSubscriptionHistory(req.params.orgId);
         res.json(history);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(error.status || 500).json({ error: error.message });
     }
 };

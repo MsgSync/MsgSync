@@ -110,6 +110,16 @@ cd ../aggregator
 npx prisma migrate deploy
 ```
 
+Both packages ship a `20260101000000_baseline` migration generated from their Prisma schema. A database that was created earlier with `prisma db push` or the loose SQL files in `packages/platform/prisma/legacy-sql` already contains these tables, so mark the baseline as applied instead of running it:
+
+```bash
+npx prisma migrate resolve --applied 20260101000000_baseline
+```
+
+For an existing database, first apply the legacy SQL that matches your schema state (`drop_contact_phone_unique.sql` and `audit_log_nullable_organization.sql` cover the most recent schema changes).
+
+Create later migrations with `pnpm run prisma:migrate` in the package whose schema changed.
+
 ### 2. Seed Initial Data
 
 ```bash

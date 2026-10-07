@@ -120,25 +120,25 @@ function createCampaignCard(campaign) {
             
             <div class="campaign-meta">
                 ${
-                    campaign.senderId
-                        ? `
+    campaign.senderId
+        ? `
                     <div class="meta-item">
                         <i data-lucide="phone"></i>
                         <span>Sender: ${escapeHtml(campaign.senderId)}</span>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
                 ${
-                    campaign.scheduledAt
-                        ? `
+    campaign.scheduledAt
+        ? `
                     <div class="meta-item">
                         <i data-lucide="clock"></i>
                         <span>${scheduledDate}</span>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
                 <div class="meta-item">
                     <i data-lucide="users"></i>
                     <span>${campaign.contactList?.contacts?.length || 0} recipients</span>
@@ -166,8 +166,8 @@ function createCampaignCard(campaign) {
             
             <div class="campaign-actions" onclick="event.stopPropagation()">
                 ${
-                    campaign.status === 'draft'
-                        ? `
+    campaign.status === 'draft'
+        ? `
                     <button class="icon-btn" onclick="editCampaign('${campaign.id}')" title="Edit">
                         <i data-lucide="edit"></i>
                     </button>
@@ -175,26 +175,26 @@ function createCampaignCard(campaign) {
                         <i data-lucide="play"></i>
                     </button>
                 `
-                        : ''
-                }
+        : ''
+}
                 ${
-                    campaign.status === 'scheduled'
-                        ? `
+    campaign.status === 'scheduled'
+        ? `
                     <button class="icon-btn" onclick="pauseCampaign('${campaign.id}')" title="Pause">
                         <i data-lucide="pause"></i>
                     </button>
                 `
-                        : ''
-                }
+        : ''
+}
                 ${
-                    campaign.status === 'paused'
-                        ? `
+    campaign.status === 'paused'
+        ? `
                     <button class="icon-btn" onclick="resumeCampaign('${campaign.id}')" title="Resume">
                         <i data-lucide="play"></i>
                     </button>
                 `
-                        : ''
-                }
+        : ''
+}
                 <button class="icon-btn" onclick="duplicateCampaign('${campaign.id}')" title="Duplicate">
                     <i data-lucide="copy"></i>
                 </button>
@@ -541,23 +541,23 @@ async function viewCampaignDetails(campaignId) {
                     <strong>Created:</strong> ${new Date(campaign.createdAt).toLocaleString()}
                 </div>
                 ${
-                    campaign.senderId
-                        ? `
+    campaign.senderId
+        ? `
                     <div>
                         <strong>Sender ID:</strong> ${escapeHtml(campaign.senderId)}
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
                 ${
-                    campaign.scheduledAt
-                        ? `
+    campaign.scheduledAt
+        ? `
                     <div>
                         <strong>Scheduled:</strong> ${new Date(campaign.scheduledAt).toLocaleString()}
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
             </div>
         </div>
         

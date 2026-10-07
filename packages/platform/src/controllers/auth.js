@@ -3,7 +3,10 @@ const prisma = new PrismaClient();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'msgsync-super-secret-key-change-in-production';
+const { getJwtSecret } = require('../config/jwt');
+const tokenService = require('../services/tokenService');
+
+const JWT_SECRET = getJwtSecret();
 const JWT_EXPIRES_IN = '24h';
 const REFRESH_TOKEN_EXPIRES_IN = '7d';
 
@@ -82,9 +85,8 @@ exports.login = async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
-            expiresIn: REFRESH_TOKEN_EXPIRES_IN
-        });
+        const refresh = await tokenService.issue(user.id);
+        const refreshToken = refresh.token;
 
         await prisma.user.update({
             where: { id: user.id },
@@ -176,9 +178,8 @@ exports.register = async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
-            expiresIn: REFRESH_TOKEN_EXPIRES_IN
-        });
+        const refresh = await tokenService.issue(user.id);
+        const refreshToken = refresh.token;
 
         res.status(201).json({
             status: 'success',
@@ -205,6 +206,7 @@ exports.logout = async (req, res) => {
         const token = authHeader?.split(' ')[1];
 
         if (token) {
+            await tokenService.revoke(token);
             await require('../services/securityService').logSecurityEvent(
                 req.user?.id || null,
                 req.organization?.id || null,
@@ -227,13 +229,15 @@ exports.refreshToken = async (req, res) => {
             return res.status(401).json({ status: 'error', message: 'Refresh token required' });
         }
 
-        const decoded = jwt.verify(refreshToken, JWT_SECRET);
-        if (decoded.type !== 'REFRESH') {
-            return res.status(401).json({ status: 'error', message: 'Invalid refresh token' });
+        const rotated = await tokenService.rotate(refreshToken);
+        if (!rotated) {
+            return res
+                .status(401)
+                .json({ status: 'error', message: 'Invalid or expired refresh token' });
         }
 
         const user = await prisma.user.findUnique({
-            where: { id: decoded.userId },
+            where: { id: rotated.userId },
             include: { organization: true }
         });
 
@@ -247,9 +251,7 @@ exports.refreshToken = async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        const newRefreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
-            expiresIn: REFRESH_TOKEN_EXPIRES_IN
-        });
+        const newRefreshToken = rotated.token;
 
         res.json({
             status: 'success',
@@ -285,9 +287,8 @@ exports.verify2FA = async (req, res) => {
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
-        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
-            expiresIn: REFRESH_TOKEN_EXPIRES_IN
-        });
+        const refresh = await tokenService.issue(user.id);
+        const refreshToken = refresh.token;
 
         res.json({
             status: 'success',
@@ -321,7 +322,12 @@ exports.getCurrentUser = async (req, res) => {
             include: { organization: true }
         });
 
-        res.json({ status: 'success', data: user });
+        if (!user) return res.status(401).json({ error: 'Invalid session' });
+
+        const safeUser = { ...user };
+        delete safeUser.passwordHash;
+        delete safeUser.twoFactorSecret;
+        res.json({ status: 'success', data: safeUser });
     } catch (error) {
         res.status(401).json({ error: 'Invalid session' });
     }
@@ -329,6 +335,13 @@ exports.getCurrentUser = async (req, res) => {
 
 exports.ssoLogin = async (req, res) => {
     try {
+        if (process.env.ENABLE_MOCK_SSO !== 'true' || process.env.NODE_ENV === 'production') {
+            return res.status(501).json({
+                status: 'error',
+                message: 'SSO is not configured.'
+            });
+        }
+
         const { provider } = req.params;
         const { code } = req.query;
 
@@ -377,12 +390,10 @@ exports.ssoLogin = async (req, res) => {
         );
 
         if (restriction.restricted) {
-            return res
-                .status(403)
-                .json({
-                    status: 'error',
-                    message: `Access denied from ${restriction.detectedCountry}`
-                });
+            return res.status(403).json({
+                status: 'error',
+                message: `Access denied from ${restriction.detectedCountry}`
+            });
         }
 
         if (user.twoFactorEnabled) {
@@ -400,9 +411,8 @@ exports.ssoLogin = async (req, res) => {
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
-        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
-            expiresIn: REFRESH_TOKEN_EXPIRES_IN
-        });
+        const refresh = await tokenService.issue(user.id);
+        const refreshToken = refresh.token;
 
         await securityService.logSecurityEvent(user.id, user.organizationId, 'LOGIN_SUCCESS', {
             remoteIp

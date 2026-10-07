@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma clients
+        run: pnpm run prisma:generate
+
+      - name: Verify migrations match the Prisma schemas
+        run: |
+          for pkg in platform aggregator; do
+            export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ci_$pkg"
+            (cd packages/$pkg && pnpm prisma migrate deploy && \
+              pnpm prisma migrate diff --from-url "$DATABASE_URL" \
+                --to-schema-datamodel prisma/schema.prisma --exit-code)
+          done
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test platform
+        run: pnpm --filter @msgsync/platform run test
+        env:
+          NODE_ENV: test
+
+      - name: Test aggregator
+        run: pnpm --filter @msgsync/aggregator run test
+        env:
+          NODE_ENV: test
+
+      - name: Test web app
+        run: pnpm --filter "./apps" run test
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=high
+        continue-on-error: true

@@ -23,6 +23,26 @@ class RateService {
         });
     }
 
+    async getPlan(id) {
+        return await prisma.ratePlan.findUnique({
+            where: { id },
+            include: { organizations: { select: { id: true } } }
+        });
+    }
+
+    async listRatePlansScoped(scope, organizationId) {
+        const own = await prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: { ratePlanId: true }
+        });
+        const or = [{ ownerId: { in: scope } }];
+        if (own?.ratePlanId) or.push({ id: own.ratePlanId });
+        return await prisma.ratePlan.findMany({
+            where: { OR: or },
+            include: { _count: { select: { rates: true } } }
+        });
+    }
+
     async assignPlanToOrganization(organizationId, planId) {
         return await prisma.organization.update({
             where: { id: organizationId },
@@ -168,6 +188,10 @@ class RateService {
                 status: 'PENDING'
             }
         });
+    }
+
+    async getSenderId(id) {
+        return await prisma.senderId.findUnique({ where: { id } });
     }
 
     async approveSenderId(id) {

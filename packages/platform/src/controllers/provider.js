@@ -3,12 +3,31 @@ const prisma = new PrismaClient();
 const providerService = require('../services/providerService');
 const auditService = require('../services/auditService');
 
+const SENSITIVE_KEY = /pass|secret|token|key|credential|auth/i;
+
+function redactConfig(config) {
+    if (!config || typeof config !== 'object') return config;
+    const redacted = {};
+    for (const [key, value] of Object.entries(config)) {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+            redacted[key] = redactConfig(value);
+        } else {
+            redacted[key] = SENSITIVE_KEY.test(key) ? '********' : value;
+        }
+    }
+    return redacted;
+}
+
+function toPublicProvider(provider) {
+    return { ...provider, config: redactConfig(provider.config) };
+}
+
 exports.list = async (req, res) => {
     try {
         const providers = await prisma.provider.findMany({
             orderBy: { priority: 'asc' }
         });
-        res.json({ status: 'success', data: providers });
+        res.json({ status: 'success', data: providers.map(toPublicProvider) });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
@@ -29,7 +48,7 @@ exports.update = async (req, res) => {
             organizationId: req.organization?.id,
             metadata: { active }
         });
-        res.json({ status: 'success', data: provider });
+        res.json({ status: 'success', data: toPublicProvider(provider) });
     } catch (error) {
         res.status(400).json({ status: 'error', message: error.message });
     }

@@ -48,15 +48,13 @@ class BundleService {
             });
             if (!org) throw new Error('Organization not found');
 
-            if (parseFloat(org.balance) < parseFloat(bundle.price)) {
-                throw new Error('Insufficient balance to subscribe to this bundle');
-            }
-
-            // Deduct balance
-            await tx.organization.update({
-                where: { id: organizationId },
+            const debited = await tx.organization.updateMany({
+                where: { id: organizationId, balance: { gte: bundle.price } },
                 data: { balance: { decrement: bundle.price } }
             });
+            if (debited.count === 0) {
+                throw new Error('Insufficient balance to subscribe to this bundle');
+            }
 
             // Create Transaction record
             await tx.transaction.create({

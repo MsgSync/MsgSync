@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const axios = require('axios');
+const { assertPublicHttpUrl } = require('../utils/urlGuard');
 
 class LookupService {
     /**
@@ -67,6 +68,7 @@ class LookupService {
      */
     async performExternalHlr(config, phone) {
         try {
+            await assertPublicHttpUrl(config.baseUrl);
             console.log(`Calling HLR provider ${config.name} for ${phone} via ${config.baseUrl}`);
 
             const options = {
@@ -174,11 +176,17 @@ class LookupService {
 
     // Config Management
     async getConfigs() {
-        return await prisma.hlrConfig.findMany();
+        const configs = await prisma.hlrConfig.findMany();
+        return configs.map(({ apiKey, apiSecret, ...rest }) => ({
+            ...rest,
+            hasApiKey: Boolean(apiKey),
+            hasApiSecret: Boolean(apiSecret)
+        }));
     }
 
     async saveConfig(data) {
         const auditService = require('./auditService');
+        await assertPublicHttpUrl(data.baseUrl);
         if (data.id) {
             const updated = await prisma.hlrConfig.update({
                 where: { id: data.id },

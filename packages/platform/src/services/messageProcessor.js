@@ -22,31 +22,39 @@ async function processMessage(messageId) {
             return;
         }
 
-        // 2. Update status to 'sending'
-        await prisma.message.update({
-            where: { id: messageId },
-            data: { status: 'sending' }
-        });
+        if (message.status === 'paused') {
+            console.log(`Message ${messageId} is paused, skipping.`);
+            return;
+        }
 
-        // 3. Attempt delivery with intelligent failover
-        const deliveryResult = await providerService.deliverWithFailover(message);
+        if (['sent', 'delivered'].includes(message.status)) {
+            console.log(`Message ${messageId} already ${message.status}, skipping.`);
+            return;
+        }
 
-        // 4. Calculate Financials (Multi-Policy Billing Logic)
         const rateService = require('./rateService');
         const lookupService = require('./lookupService');
+        const organizationService = require('./organizationService');
 
         const org = await prisma.organization.findUnique({
             where: { id: message.organizationId },
-            select: { billingPolicy: true }
+            select: {
+                id: true,
+                billingPolicy: true,
+                type: true,
+                balance: true,
+                maxDailySpend: true
+            }
         });
 
         const billingPolicy = org ? org.billingPolicy : 'ON_SUBMISSION';
+        const isBillable = Boolean(org) && org.type !== 'ADMIN';
 
         // Determine profile from metadata or default to TRANSACTIONAL
         const messageProfile = message.metadata?.profile || 'TRANSACTIONAL';
 
         // Try to get HLR/MNP info for network-level granularity
-        const lookupInfo = await lookupService.getLookupInfo(message.recipient).catch(() => null);
+        const lookupInfo = await lookupService.performLookup(message.recipient).catch(() => null);
 
         const rate = await rateService.lookupRateForOrganization(
             message.organizationId,
@@ -55,6 +63,50 @@ async function processMessage(messageId) {
             lookupInfo?.mnc,
             messageProfile
         );
+
+        if (isBillable) {
+            const securityService = require('./securityService');
+            if (await securityService.isDailySpendLimitReached(org)) {
+                const rejected = await prisma.message.update({
+                    where: { id: messageId },
+                    data: {
+                        status: 'failed',
+                        error: 'DAILY_SPEND_LIMIT_REACHED',
+                        price: 0,
+                        cost: 0
+                    }
+                });
+                const webhookService = require('./webhookService');
+                await webhookService.triggerStatusChange(rejected);
+                return { success: false, error: 'DAILY_SPEND_LIMIT_REACHED' };
+            }
+        }
+
+        // 2. Prepaid balance check before attempting delivery
+        if (isBillable && parseFloat(org.balance) < parseFloat(rate.pricePerSms)) {
+            const rejected = await prisma.message.update({
+                where: { id: messageId },
+                data: {
+                    status: 'failed',
+                    error: 'Insufficient balance',
+                    profile: messageProfile,
+                    price: 0,
+                    cost: 0
+                }
+            });
+            const webhookService = require('./webhookService');
+            await webhookService.triggerStatusChange(rejected);
+            return { success: false, error: 'Insufficient balance' };
+        }
+
+        // 3. Update status to 'sending'
+        await prisma.message.update({
+            where: { id: messageId },
+            data: { status: 'sending' }
+        });
+
+        // 4. Attempt delivery with intelligent failover
+        const deliveryResult = await providerService.deliverWithFailover(message);
 
         // Find the provider used to get our internal cost
         const providerUsed = await prisma.provider.findFirst({
@@ -65,12 +117,27 @@ async function processMessage(messageId) {
         // Billing Selection Logic:
         // ON_ATTEMPT: Always charge if we tried sending
         // ON_SUBMISSION: Only charge if provider accepted (deliveryResult.success)
-        // ON_DELIVERY: (Handled via DLR webhook, but for now defaults to submission success)
+        // ON_DELIVERY: Charged when a delivery receipt arrives (see deliveryReceiptService)
         let finalPrice = 0;
-        if (billingPolicy === 'ON_ATTEMPT') {
+        if (billingPolicy === 'ON_DELIVERY') {
+            finalPrice = 0;
+        } else if (billingPolicy === 'ON_ATTEMPT') {
             finalPrice = rate.pricePerSms;
         } else if (deliveryResult.success) {
             finalPrice = rate.pricePerSms;
+        }
+
+        if (isBillable && finalPrice > 0) {
+            try {
+                await organizationService.updateBalance(
+                    message.organizationId,
+                    Number(finalPrice),
+                    'DEBIT',
+                    `SMS to ${message.recipient} (${message.id})`
+                );
+            } catch (billingError) {
+                console.error(`Failed to debit balance for message ${messageId}:`, billingError);
+            }
         }
 
         // 5. Update message with result and financials
@@ -80,6 +147,9 @@ async function processMessage(messageId) {
         const updatedMessage = await prisma.message.update({
             where: { id: messageId },
             data: {
+                ...(message.metadata?.otp && deliveryResult.success
+                    ? { content: 'Verification code redacted' }
+                    : {}),
                 status: deliveryResult.success ? 'sent' : 'failed',
                 externalId: deliveryResult.externalId,
                 provider: deliveryResult.providerUsed || 'none',

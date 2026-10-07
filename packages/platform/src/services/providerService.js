@@ -57,16 +57,15 @@ class ProviderService {
         }
 
         if (provider.type === 'smpp') {
-            const SMPPProvider = require('./providers/smpp');
-            const smppProvider = new SMPPProvider(provider.config);
+            const smppSessionManager = require('./providers/smppSessionManager');
             try {
-                await smppProvider.connect();
-                const result = await smppProvider.sendMessage(
+                const session = await smppSessionManager.get(provider);
+                const result = await session.sendMessage(
                     message.recipient,
                     message.content,
-                    message.id
+                    message.id,
+                    { senderId: message.metadata?.senderId }
                 );
-                await smppProvider.disconnect();
                 return {
                     success: result.success,
                     externalId: result.externalId,

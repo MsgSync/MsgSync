@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const securityService = require('../services/securityService');
+const speakeasy = require('speakeasy');
 const auditService = require('../services/auditService');
 
 exports.setup2FA = async (req, res) => {
@@ -14,8 +15,8 @@ exports.setup2FA = async (req, res) => {
 
 exports.enable2FA = async (req, res) => {
     try {
-        const { secret, token } = req.body;
-        const success = await securityService.enable2FA(req.user.id, secret, token);
+        const { token } = req.body;
+        const success = await securityService.enable2FA(req.user.id, token);
         if (success) {
             await securityService.logSecurityEvent(
                 req.user.id,
@@ -33,6 +34,23 @@ exports.enable2FA = async (req, res) => {
 
 exports.disable2FA = async (req, res) => {
     try {
+        const { token } = req.body;
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { twoFactorSecret: true, twoFactorEnabled: true }
+        });
+        if (!user?.twoFactorEnabled) {
+            return res.status(400).json({ status: 'error', message: '2FA is not enabled' });
+        }
+        const verified = speakeasy.totp.verify({
+            secret: user.twoFactorSecret,
+            encoding: 'base32',
+            token
+        });
+        if (!verified) {
+            return res.status(400).json({ status: 'error', message: 'Invalid 2FA code' });
+        }
+
         await prisma.user.update({
             where: { id: req.user.id },
             data: { twoFactorEnabled: false, twoFactorSecret: null }
@@ -65,6 +83,8 @@ exports.updateRestrictions = async (req, res) => {
 
 exports.revokeSessions = async (req, res) => {
     try {
+        const tokenService = require('../services/tokenService');
+        await tokenService.revokeAllForUser(req.user.id);
         await securityService.logSecurityEvent(
             req.user.id,
             req.user.organizationId,

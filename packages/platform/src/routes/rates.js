@@ -15,9 +15,9 @@ router.post('/plans', authorize(PERMISSIONS.RATE_MANAGE), ratesController.create
 router.post('/plans/assign', authorize(PERMISSIONS.RATE_MANAGE), ratesController.assignPlan);
 
 // --- Rate Routes ---
+router.post('/rates/import', authorize(PERMISSIONS.RATE_MANAGE), ratesController.importRates);
 router.get('/rates/:planId?', authorize(PERMISSIONS.RATE_READ), ratesController.listRates);
 router.post('/rates/:planId?', authorize(PERMISSIONS.RATE_MANAGE), ratesController.updateRate);
-router.post('/rates/import', authorize(PERMISSIONS.RATE_MANAGE), ratesController.importRates);
 
 // --- Utilities ---
 router.get('/lookup', authorize(PERMISSIONS.RATE_READ), ratesController.lookupExchange);

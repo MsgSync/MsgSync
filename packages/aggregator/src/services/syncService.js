@@ -9,7 +9,7 @@ dotenv.config();
 class SyncService {
     constructor() {
         this.client = new MsgSyncClient({
-            apiKey: process.env.MSGSYNC_PLATFORM_API_KEY || 'demo-api-key',
+            apiKey: process.env.MSGSYNC_PLATFORM_API_KEY,
             baseUrl: process.env.MSGSYNC_PLATFORM_URL || 'http://localhost:3001/api'
         });
     }

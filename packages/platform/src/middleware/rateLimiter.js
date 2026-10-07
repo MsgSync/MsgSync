@@ -33,7 +33,20 @@ const messageSendLimiter = rateLimit({
     }
 });
 
+const otpVerifyLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        status: 'error',
+        message: 'Too many verification attempts. Please try again later.'
+    },
+    keyGenerator: (req) => (req.apiKey ? req.apiKey.id : req.ip)
+});
+
 module.exports = {
     apiLimiter,
-    messageSendLimiter
+    messageSendLimiter,
+    otpVerifyLimiter
 };

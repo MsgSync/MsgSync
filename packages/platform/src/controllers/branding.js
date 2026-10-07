@@ -1,4 +1,5 @@
 const brandingService = require('../services/brandingService');
+const { requireOrganizationAccess } = require('../services/authorizationService');
 
 exports.getBranding = async (req, res) => {
     try {
@@ -13,9 +14,10 @@ exports.getBranding = async (req, res) => {
 exports.updateBranding = async (req, res) => {
     try {
         const { organizationId } = req.params;
+        await requireOrganizationAccess(req, organizationId);
         const branding = await brandingService.updateBranding(organizationId, req.body);
         res.json(branding);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(error.status || 400).json({ error: error.message });
     }
 };

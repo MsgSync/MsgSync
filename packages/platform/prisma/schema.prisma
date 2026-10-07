@@ -24,8 +24,19 @@ model User {
   twoFactorEnabled Boolean    @default(false)
   twoFactorSecret  String?
   lastLoginAt    DateTime?
+  refreshTokens  RefreshToken[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
 }
 
 model AuditLog {
@@ -34,8 +45,8 @@ model AuditLog {
   entity         String       // e.g., Organization, ApiKey
   entityId       String
   userId         String?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   metadata       Json?        // Old/New values or request context
   ipAddress      String?
   createdAt      DateTime     @default(now())
@@ -207,7 +218,7 @@ model Contact {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  @@unique([phone])
+  @@index([phone])
 }
 
 model ContactList {

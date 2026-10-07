@@ -2,6 +2,10 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 class AuditService {
+    normalizeOrganizationId(organizationId) {
+        return !organizationId || organizationId === 'SYSTEM' ? null : organizationId;
+    }
+
     async log(data) {
         try {
             return await prisma.auditLog.create({
@@ -10,7 +14,7 @@ class AuditService {
                     entity: data.entity,
                     entityId: data.entityId,
                     userId: data.userId || null,
-                    organizationId: data.organizationId,
+                    organizationId: this.normalizeOrganizationId(data.organizationId),
                     metadata: data.metadata || {},
                     ipAddress: data.ipAddress || null
                 }
@@ -20,8 +24,19 @@ class AuditService {
         }
     }
 
+    /**
+     * @param {string|string[]|null} organizationId - an id, a list of ids, 'SYSTEM' for
+     * system-level entries, or null/'ALL' for no filter.
+     */
     async getLogs(organizationId, limit = 50) {
-        const filter = organizationId && organizationId !== 'ALL' ? { organizationId } : {};
+        let filter = {};
+        if (Array.isArray(organizationId)) {
+            filter = { organizationId: { in: organizationId } };
+        } else if (organizationId === 'SYSTEM') {
+            filter = { organizationId: null };
+        } else if (organizationId && organizationId !== 'ALL') {
+            filter = { organizationId };
+        }
         return await prisma.auditLog.findMany({
             where: filter,
             orderBy: { createdAt: 'desc' },
