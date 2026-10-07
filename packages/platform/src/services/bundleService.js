@@ -25,7 +25,7 @@ class BundleService {
     }
 
     async deleteBundle(id) {
-    // We usually deactivate instead of delete for history
+        // We usually deactivate instead of delete for history
         return await prisma.bundle.update({
             where: { id },
             data: { active: false }

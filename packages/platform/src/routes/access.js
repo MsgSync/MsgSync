@@ -11,9 +11,17 @@ router.use(apiLimiter);
 
 router.get('/me', accessController.getMyAccess);
 router.get('/customers', authorize(PERMISSIONS.ORGANIZATION_READ), accessController.listCustomers);
-router.post('/customers', authorize(PERMISSIONS.ORGANIZATION_MANAGE), accessController.createCustomer);
+router.post(
+    '/customers',
+    authorize(PERMISSIONS.ORGANIZATION_MANAGE),
+    accessController.createCustomer
+);
 router.get('/users', authorize(PERMISSIONS.USER_MANAGE), accessController.listUsers);
 router.post('/users', authorize(PERMISSIONS.USER_MANAGE), accessController.createUser);
-router.patch('/users/:id/role', authorize(PERMISSIONS.USER_MANAGE), accessController.updateUserRole);
+router.patch(
+    '/users/:id/role',
+    authorize(PERMISSIONS.USER_MANAGE),
+    accessController.updateUserRole
+);
 
 module.exports = router;

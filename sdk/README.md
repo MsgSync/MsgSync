@@ -43,29 +43,29 @@ See [Go SDK](./go/) for documentation.
 ## Quick Start Example (JavaScript)
 
 ```javascript
-const MsgSync = require("@msgsync/sdk");
+const MsgSync = require('@msgsync/sdk');
 
 // Initialize the client
 const client = new MsgSync({
-  apiKey: "your-api-key",
-  endpoint: "https://api.msgsync.io",
+    apiKey: 'your-api-key',
+    endpoint: 'https://api.msgsync.io'
 });
 
 // Send a message
 async function sendMessage() {
-  const result = await client.messages.send({
-    to: "+1234567890",
-    body: "Hello from MsgSync!",
-    from: "+0987654321",
-  });
+    const result = await client.messages.send({
+        to: '+1234567890',
+        body: 'Hello from MsgSync!',
+        from: '+0987654321'
+    });
 
-  console.log("Message sent:", result.id);
+    console.log('Message sent:', result.id);
 }
 
 // Get message status
 async function getStatus(messageId) {
-  const status = await client.messages.get(messageId);
-  console.log("Status:", status.delivery_status);
+    const status = await client.messages.get(messageId);
+    console.log('Status:', status.delivery_status);
 }
 ```
 

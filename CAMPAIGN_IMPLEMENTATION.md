@@ -84,35 +84,35 @@ Successfully implemented a comprehensive **Campaign Management System** for MsgS
 ### New Files Created
 
 1. **Frontend**
-   - `/platform/src/public/campaigns.html` - Main campaign management UI
-   - `/platform/src/public/campaigns.css` - Comprehensive styling with glassmorphism
-   - `/platform/src/public/campaigns.js` - Full campaign management logic
+    - `/platform/src/public/campaigns.html` - Main campaign management UI
+    - `/platform/src/public/campaigns.css` - Comprehensive styling with glassmorphism
+    - `/platform/src/public/campaigns.js` - Full campaign management logic
 
 2. **Documentation**
-   - `/docs/campaign-management.md` - Complete user guide with API examples
+    - `/docs/campaign-management.md` - Complete user guide with API examples
 
 3. **Database**
-   - `/platform/prisma/migrations/add_campaign_features.sql` - Schema migration
+    - `/platform/prisma/migrations/add_campaign_features.sql` - Schema migration
 
 4. **Setup**
-   - `/platform/setup-campaigns.sh` - Automated setup script
+    - `/platform/setup-campaigns.sh` - Automated setup script
 
 ### Modified Files
 
 1. **Database Schema**
-   - `/platform/prisma/schema.prisma` - Added senderId, completedAt, enableTracking, enableWebhooks
+    - `/platform/prisma/schema.prisma` - Added senderId, completedAt, enableTracking, enableWebhooks
 
 2. **Backend Controllers**
-   - `/platform/src/controllers/bulk.js` - Added 7 new controller functions
+    - `/platform/src/controllers/bulk.js` - Added 7 new controller functions
 
 3. **Backend Routes**
-   - `/platform/src/routes/bulk.js` - Added 8 new API endpoints
+    - `/platform/src/routes/bulk.js` - Added 8 new API endpoints
 
 4. **Services**
-   - `/platform/src/services/campaignService.js` - Enhanced with sender ID support
+    - `/platform/src/services/campaignService.js` - Enhanced with sender ID support
 
 5. **Server Configuration**
-   - `/platform/src/index.js` - Added /campaigns route
+    - `/platform/src/index.js` - Added /campaigns route
 
 ## 🗄️ Database Schema Changes
 
@@ -228,11 +228,11 @@ open http://localhost:3001/campaigns
 1. Navigate to http://localhost:3001/campaigns
 2. Click "New Campaign"
 3. Fill in details:
-   - Name: "Summer Sale 2025"
-   - Sender ID: "ACME"
-   - Template: "Hi {{firstName}}! Save {{discount}}% now!"
-   - Select contact list
-   - Choose scheduling option
+    - Name: "Summer Sale 2025"
+    - Sender ID: "ACME"
+    - Template: "Hi {{firstName}}! Save {{discount}}% now!"
+    - Select contact list
+    - Choose scheduling option
 4. Click "Launch Campaign"
 
 ### Creating a Campaign via API
@@ -291,7 +291,7 @@ const isPhoneNumber = /^\+?[1-9]\d{1,14}$/.test(senderId);
 ```javascript
 // Replaces {{variableName}} with actual values
 Object.entries(variables).forEach(([key, value]) => {
-  content = content.replace(new RegExp(`{{${key}}}`, "g"), value);
+    content = content.replace(new RegExp(`{{${key}}}`, 'g'), value);
 });
 ```
 
@@ -309,9 +309,9 @@ running → (pause) → paused → (resume) → running
 ```javascript
 // Supports both CSV and JSON formats
 try {
-  contacts = JSON.parse(contactsDataRaw);
+    contacts = JSON.parse(contactsDataRaw);
 } catch {
-  contacts = parseCSV(contactsDataRaw);
+    contacts = parseCSV(contactsDataRaw);
 }
 ```
 

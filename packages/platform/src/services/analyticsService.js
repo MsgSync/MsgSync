@@ -37,16 +37,14 @@ class AnalyticsService {
         // Calculate success rate
         const finished = stats.sent + stats.failed + stats.delivered;
         stats.successRate =
-      finished > 0
-          ? (((stats.sent + stats.delivered) / finished) * 100).toFixed(1)
-          : 0;
+            finished > 0 ? (((stats.sent + stats.delivered) / finished) * 100).toFixed(1) : 0;
 
         return stats;
     }
 
     /**
-   * Gets delivery volume trends over the last 24 hours.
-   */
+     * Gets delivery volume trends over the last 24 hours.
+     */
     async getVolumeTrend(apiKeyId = null, organizationId = null) {
         const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const where = {
@@ -71,8 +69,7 @@ class AnalyticsService {
             const h = m.createdAt.getHours();
             if (hourlyData[h]) {
                 hourlyData[h].count++;
-                if (m.status === 'sent' || m.status === 'delivered')
-                    hourlyData[h].success++;
+                if (m.status === 'sent' || m.status === 'delivered') hourlyData[h].success++;
             }
         });
 
@@ -84,8 +81,8 @@ class AnalyticsService {
             .sort((a, b) => a.hour - b.hour);
     }
     /**
-   * Gets message volume by provider.
-   */
+     * Gets message volume by provider.
+     */
     async getVolumeByProvider(apiKeyId = null, organizationId = null) {
         const where = {};
         if (apiKeyId) where.apiKeyId = apiKeyId;
@@ -99,7 +96,7 @@ class AnalyticsService {
             }
         });
 
-        return volumeByProvider.map(item => ({
+        return volumeByProvider.map((item) => ({
             provider: item.provider || 'unknown',
             count: item._count._all
         }));
@@ -150,8 +147,8 @@ class AnalyticsService {
     }
 
     /**
-   * Gets detailed message reports with pagination and filtering.
-   */
+     * Gets detailed message reports with pagination and filtering.
+     */
     async getDetailedReports(filters = {}, skip = 0, take = 50) {
         const where = {};
         if (filters.organizationId) where.organizationId = filters.organizationId;
@@ -181,8 +178,8 @@ class AnalyticsService {
     }
 
     /**
-   * Gets recent messages for real-time traffic monitoring.
-   */
+     * Gets recent messages for real-time traffic monitoring.
+     */
     async getLiveTraffic(organizationId = null, limit = 100) {
         const where = {};
         if (organizationId) where.organizationId = organizationId;
@@ -205,8 +202,8 @@ class AnalyticsService {
     }
 
     /**
-   * Gets active alerts for an organization.
-   */
+     * Gets active alerts for an organization.
+     */
     async getAlerts(organizationId) {
         return await prisma.alert.findMany({
             where: { organizationId },
@@ -215,8 +212,8 @@ class AnalyticsService {
     }
 
     /**
-   * Creates or updates an alert.
-   */
+     * Creates or updates an alert.
+     */
     async saveAlert(organizationId, alertData) {
         if (alertData.id) {
             return await prisma.alert.update({

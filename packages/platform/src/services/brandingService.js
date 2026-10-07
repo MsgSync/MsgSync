@@ -3,10 +3,10 @@ const prisma = new PrismaClient();
 
 class BrandingService {
     /**
-   * Resolves the organization and its branding based on the request hostname.
-   */
+     * Resolves the organization and its branding based on the request hostname.
+     */
     async getBrandingByHost(hostname) {
-    // Find organization matching the custom domain
+        // Find organization matching the custom domain
         const org = await prisma.organization.findUnique({
             where: { customDomain: hostname }
         });

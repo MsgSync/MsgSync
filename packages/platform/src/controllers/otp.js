@@ -8,9 +8,7 @@ async function sendOTP(req, res) {
     const { recipient, ttl, length } = req.body;
 
     if (!recipient) {
-        return res
-            .status(400)
-            .json({ status: 'error', message: 'Recipient is required' });
+        return res.status(400).json({ status: 'error', message: 'Recipient is required' });
     }
 
     try {
@@ -42,9 +40,7 @@ async function verifyOTP(req, res) {
         const result = await otpService.validateOTP(recipient, code);
 
         if (result.valid) {
-            res
-                .status(200)
-                .json({ status: 'success', message: 'OTP verified successfully' });
+            res.status(200).json({ status: 'success', message: 'OTP verified successfully' });
         } else {
             res.status(400).json({ status: 'error', message: result.message });
         }

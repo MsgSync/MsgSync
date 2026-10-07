@@ -2,11 +2,11 @@ const webhookQueue = require('../queue/webhookQueue');
 
 class WebhookService {
     /**
-   * Triggers a webhook for a message status change.
-   * @param {Object} message - The message object.
-   */
+     * Triggers a webhook for a message status change.
+     * @param {Object} message - The message object.
+     */
     async triggerStatusChange(message) {
-    // Look for webhook URL in metadata
+        // Look for webhook URL in metadata
         const webhookUrl = message.metadata?.webhook_url;
         const webhookSecret = message.metadata?.webhook_secret;
 

@@ -13,7 +13,7 @@ function permissionsForRequest(req) {
 function authorize(...requiredPermissions) {
     return (req, res, next) => {
         const granted = permissionsFromRequest(req);
-        const allowed = requiredPermissions.every(permission => granted.includes(permission));
+        const allowed = requiredPermissions.every((permission) => granted.includes(permission));
         if (!allowed) {
             return res.status(403).json({
                 status: 'error',

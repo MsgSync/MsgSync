@@ -46,9 +46,7 @@ describe('Message Submission API', () => {
     });
 
     it('should reject submission without required fields', async () => {
-        const res = await request(app)
-            .post('/api/messages')
-            .send({}); // Missing recipient and content
+        const res = await request(app).post('/api/messages').send({}); // Missing recipient and content
 
         expect(res.status).toBe(400);
         expect(res.body.status).toBe('error');
@@ -58,12 +56,10 @@ describe('Message Submission API', () => {
         const mockMessage = { id: 'msg-123', status: 'queued' };
         prisma.message.create.mockResolvedValue(mockMessage);
 
-        const res = await request(app)
-            .post('/api/messages')
-            .send({
-                recipient: '1234567890',
-                content: 'Hello World'
-            });
+        const res = await request(app).post('/api/messages').send({
+            recipient: '1234567890',
+            content: 'Hello World'
+        });
 
         expect(res.status).toBe(202);
         expect(res.body.status).toBe('success');

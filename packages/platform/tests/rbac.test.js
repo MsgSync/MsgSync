@@ -3,7 +3,9 @@ const { authorize } = require('../src/middleware/rbac');
 
 describe('RBAC policy', () => {
     it('gives administrators every permission', () => {
-        expect(permissionsForRole(ROLES.ADMIN)).toEqual(expect.arrayContaining(Object.values(PERMISSIONS)));
+        expect(permissionsForRole(ROLES.ADMIN)).toEqual(
+            expect.arrayContaining(Object.values(PERMISSIONS))
+        );
     });
 
     it('allows aggregators to manage customers but not providers', () => {

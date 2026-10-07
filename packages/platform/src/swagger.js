@@ -35,7 +35,10 @@ const options = {
                         id: { type: 'string' },
                         recipient: { type: 'string', example: '+15550001122' },
                         content: { type: 'string', example: 'Hello World!' },
-                        status: { type: 'string', enum: ['queued', 'sending', 'sent', 'delivered', 'failed'] },
+                        status: {
+                            type: 'string',
+                            enum: ['queued', 'sending', 'sent', 'delivered', 'failed']
+                        },
                         provider: { type: 'string', nullable: true },
                         externalId: { type: 'string', nullable: true },
                         error: { type: 'string', nullable: true },
@@ -53,7 +56,10 @@ const options = {
                         name: { type: 'string' },
                         template: { type: 'string' },
                         senderId: { type: 'string', nullable: true },
-                        status: { type: 'string', enum: ['draft', 'active', 'paused', 'completed'] },
+                        status: {
+                            type: 'string',
+                            enum: ['draft', 'active', 'paused', 'completed']
+                        },
                         contactListId: { type: 'string' },
                         apiKeyId: { type: 'string' },
                         createdAt: { type: 'string', format: 'date-time' }
@@ -144,7 +150,13 @@ const options = {
                         messageCount: { type: 'integer' },
                         profileBreakdown: {
                             type: 'array',
-                            items: { type: 'object', properties: { profile: { type: 'string' }, revenue: { type: 'number' } } }
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    profile: { type: 'string' },
+                                    revenue: { type: 'number' }
+                                }
+                            }
                         }
                     }
                 },

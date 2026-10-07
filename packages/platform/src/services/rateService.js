@@ -66,8 +66,8 @@ class RateService {
     }
 
     /**
-   * Optimized batch import for large price lists
-   */
+     * Optimized batch import for large price lists
+     */
     async importRates(planId, rates) {
         return await prisma.$transaction(
             rates.map((r) =>
@@ -111,8 +111,8 @@ class RateService {
     }
 
     /**
-   * Intelligent Rate Lookup for Charging
-   */
+     * Intelligent Rate Lookup for Charging
+     */
     async lookupRateForOrganization(
         organizationId,
         phone,

@@ -90,9 +90,7 @@ function renderCampaigns() {
     grid.style.display = 'grid';
     emptyState.style.display = 'none';
 
-    grid.innerHTML = campaigns
-        .map((campaign) => createCampaignCard(campaign))
-        .join('');
+    grid.innerHTML = campaigns.map((campaign) => createCampaignCard(campaign)).join('');
     lucide.createIcons();
 }
 
@@ -103,11 +101,9 @@ function createCampaignCard(campaign) {
         : 'Not scheduled';
     const messageCount = campaign.messages?.length || 0;
     const sentCount =
-    campaign.messages?.filter(
-        (m) => m.status === 'sent' || m.status === 'delivered'
-    ).length || 0;
-    const failedCount =
-    campaign.messages?.filter((m) => m.status === 'failed').length || 0;
+        campaign.messages?.filter((m) => m.status === 'sent' || m.status === 'delivered').length ||
+        0;
+    const failedCount = campaign.messages?.filter((m) => m.status === 'failed').length || 0;
 
     return `
         <div class="campaign-card" onclick="viewCampaignDetails('${campaign.id}')">
@@ -124,25 +120,25 @@ function createCampaignCard(campaign) {
             
             <div class="campaign-meta">
                 ${
-    campaign.senderId
-        ? `
+                    campaign.senderId
+                        ? `
                     <div class="meta-item">
                         <i data-lucide="phone"></i>
                         <span>Sender: ${escapeHtml(campaign.senderId)}</span>
                     </div>
                 `
-        : ''
-}
+                        : ''
+                }
                 ${
-    campaign.scheduledAt
-        ? `
+                    campaign.scheduledAt
+                        ? `
                     <div class="meta-item">
                         <i data-lucide="clock"></i>
                         <span>${scheduledDate}</span>
                     </div>
                 `
-        : ''
-}
+                        : ''
+                }
                 <div class="meta-item">
                     <i data-lucide="users"></i>
                     <span>${campaign.contactList?.contacts?.length || 0} recipients</span>
@@ -170,8 +166,8 @@ function createCampaignCard(campaign) {
             
             <div class="campaign-actions" onclick="event.stopPropagation()">
                 ${
-    campaign.status === 'draft'
-        ? `
+                    campaign.status === 'draft'
+                        ? `
                     <button class="icon-btn" onclick="editCampaign('${campaign.id}')" title="Edit">
                         <i data-lucide="edit"></i>
                     </button>
@@ -179,26 +175,26 @@ function createCampaignCard(campaign) {
                         <i data-lucide="play"></i>
                     </button>
                 `
-        : ''
-}
+                        : ''
+                }
                 ${
-    campaign.status === 'scheduled'
-        ? `
+                    campaign.status === 'scheduled'
+                        ? `
                     <button class="icon-btn" onclick="pauseCampaign('${campaign.id}')" title="Pause">
                         <i data-lucide="pause"></i>
                     </button>
                 `
-        : ''
-}
+                        : ''
+                }
                 ${
-    campaign.status === 'paused'
-        ? `
+                    campaign.status === 'paused'
+                        ? `
                     <button class="icon-btn" onclick="resumeCampaign('${campaign.id}')" title="Resume">
                         <i data-lucide="play"></i>
                     </button>
                 `
-        : ''
-}
+                        : ''
+                }
                 <button class="icon-btn" onclick="duplicateCampaign('${campaign.id}')" title="Duplicate">
                     <i data-lucide="copy"></i>
                 </button>
@@ -222,8 +218,7 @@ function updateStats() {
     document.getElementById('total-campaigns').textContent = total;
     document.getElementById('active-campaigns').textContent = active;
     document.getElementById('scheduled-campaigns').textContent = scheduled;
-    document.getElementById('total-reach').textContent =
-    totalReach.toLocaleString();
+    document.getElementById('total-reach').textContent = totalReach.toLocaleString();
 }
 
 function populateContactListDropdown() {
@@ -231,13 +226,13 @@ function populateContactListDropdown() {
     if (!select) return;
 
     select.innerHTML =
-    '<option value="">Select a contact list</option>' +
-    contactLists
-        .map(
-            (list) =>
-                `<option value="${list.id}">${escapeHtml(list.name)} (${list.contacts?.length || 0} contacts)</option>`
-        )
-        .join('');
+        '<option value="">Select a contact list</option>' +
+        contactLists
+            .map(
+                (list) =>
+                    `<option value="${list.id}">${escapeHtml(list.name)} (${list.contacts?.length || 0} contacts)</option>`
+            )
+            .join('');
 }
 
 // Modal Management
@@ -283,13 +278,9 @@ async function createCampaign() {
         return;
     }
 
-    const scheduleType = document.querySelector(
-        'input[name="schedule-type"]:checked'
-    ).value;
+    const scheduleType = document.querySelector('input[name="schedule-type"]:checked').value;
     const scheduledAt =
-    scheduleType === 'scheduled'
-        ? document.getElementById('scheduled-time').value
-        : null;
+        scheduleType === 'scheduled' ? document.getElementById('scheduled-time').value : null;
 
     const campaignData = {
         name: document.getElementById('campaign-name').value,
@@ -446,11 +437,7 @@ async function resumeCampaign(campaignId) {
 }
 
 async function deleteCampaign(campaignId) {
-    if (
-        !confirm(
-            'Are you sure you want to delete this campaign? This action cannot be undone.'
-        )
-    ) {
+    if (!confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
         return;
     }
 
@@ -524,12 +511,8 @@ function editCampaign(campaignId) {
     document.getElementById('sender-id').value = campaign.senderId || '';
 
     if (campaign.scheduledAt) {
-        document.querySelector(
-            'input[name="schedule-type"][value="scheduled"]'
-        ).checked = true;
-        document.getElementById('scheduled-time').value = new Date(
-            campaign.scheduledAt
-        )
+        document.querySelector('input[name="schedule-type"][value="scheduled"]').checked = true;
+        document.getElementById('scheduled-time').value = new Date(campaign.scheduledAt)
             .toISOString()
             .slice(0, 16);
         toggleSchedule();
@@ -558,23 +541,23 @@ async function viewCampaignDetails(campaignId) {
                     <strong>Created:</strong> ${new Date(campaign.createdAt).toLocaleString()}
                 </div>
                 ${
-    campaign.senderId
-        ? `
+                    campaign.senderId
+                        ? `
                     <div>
                         <strong>Sender ID:</strong> ${escapeHtml(campaign.senderId)}
                     </div>
                 `
-        : ''
-}
+                        : ''
+                }
                 ${
-    campaign.scheduledAt
-        ? `
+                    campaign.scheduledAt
+                        ? `
                     <div>
                         <strong>Scheduled:</strong> ${new Date(campaign.scheduledAt).toLocaleString()}
                     </div>
                 `
-        : ''
-}
+                        : ''
+                }
             </div>
         </div>
         
@@ -637,10 +620,10 @@ async function createContactList() {
 
     let contacts;
     try {
-    // Try parsing as JSON first
+        // Try parsing as JSON first
         contacts = JSON.parse(contactsDataRaw);
     } catch {
-    // Try parsing as CSV
+        // Try parsing as CSV
         contacts = parseCSV(contactsDataRaw);
     }
 
@@ -651,7 +634,7 @@ async function createContactList() {
 
     showLoading(true);
     try {
-    // Create list
+        // Create list
         const listResponse = await fetch(`${API_BASE}/lists`, {
             method: 'POST',
             headers: {
@@ -669,17 +652,14 @@ async function createContactList() {
         const listId = listResult.data.id;
 
         // Add contacts
-        const contactsResponse = await fetch(
-            `${API_BASE}/lists/${listId}/contacts`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-Key': API_KEY
-                },
-                body: JSON.stringify({ contacts })
-            }
-        );
+        const contactsResponse = await fetch(`${API_BASE}/lists/${listId}/contacts`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY
+            },
+            body: JSON.stringify({ contacts })
+        });
 
         if (contactsResponse.ok) {
             showSuccess(`Contact list created with ${contacts.length} contacts`);
@@ -723,9 +703,7 @@ function parseCSV(csv) {
 }
 
 function toggleSchedule() {
-    const scheduleType = document.querySelector(
-        'input[name="schedule-type"]:checked'
-    ).value;
+    const scheduleType = document.querySelector('input[name="schedule-type"]:checked').value;
     const datetimeInput = document.getElementById('schedule-datetime');
 
     if (scheduleType === 'scheduled') {
@@ -750,8 +728,7 @@ function updateTemplatePreview() {
         .replace(/\{\{discount\}\}/g, '20')
         .replace(/\{\{expiryDate\}\}/g, 'Dec 31');
 
-    preview.textContent =
-    previewText || 'Enter a message template to see preview...';
+    preview.textContent = previewText || 'Enter a message template to see preview...';
 }
 
 function updateListCount() {
@@ -759,15 +736,12 @@ function updateListCount() {
     const list = contactLists.find((l) => l.id === listId);
     const count = list?.contacts?.length || 0;
 
-    document.getElementById('list-count').textContent =
-    `${count} contacts selected`;
+    document.getElementById('list-count').textContent = `${count} contacts selected`;
 }
 
 function filterCampaigns() {
     const statusFilter = document.getElementById('status-filter').value;
-    const searchQuery = document
-        .getElementById('search-input')
-        .value.toLowerCase();
+    const searchQuery = document.getElementById('search-input').value.toLowerCase();
 
     let filtered = campaigns;
 
@@ -779,14 +753,12 @@ function filterCampaigns() {
         filtered = filtered.filter(
             (c) =>
                 c.name.toLowerCase().includes(searchQuery) ||
-        c.template.toLowerCase().includes(searchQuery)
+                c.template.toLowerCase().includes(searchQuery)
         );
     }
 
     const grid = document.getElementById('campaigns-grid');
-    grid.innerHTML = filtered
-        .map((campaign) => createCampaignCard(campaign))
-        .join('');
+    grid.innerHTML = filtered.map((campaign) => createCampaignCard(campaign)).join('');
     lucide.createIcons();
 }
 

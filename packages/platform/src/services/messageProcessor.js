@@ -8,7 +8,7 @@ const providerService = require('./providerService');
  */
 async function processMessage(messageId) {
     try {
-    // 1. Fetch message from DB
+        // 1. Fetch message from DB
         const message = await prisma.message.findUnique({
             where: { id: messageId }
         });
@@ -39,16 +39,14 @@ async function processMessage(messageId) {
             where: { id: message.organizationId },
             select: { billingPolicy: true }
         });
-        
+
         const billingPolicy = org ? org.billingPolicy : 'ON_SUBMISSION';
 
         // Determine profile from metadata or default to TRANSACTIONAL
         const messageProfile = message.metadata?.profile || 'TRANSACTIONAL';
 
         // Try to get HLR/MNP info for network-level granularity
-        const lookupInfo = await lookupService
-            .getLookupInfo(message.recipient)
-            .catch(() => null);
+        const lookupInfo = await lookupService.getLookupInfo(message.recipient).catch(() => null);
 
         const rate = await rateService.lookupRateForOrganization(
             message.organizationId,
@@ -100,10 +98,7 @@ async function processMessage(messageId) {
         await webhookService.triggerStatusChange(updatedMessage);
 
         // 7. Trigger Integration Alerts (Slack/Discord)
-        if (
-            updatedMessage.status === 'failed' &&
-      updatedMessage.metadata?.slack_webhook_url
-        ) {
+        if (updatedMessage.status === 'failed' && updatedMessage.metadata?.slack_webhook_url) {
             const integrationService = require('./integrationService');
             await integrationService.sendSlackAlert(
                 updatedMessage.metadata.slack_webhook_url,

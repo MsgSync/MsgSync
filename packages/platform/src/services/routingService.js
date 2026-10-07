@@ -3,8 +3,8 @@ const prisma = new PrismaClient();
 
 class RoutingService {
     /**
-   * Finds the most optimal providers for a message based on prefix, MCC/MNC, and organization rules.
-   */
+     * Finds the most optimal providers for a message based on prefix, MCC/MNC, and organization rules.
+     */
     async getOptimalProviders(phone, organizationId = null) {
         const cleanPhone = phone.replace('+', '');
         const lookupService = require('./lookupService');
@@ -52,9 +52,7 @@ class RoutingService {
 
         // 4. Fallback to all active providers if no specific rules found
         if (matchingProviders.length === 0) {
-            const globalRules = rules.filter(
-                (rule) => !rule.prefix && !rule.mcc && !rule.mnc
-            );
+            const globalRules = rules.filter((rule) => !rule.prefix && !rule.mcc && !rule.mnc);
             if (globalRules.length > 0) {
                 matchingProviders = globalRules.map((rule) => rule.provider);
             } else {
@@ -68,9 +66,7 @@ class RoutingService {
         // 5. Double check provider capabilities
         matchingProviders = matchingProviders.filter((p) => {
             if (!p.supportedPrefixes || p.supportedPrefixes.length === 0) return true;
-            return p.supportedPrefixes.some((prefix) =>
-                cleanPhone.startsWith(prefix)
-            );
+            return p.supportedPrefixes.some((prefix) => cleanPhone.startsWith(prefix));
         });
 
         return matchingProviders;

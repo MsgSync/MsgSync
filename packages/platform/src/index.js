@@ -33,21 +33,24 @@ const swaggerSpecs = require('./swagger');
 const allowedOrigins = new Set(
     (process.env.CLIENT_ORIGINS || 'http://localhost:3000')
         .split(',')
-        .map(origin => origin.trim())
+        .map((origin) => origin.trim())
         .filter(Boolean)
 );
-const deploymentOriginPattern = /^https:\/\/msgsync-[a-z0-9-]+-mdselim606570-9293s-projects\.vercel\.app$/;
+const deploymentOriginPattern =
+    /^https:\/\/msgsync-[a-z0-9-]+-mdselim606570-9293s-projects\.vercel\.app$/;
 
-app.use(cors({
-    origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin) || deploymentOriginPattern.test(origin)) {
-            return callback(null, true);
-        }
-        return callback(new Error('Origin not allowed'));
-    },
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
-}));
+app.use(
+    cors({
+        origin(origin, callback) {
+            if (!origin || allowedOrigins.has(origin) || deploymentOriginPattern.test(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error('Origin not allowed'));
+        },
+        methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
+    })
+);
 app.use(requestLogger);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

@@ -51,26 +51,17 @@ async function addContacts(req, res) {
             return res.status(404).json({ status: 'error', message: 'Contact list not found' });
         }
         await campaignService.importContacts(listId, contacts);
-        res
-            .status(200)
-            .json({ status: 'success', message: 'Contacts imported successfully' });
+        res.status(200).json({ status: 'success', message: 'Contacts imported successfully' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
 }
 
 async function createCampaign(req, res) {
-    const {
-        name,
-        template,
-        contactListId,
-        scheduledAt,
-        senderId,
-        enableTracking,
-        enableWebhooks
-    } = req.body;
+    const { name, template, contactListId, scheduledAt, senderId, enableTracking, enableWebhooks } =
+        req.body;
     try {
-    // Validate sender ID format if provided
+        // Validate sender ID format if provided
         if (senderId) {
             const isAlphanumeric = /^[a-zA-Z0-9]{1,11}$/.test(senderId);
             const isPhoneNumber = /^\+?[1-9]\d{1,14}$/.test(senderId);
@@ -78,8 +69,7 @@ async function createCampaign(req, res) {
             if (!isAlphanumeric && !isPhoneNumber) {
                 return res.status(400).json({
                     status: 'error',
-                    message:
-            'Sender ID must be alphanumeric (max 11 chars) or a valid phone number'
+                    message: 'Sender ID must be alphanumeric (max 11 chars) or a valid phone number'
                 });
             }
         }
@@ -137,7 +127,7 @@ async function startCampaign(req, res) {
         if (!campaign) {
             return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
-    // Run in background
+        // Run in background
         campaignService
             .processCampaign(id)
             .catch((err) => console.error('Campaign background error:', err));
@@ -152,9 +142,7 @@ async function startCampaign(req, res) {
             organizationId: req.organization ? req.organization.id : 'SYSTEM'
         });
 
-        res
-            .status(202)
-            .json({ status: 'success', message: 'Campaign execution started' });
+        res.status(202).json({ status: 'success', message: 'Campaign execution started' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
@@ -190,9 +178,7 @@ async function getCampaignById(req, res) {
         });
 
         if (!campaign) {
-            return res
-                .status(404)
-                .json({ status: 'error', message: 'Campaign not found' });
+            return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
 
         res.status(200).json({ status: 'success', data: campaign });
@@ -235,15 +221,13 @@ async function resumeCampaign(req, res) {
         const campaign = await findCampaignForRequest(req, id);
 
         if (!campaign) {
-            return res
-                .status(404)
-                .json({ status: 'error', message: 'Campaign not found' });
+            return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
 
         const newStatus =
-      campaign.scheduledAt && new Date(campaign.scheduledAt) > new Date()
-          ? 'scheduled'
-          : 'running';
+            campaign.scheduledAt && new Date(campaign.scheduledAt) > new Date()
+                ? 'scheduled'
+                : 'running';
 
         const updated = await prisma.campaign.update({
             where: { id },
@@ -276,13 +260,11 @@ async function resumeCampaign(req, res) {
 async function deleteCampaign(req, res) {
     const { id } = req.params;
     try {
-    // Check if campaign can be deleted (not running)
+        // Check if campaign can be deleted (not running)
         const campaign = await findCampaignForRequest(req, id);
 
         if (!campaign) {
-            return res
-                .status(404)
-                .json({ status: 'error', message: 'Campaign not found' });
+            return res.status(404).json({ status: 'error', message: 'Campaign not found' });
         }
 
         if (campaign.status === 'running') {
@@ -307,9 +289,7 @@ async function deleteCampaign(req, res) {
             metadata: { name }
         });
 
-        res
-            .status(200)
-            .json({ status: 'success', message: 'Campaign deleted successfully' });
+        res.status(200).json({ status: 'success', message: 'Campaign deleted successfully' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }

@@ -6,9 +6,7 @@ const axios = require('axios');
  */
 async function runCrossPlatformSyncDemo() {
     console.log('--- MsgSync Cross-Platform Sync Demo ---');
-    console.log(
-        'Flow: External App -> Aggregator (Normalize) -> Platform (Deliver)'
-    );
+    console.log('Flow: External App -> Aggregator (Normalize) -> Platform (Deliver)');
 
     const AGGREGATOR_URL = 'http://localhost:3000/api/webhooks/slack-custom';
 
@@ -35,9 +33,7 @@ async function runCrossPlatformSyncDemo() {
         );
     } catch (error) {
         console.error('Demo Error:', error.response?.data || error.message);
-        console.log(
-            '\nNote: Make sure both Platform (p3001) and Aggregator (p3000) are running.'
-        );
+        console.log('\nNote: Make sure both Platform (p3001) and Aggregator (p3000) are running.');
     }
 }
 

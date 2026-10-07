@@ -52,16 +52,16 @@ phone,firstName,lastName,email,tier
 
 ```json
 [
-  {
-    "phone": "+1234567890",
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com",
-    "attributes": {
-      "tier": "gold",
-      "discount": "20"
+    {
+        "phone": "+1234567890",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "attributes": {
+            "tier": "gold",
+            "discount": "20"
+        }
     }
-  }
 ]
 ```
 
@@ -71,12 +71,12 @@ phone,firstName,lastName,email,tier
 
 1. Click **"New Campaign"** button
 2. Fill in campaign details:
-   - **Campaign Name**: e.g., "Summer Sale 2025"
-   - **Sender ID**: Optional - Use "BRAND" or "+1234567890"
-   - **Message Template**: Use variables like `{{firstName}}`, `{{discount}}`
-   - **Contact List**: Select your created list
-   - **Scheduling**: Choose immediate or scheduled delivery
-   - **Settings**: Enable tracking and webhooks as needed
+    - **Campaign Name**: e.g., "Summer Sale 2025"
+    - **Sender ID**: Optional - Use "BRAND" or "+1234567890"
+    - **Message Template**: Use variables like `{{firstName}}`, `{{discount}}`
+    - **Contact List**: Select your created list
+    - **Scheduling**: Choose immediate or scheduled delivery
+    - **Settings**: Enable tracking and webhooks as needed
 
 3. Preview your message with sample data
 4. Click **"Launch Campaign"** or **"Save Draft"**
@@ -305,10 +305,10 @@ The dashboard displays:
 
 1. Click on any campaign card
 2. View detailed metrics:
-   - Campaign information
-   - Message template
-   - Recipient count
-   - Performance breakdown
+    - Campaign information
+    - Message template
+    - Recipient count
+    - Performance breakdown
 
 ### Export Data
 

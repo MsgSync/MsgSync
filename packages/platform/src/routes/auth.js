@@ -9,7 +9,10 @@ const loginLimiter = require('express-rate-limit')({
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { status: 'error', message: 'Too many login attempts. Please try again in 15 minutes.' }
+    message: {
+        status: 'error',
+        message: 'Too many login attempts. Please try again in 15 minutes.'
+    }
 });
 
 router.post('/register', apiLimiter, authController.register);

@@ -4,10 +4,10 @@ const auditService = require('./auditService');
 
 class InvoiceService {
     /**
-   * Generates a new invoice for an organization for a specific period.
-   */
+     * Generates a new invoice for an organization for a specific period.
+     */
     async generateInvoice(organizationId, periodStart, periodEnd) {
-    // 1. Calculate total amount from messages in period
+        // 1. Calculate total amount from messages in period
         const aggregation = await prisma.message.aggregate({
             where: {
                 organizationId,
@@ -93,10 +93,9 @@ class InvoiceService {
         return invoice;
     }
 
-
     /**
-   * Simulation of automated billing cycle run
-   */
+     * Simulation of automated billing cycle run
+     */
     async runBillingCycle() {
         const orgs = await prisma.organization.findMany();
         const results = [];
@@ -107,11 +106,7 @@ class InvoiceService {
 
         for (const org of orgs) {
             try {
-                const inv = await this.generateInvoice(
-                    org.id,
-                    startOfMonth,
-                    endOfMonth
-                );
+                const inv = await this.generateInvoice(org.id, startOfMonth, endOfMonth);
                 results.push({ org: org.name, status: 'SUCCESS', invoice: inv.number });
             } catch (err) {
                 results.push({ org: org.name, status: 'FAILED', error: err.message });

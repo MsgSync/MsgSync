@@ -1,7 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const messageQueue = require('../queue/messageQueue');
-const { getOrganizationScope, organizationScopeWhere } = require('../services/authorizationService');
+const {
+    getOrganizationScope,
+    organizationScopeWhere
+} = require('../services/authorizationService');
 
 /**
  * Sends a new message by adding it to the processing queue.
@@ -62,9 +65,9 @@ async function sendMessage(req, res) {
             status: 'success',
             data: message,
             message:
-        delay > 0
-            ? `Message scheduled for ${scheduleDate.toISOString()}`
-            : 'Message accepted and queued for delivery'
+                delay > 0
+                    ? `Message scheduled for ${scheduleDate.toISOString()}`
+                    : 'Message accepted and queued for delivery'
         });
     } catch (error) {
         console.error('Error sending message:', error);
@@ -84,9 +87,7 @@ async function getMessageStatus(req, res) {
         });
 
         if (!message) {
-            return res
-                .status(404)
-                .json({ status: 'error', message: 'Message not found' });
+            return res.status(404).json({ status: 'error', message: 'Message not found' });
         }
 
         res.status(200).json({ status: 'success', data: message });
@@ -124,9 +125,7 @@ async function cancelMessage(req, res) {
         });
 
         if (!message) {
-            return res
-                .status(404)
-                .json({ status: 'error', message: 'Message not found' });
+            return res.status(404).json({ status: 'error', message: 'Message not found' });
         }
 
         if (message.status !== 'queued') {

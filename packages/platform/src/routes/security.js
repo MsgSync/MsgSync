@@ -10,7 +10,11 @@ router.use(authenticate);
 router.get('/2fa/setup', securityController.setup2FA);
 router.post('/2fa/enable', securityController.enable2FA);
 router.post('/2fa/disable', securityController.disable2FA);
-router.post('/restrictions', authorize(PERMISSIONS.ORGANIZATION_MANAGE), securityController.updateRestrictions);
+router.post(
+    '/restrictions',
+    authorize(PERMISSIONS.ORGANIZATION_MANAGE),
+    securityController.updateRestrictions
+);
 router.post('/revoke-sessions', securityController.revokeSessions);
 router.get('/audit', authorize(PERMISSIONS.AUDIT_READ), securityController.getSecurityAudit);
 router.post('/break-glass', authorize(PERMISSIONS.PROVIDER_MANAGE), securityController.breakGlass);

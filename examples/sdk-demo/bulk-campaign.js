@@ -7,7 +7,7 @@ async function runBulkDemo() {
     const HEADERS = { headers: { 'X-API-Key': 'demo-api-key' } };
 
     try {
-    // 1. Create a Contact List
+        // 1. Create a Contact List
         console.log('\n1. Creating a contact list "Summer Promo 2025"...');
         const listResp = await axios.post(
             `${API_BASE}/lists`,
@@ -47,7 +47,7 @@ async function runBulkDemo() {
                 name: 'Summer Flash Sale',
                 contactListId: listId,
                 template:
-          'Hey {{firstName}}! Use code {{code}} for a {{discount}} discount at MsgSync!'
+                    'Hey {{firstName}}! Use code {{code}} for a {{discount}} discount at MsgSync!'
             },
             HEADERS
         );

@@ -19,9 +19,10 @@ exports.listRules = async (req, res) => {
 
 exports.createRule = async (req, res) => {
     try {
-        const organizationId = req.identityRole === ROLES.ADMIN
-            ? req.body.organizationId || null
-            : req.organization.id;
+        const organizationId =
+            req.identityRole === ROLES.ADMIN
+                ? req.body.organizationId || null
+                : req.organization.id;
         const rule = await routingService.createRule({ ...req.body, organizationId });
         res.status(201).json(rule);
     } catch (error) {
@@ -32,13 +33,22 @@ exports.createRule = async (req, res) => {
 exports.updateRule = async (req, res) => {
     try {
         const existing = await routingService.getRule(req.params.id);
-        if (!existing || (req.identityRole !== ROLES.ADMIN && !existing.organizationId) || (existing.organizationId && !(await canAccessOrganization(req, existing.organizationId)))) {
+        if (
+            !existing ||
+            (req.identityRole !== ROLES.ADMIN && !existing.organizationId) ||
+            (existing.organizationId &&
+                !(await canAccessOrganization(req, existing.organizationId)))
+        ) {
             return res.status(404).json({ error: 'Routing rule not found' });
         }
-        const organizationId = req.identityRole === ROLES.ADMIN
-            ? req.body.organizationId ?? existing.organizationId
-            : req.organization.id;
-        const rule = await routingService.updateRule(req.params.id, { ...req.body, organizationId });
+        const organizationId =
+            req.identityRole === ROLES.ADMIN
+                ? (req.body.organizationId ?? existing.organizationId)
+                : req.organization.id;
+        const rule = await routingService.updateRule(req.params.id, {
+            ...req.body,
+            organizationId
+        });
         res.json(rule);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -48,7 +58,12 @@ exports.updateRule = async (req, res) => {
 exports.deleteRule = async (req, res) => {
     try {
         const existing = await routingService.getRule(req.params.id);
-        if (!existing || (req.identityRole !== ROLES.ADMIN && !existing.organizationId) || (existing.organizationId && !(await canAccessOrganization(req, existing.organizationId)))) {
+        if (
+            !existing ||
+            (req.identityRole !== ROLES.ADMIN && !existing.organizationId) ||
+            (existing.organizationId &&
+                !(await canAccessOrganization(req, existing.organizationId)))
+        ) {
             return res.status(404).json({ error: 'Routing rule not found' });
         }
         await routingService.deleteRule(req.params.id);

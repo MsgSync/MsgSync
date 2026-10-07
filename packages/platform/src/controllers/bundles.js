@@ -20,9 +20,7 @@ exports.updateBundle = async (req, res) => {
 
 exports.listBundles = async (req, res) => {
     try {
-        const bundles = await bundleService.listBundles(
-            req.query.includeInactive === 'true'
-        );
+        const bundles = await bundleService.listBundles(req.query.includeInactive === 'true');
         res.json(bundles);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -32,10 +30,7 @@ exports.listBundles = async (req, res) => {
 exports.subscribe = async (req, res) => {
     try {
         const { organizationId, bundleId } = req.body;
-        const subscription = await bundleService.subscribe(
-            organizationId,
-            bundleId
-        );
+        const subscription = await bundleService.subscribe(organizationId, bundleId);
         res.status(201).json(subscription);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -44,9 +39,7 @@ exports.subscribe = async (req, res) => {
 
 exports.getOrgSubscriptions = async (req, res) => {
     try {
-        const history = await bundleService.getSubscriptionHistory(
-            req.params.orgId
-        );
+        const history = await bundleService.getSubscriptionHistory(req.params.orgId);
         res.json(history);
     } catch (error) {
         res.status(500).json({ error: error.message });

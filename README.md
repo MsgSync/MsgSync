@@ -292,20 +292,20 @@ MsgSync supports multiple industry-standard protocols for maximum flexibility:
 **JavaScript**
 
 ```javascript
-const MsgSyncClient = require("@msgsync/sdk");
-const client = new MsgSyncClient({ apiKey: "your-api-key" });
+const MsgSyncClient = require('@msgsync/sdk');
+const client = new MsgSyncClient({ apiKey: 'your-api-key' });
 
 // Send message
 await client.sendMessage({
-  recipient: "+15550001122",
-  content: "Hello World!",
+    recipient: '+15550001122',
+    content: 'Hello World!'
 });
 
 // Send OTP
 await client.sendOTP({
-  recipient: "+15550001122",
-  length: 6,
-  ttl: 300,
+    recipient: '+15550001122',
+    length: 6,
+    ttl: 300
 });
 ```
 
@@ -363,9 +363,9 @@ $client->sendMessage([
 ```javascript
 // Send verification code
 const otp = await client.sendOTP({
-  recipient: user.phone,
-  length: 6,
-  ttl: 300,
+    recipient: user.phone,
+    length: 6,
+    ttl: 300
 });
 
 // Verify code
@@ -377,9 +377,9 @@ const verified = await client.verifyOTP(user.phone, userInput);
 ```javascript
 // Create targeted campaign
 const campaign = await client.createCampaign({
-  name: "Summer Sale 2025",
-  template: "Hi {{firstName}}! Use code {{code}} for {{discount}} off!",
-  contactListId: "list-id",
+    name: 'Summer Sale 2025',
+    template: 'Hi {{firstName}}! Use code {{code}} for {{discount}} off!',
+    contactListId: 'list-id'
 });
 
 // Launch campaign
@@ -391,9 +391,9 @@ await client.startCampaign(campaign.id);
 ```javascript
 // Order confirmation
 await client.sendMessage({
-  recipient: customer.phone,
-  content: `Order #${orderId} confirmed! Arriving ${deliveryDate}.`,
-  metadata: { orderId, customerId },
+    recipient: customer.phone,
+    content: `Order #${orderId} confirmed! Arriving ${deliveryDate}.`,
+    metadata: { orderId, customerId }
 });
 ```
 
@@ -402,9 +402,9 @@ await client.sendMessage({
 ```javascript
 // Login notification
 await client.sendMessage({
-  recipient: user.phone,
-  content: `New login from ${device} in ${location}. Secure your account: ${url}`,
-  metadata: { alertType: "security", userId: user.id },
+    recipient: user.phone,
+    content: `New login from ${device} in ${location}. Secure your account: ${url}`,
+    metadata: { alertType: 'security', userId: user.id }
 });
 ```
 
@@ -448,21 +448,21 @@ docker-compose -f docker-compose.production.yml up -d --scale platform=3
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: msgsync-platform
+    name: msgsync-platform
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: msgsync
-  template:
-    spec:
-      containers:
-        - name: platform
-          image: msgsync/platform:latest
-          resources:
-            limits:
-              memory: "1Gi"
-              cpu: "1000m"
+    replicas: 3
+    selector:
+        matchLabels:
+            app: msgsync
+    template:
+        spec:
+            containers:
+                - name: platform
+                  image: msgsync/platform:latest
+                  resources:
+                      limits:
+                          memory: '1Gi'
+                          cpu: '1000m'
 ```
 
 ### Monitoring & Observability

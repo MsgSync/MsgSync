@@ -23,10 +23,7 @@ exports.createPlan = async (req, res) => {
 exports.assignPlan = async (req, res) => {
     try {
         const { organizationId, planId } = req.body;
-        const result = await rateService.assignPlanToOrganization(
-            organizationId,
-            planId
-        );
+        const result = await rateService.assignPlanToOrganization(organizationId, planId);
         res.json(result);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -70,12 +67,7 @@ exports.importRates = async (req, res) => {
 exports.lookupExchange = async (req, res) => {
     try {
         const { phone, organizationId, mcc, mnc } = req.query;
-        const info = await rateService.lookupRateForOrganization(
-            organizationId,
-            phone,
-            mcc,
-            mnc
-        );
+        const info = await rateService.lookupRateForOrganization(organizationId, phone, mcc, mnc);
         res.json(info);
     } catch (error) {
         res.status(500).json({ error: error.message });

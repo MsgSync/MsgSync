@@ -23,8 +23,8 @@ Create a client instance by providing your API key and the platform endpoint.
 
 ```javascript
 const client = new MsgSync({
-  apiKey: "YOUR_API_KEY",
-  endpoint: "https://api.msgsync.io", // Optional
+    apiKey: 'YOUR_API_KEY',
+    endpoint: 'https://api.msgsync.io' // Optional
 });
 ```
 

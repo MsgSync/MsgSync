@@ -3,8 +3,7 @@ const lookupService = require('../services/lookupService');
 exports.getLookup = async (req, res) => {
     try {
         const { phone } = req.query;
-        if (!phone)
-            return res.status(400).json({ error: 'Phone number is required' });
+        if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
         const result = await lookupService.performLookup(phone);
         res.json(result);
@@ -56,9 +55,7 @@ exports.testConfig = async (req, res) => {
         if (result) {
             res.json(result);
         } else {
-            res
-                .status(400)
-                .json({ error: 'HLR Test failed. Check logs for details.' });
+            res.status(400).json({ error: 'HLR Test failed. Check logs for details.' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });

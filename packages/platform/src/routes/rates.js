@@ -21,8 +21,20 @@ router.post('/rates/import', authorize(PERMISSIONS.RATE_MANAGE), ratesController
 
 // --- Utilities ---
 router.get('/lookup', authorize(PERMISSIONS.RATE_READ), ratesController.lookupExchange);
-router.post('/sender-id', authorize(PERMISSIONS.ORGANIZATION_READ), ratesController.requestSenderId);
-router.get('/sender-id/:orgId', authorize(PERMISSIONS.ORGANIZATION_READ), ratesController.getSenderIds);
-router.patch('/sender-id/:id/approve', authorize(PERMISSIONS.RATE_MANAGE), ratesController.approveSenderId);
+router.post(
+    '/sender-id',
+    authorize(PERMISSIONS.ORGANIZATION_READ),
+    ratesController.requestSenderId
+);
+router.get(
+    '/sender-id/:orgId',
+    authorize(PERMISSIONS.ORGANIZATION_READ),
+    ratesController.getSenderIds
+);
+router.patch(
+    '/sender-id/:id/approve',
+    authorize(PERMISSIONS.RATE_MANAGE),
+    ratesController.approveSenderId
+);
 
 module.exports = router;

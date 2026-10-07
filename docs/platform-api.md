@@ -38,11 +38,11 @@ Queues a single SMS for delivery.
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": "msg_8f3d2e1a",
-    "status": "queued"
-  }
+    "status": "success",
+    "data": {
+        "id": "msg_8f3d2e1a",
+        "status": "queued"
+    }
 }
 ```
 
@@ -56,15 +56,15 @@ Retrieves the current status of a specific message.
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": "msg_8f3d2e1a",
-    "recipient": "+15550001122",
-    "content": "Your appointment is confirmed...",
-    "status": "delivered",
-    "provider": "twilio",
-    "createdAt": "2024-01-01T09:00:00Z"
-  }
+    "status": "success",
+    "data": {
+        "id": "msg_8f3d2e1a",
+        "recipient": "+15550001122",
+        "content": "Your appointment is confirmed...",
+        "status": "delivered",
+        "provider": "twilio",
+        "createdAt": "2024-01-01T09:00:00Z"
+    }
 }
 ```
 
@@ -104,8 +104,8 @@ Verifies a previously sent OTP code.
 
 ```json
 {
-  "recipient": "+15550001122",
-  "code": "123456"
+    "recipient": "+15550001122",
+    "code": "123456"
 }
 ```
 
@@ -123,11 +123,11 @@ Creates a new bulk messaging campaign linked to a contact list.
 
 ```json
 {
-  "name": "January Promo",
-  "content": "Flash Sale! Get 20% off with code FLASH20",
-  "listId": "list_928374",
-  "senderId": "MsgSync",
-  "enableTracking": true
+    "name": "January Promo",
+    "content": "Flash Sale! Get 20% off with code FLASH20",
+    "listId": "list_928374",
+    "senderId": "MsgSync",
+    "enableTracking": true
 }
 ```
 

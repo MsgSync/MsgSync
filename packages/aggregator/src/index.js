@@ -1,11 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const {
-    triggerAggregation,
-    getSources,
-    addSource,
-    getAnalytics
-} = require('./controllers/api');
+const { triggerAggregation, getSources, addSource, getAnalytics } = require('./controllers/api');
 
 // Load environment variables
 dotenv.config();

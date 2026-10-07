@@ -65,7 +65,7 @@ class SMPPProvider {
     }
 
     setupEventHandlers() {
-    // Handle incoming delivery receipts
+        // Handle incoming delivery receipts
         this.session.on('deliver_sm', (pdu) => {
             this.handleDeliveryReceipt(pdu);
             this.session.send(pdu.response());
@@ -91,9 +91,7 @@ class SMPPProvider {
                 }
             });
 
-            console.log(
-                `[SMPP] Delivery receipt processed: ${messageId} -> ${status}`
-            );
+            console.log(`[SMPP] Delivery receipt processed: ${messageId} -> ${status}`);
         } catch (error) {
             console.error('[SMPP] Error processing delivery receipt:', error);
         }

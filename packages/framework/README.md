@@ -28,12 +28,12 @@ const app = express();
 app.use(createExpressMiddleware({ client }));
 
 app.post('/send', async (req, res) => {
-  // Use the client attached to the request
-  const result = await req.msgsync.messages.send({
-    recipient: '+1234567890',
-    content: 'Hello from Express!'
-  });
-  res.json(result);
+    // Use the client attached to the request
+    const result = await req.msgsync.messages.send({
+        recipient: '+1234567890',
+        content: 'Hello from Express!'
+    });
+    res.json(result);
 });
 ```
 

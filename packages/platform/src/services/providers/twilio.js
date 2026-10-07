@@ -7,10 +7,10 @@ class TwilioProvider {
     }
 
     /**
-   * Sends an SMS using Twilio.
-   * @param {Object} message - The message object from the database.
-   * @returns {Promise<Object>} Delivery result.
-   */
+     * Sends an SMS using Twilio.
+     * @param {Object} message - The message object from the database.
+     * @returns {Promise<Object>} Delivery result.
+     */
     async send(message) {
         try {
             const result = await this.client.messages.create({

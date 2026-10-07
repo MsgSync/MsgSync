@@ -5,10 +5,10 @@ const axios = require('axios');
  */
 class IntegrationService {
     /**
-   * Sends a notification to a Slack webhook.
-   * @param {string} webhookUrl - The Slack Incoming Webhook URL.
-   * @param {Object} message - The message object that triggered the alert.
-   */
+     * Sends a notification to a Slack webhook.
+     * @param {string} webhookUrl - The Slack Incoming Webhook URL.
+     * @param {Object} message - The message object that triggered the alert.
+     */
     async sendSlackAlert(webhookUrl, message) {
         if (!webhookUrl) return;
 

@@ -7,14 +7,12 @@ const prisma = new PrismaClient();
  */
 async function triggerAggregation(req, res) {
     try {
-    // This could be asynchronous to return 202 Accepted
+        // This could be asynchronous to return 202 Accepted
         await aggregateAllSources();
-        res
-            .status(200)
-            .json({
-                status: 'success',
-                message: 'Aggregation triggered successfully'
-            });
+        res.status(200).json({
+            status: 'success',
+            message: 'Aggregation triggered successfully'
+        });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
@@ -39,12 +37,10 @@ async function addSource(req, res) {
     const { name, type, config } = req.body;
 
     if (!name || !type || !config) {
-        return res
-            .status(400)
-            .json({
-                status: 'error',
-                message: 'Missing required fields: name, type, config'
-            });
+        return res.status(400).json({
+            status: 'error',
+            message: 'Missing required fields: name, type, config'
+        });
     }
 
     try {

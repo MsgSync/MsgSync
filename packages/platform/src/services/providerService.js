@@ -8,18 +8,15 @@ const routingService = require('./routingService');
  */
 class ProviderService {
     /**
-   * Selects a list of optimal providers for failover.
-   */
+     * Selects a list of optimal providers for failover.
+     */
     async selectProviders(message) {
-        return await routingService.getOptimalProviders(
-            message.recipient,
-            message.organizationId
-        );
+        return await routingService.getOptimalProviders(message.recipient, message.organizationId);
     }
 
     /**
-   * Delivers a message with automatic failover support.
-   */
+     * Delivers a message with automatic failover support.
+     */
     async deliverWithFailover(message) {
         const providers = await this.selectProviders(message);
         let lastError = 'No providers available';
@@ -36,9 +33,7 @@ class ProviderService {
                 );
             } catch (e) {
                 lastError = e.message;
-                console.error(
-                    `Critical error with provider ${provider.name}: ${lastError}`
-                );
+                console.error(`Critical error with provider ${provider.name}: ${lastError}`);
             }
         }
 
@@ -50,12 +45,10 @@ class ProviderService {
     }
 
     /**
-   * Delivers a message through the selected provider.
-   */
+     * Delivers a message through the selected provider.
+     */
     async deliver(message, provider) {
-        console.log(
-            `Delivering message ${message.id} via ${provider.name} (${provider.type})`
-        );
+        console.log(`Delivering message ${message.id} via ${provider.name} (${provider.type})`);
 
         if (provider.type === 'twilio') {
             const TwilioProvider = require('./providers/twilio');

@@ -7,9 +7,9 @@ const messageQueue = require('../queue/messageQueue');
  */
 class CampaignService {
     /**
-   * Creates or updates a message for each contact in the list, substituting variables.
-   * @param {string} campaignId - The ID of the campaign to execute.
-   */
+     * Creates or updates a message for each contact in the list, substituting variables.
+     * @param {string} campaignId - The ID of the campaign to execute.
+     */
     async processCampaign(campaignId) {
         const campaign = await prisma.campaign.findUnique({
             where: { id: campaignId },
@@ -77,16 +77,14 @@ class CampaignService {
             where: { id: campaign.id },
             data: {
                 status: 'running',
-                ...(campaign.scheduledAt && new Date(campaign.scheduledAt) <= new Date()
-                    ? {}
-                    : {})
+                ...(campaign.scheduledAt && new Date(campaign.scheduledAt) <= new Date() ? {} : {})
             }
         });
     }
 
     /**
-   * Imports contacts into a list.
-   */
+     * Imports contacts into a list.
+     */
     async importContacts(listId, contactsData) {
         const list = await prisma.contactList.findUnique({ where: { id: listId } });
         if (!list) throw new Error('List not found');

@@ -1,7 +1,4 @@
-const {
-    apiLimiter,
-    messageSendLimiter
-} = require('../src/middleware/rateLimiter');
+const { apiLimiter, messageSendLimiter } = require('../src/middleware/rateLimiter');
 const request = require('supertest');
 const express = require('express');
 
@@ -14,9 +11,7 @@ describe('Rate Limiter Middleware', () => {
     });
 
     it('should apply global API limiter', async () => {
-        app.get('/test', apiLimiter, (req, res) =>
-            res.status(200).json({ ok: true })
-        );
+        app.get('/test', apiLimiter, (req, res) => res.status(200).json({ ok: true }));
 
         const response = await request(app).get('/test');
         expect(response.status).toBe(200);
@@ -24,9 +19,7 @@ describe('Rate Limiter Middleware', () => {
     });
 
     it('should apply stricter message send limiter', async () => {
-        app.post('/send', messageSendLimiter, (req, res) =>
-            res.status(200).json({ ok: true })
-        );
+        app.post('/send', messageSendLimiter, (req, res) => res.status(200).json({ ok: true }));
 
         // Send multiple requests to trigger limit if possible (or just check headers)
         const response = await request(app).post('/send');

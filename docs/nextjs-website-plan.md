@@ -15,6 +15,7 @@ This plan defines how to build a Next.js-based public website and web applicatio
 ## 3. Goal
 
 Build a production-ready Next.js website and web app that:
+
 - replaces static platform pages with modern React UI,
 - consumes the existing MsgSync platform API,
 - supports marketing, authentication, dashboard, campaigns, analytics, billing, and settings,
@@ -23,6 +24,7 @@ Build a production-ready Next.js website and web app that:
 ## 4. Scope
 
 ### Public website
+
 - Home page
 - Features page
 - Pricing / plans page
@@ -30,6 +32,7 @@ Build a production-ready Next.js website and web app that:
 - Contact / get started page
 
 ### Platform web app
+
 - Login / authentication flow
 - Dashboard summary page
 - Campaigns / bulk messaging management
@@ -41,7 +44,8 @@ Build a production-ready Next.js website and web app that:
 
 ## 5. API integration points
 
-The Next.js app should integrate with the existing platform endpoints in `packages/platform`: 
+The Next.js app should integrate with the existing platform endpoints in `packages/platform`:
+
 - `POST /api/messages`
 - `GET /api/messages`
 - `POST /api/otp/send`, `POST /api/otp/verify`
@@ -93,27 +97,32 @@ apps/www/
 ## 7. Technical approach
 
 ### 7.1 Use Next.js App Router
+
 - Use the App Router to build a modular multi-page application.
 - Prefer server-side rendering or incremental static regeneration for marketing pages.
 - Use client components for dashboard interactivity and charting.
 
 ### 7.2 API client
+
 - Create a shared API helper in `apps/www/lib/api.ts`.
 - Use `fetch` or `axios` with a configurable `NEXT_PUBLIC_PLATFORM_API_BASE`.
 - Include API key / bearer token handling in `lib/auth.ts`.
 - Optionally reuse the JS SDK package in `packages/sdk-js` by adding browser-friendly export support.
 
 ### 7.3 Authentication
+
 - Build a login page that calls `/api/auth/verify-2fa` or uses a platform auth flow.
 - Store tokens in secure cookies or local storage as required.
 - Protect app pages using middleware or a client-side auth wrapper.
 
 ### 7.4 Shared UI & design system
+
 - Reuse `apps/design-system` if it is intended for shared UI components.
 - If no common design package exists yet, start with a lightweight component library and standard CSS variables.
 - Use icons from `lucide-react` or maintain the existing visual style from `packages/platform/src/public/js`.
 
 ### 7.5 Data fetching and page flows
+
 - `dashboard` page: fetch `/api/analytics/stats`, `/api/messages`, `/api/bulk/campaigns`.
 - `campaigns` page: list campaigns, create campaign form, launch/pause/resume actions.
 - `analytics` page: trends charts and volume data.
@@ -121,6 +130,7 @@ apps/www/
 - `settings` page: branding, security, user profile.
 
 ### 7.6 Code quality
+
 - Add TypeScript typing for API responses.
 - Keep the Next.js app in the workspace so it can use pnpm workspaces.
 - Add linting and formatting scripts consistent with repo conventions.
@@ -128,23 +138,27 @@ apps/www/
 ## 8. Phased implementation
 
 ### Phase 1 — Setup & scaffolding
+
 - Add `apps/www/package.json` and `tsconfig.json`.
 - Install `next`, `react`, `react-dom`, `swr`, `axios`, and any icon/chart libraries.
 - Add root workspace references via `pnpm-workspace.yaml` already covering `apps/*`.
 - Build the initial public homepage and `/login` page.
 
 ### Phase 2 — API integration
+
 - Add `lib/api.ts` and connect to the backend.
 - Implement the login flow and secure page access.
 - Build the dashboard overview page.
 - Replace one platform static page with a Next page to validate integration.
 
 ### Phase 3 — Platform web app
+
 - Implement campaigns management, contact lists, analytics, billing, and settings.
 - Add forms, data tables, and real-time charts.
 - Add error handling, loading states, and user feedback.
 
 ### Phase 4 — polish and deployment
+
 - Add responsive UI and navigation.
 - Add environment config and docs for local development.
 - Add a Dockerfile and/or `docker-compose` as needed for web app deployment.

@@ -89,7 +89,7 @@ pnpm run dev
  * @returns {Promise<MessageResult>}
  */
 async function sendMessage(to, message, options = {}) {
-  // Implementation
+    // Implementation
 }
 ```
 
@@ -101,18 +101,18 @@ async function sendMessage(to, message, options = {}) {
 - Follow the Arrange-Act-Assert pattern
 
 ```javascript
-describe("MessageHandler", () => {
-  it("should send a message successfully", async () => {
-    // Arrange
-    const handler = new MessageHandler();
-    const message = { to: "+1234567890", body: "Test" };
+describe('MessageHandler', () => {
+    it('should send a message successfully', async () => {
+        // Arrange
+        const handler = new MessageHandler();
+        const message = { to: '+1234567890', body: 'Test' };
 
-    // Act
-    const result = await handler.send(message);
+        // Act
+        const result = await handler.send(message);
 
-    // Assert
-    expect(result.status).toBe("sent");
-  });
+        // Assert
+        expect(result.status).toBe('sent');
+    });
 });
 ```
 

@@ -5,28 +5,22 @@ const app = require('../src/index');
 jest.mock('@prisma/client', () => {
     const mPrismaClient = {
         source: {
-            findMany: jest
-                .fn()
-                .mockResolvedValue([
-                    {
-                        id: '1',
-                        name: 'Test Source',
-                        type: 'sms',
-                        active: true,
-                        config: { url: 'http://example.com' }
-                    }
-                ]),
+            findMany: jest.fn().mockResolvedValue([
+                {
+                    id: '1',
+                    name: 'Test Source',
+                    type: 'sms',
+                    active: true,
+                    config: { url: 'http://example.com' }
+                }
+            ]),
             create: jest
                 .fn()
-                .mockImplementation((data) =>
-                    Promise.resolve({ id: '2', ...data.data })
-                )
+                .mockImplementation((data) => Promise.resolve({ id: '2', ...data.data }))
         },
         message: {
             count: jest.fn().mockResolvedValue(10),
-            groupBy: jest
-                .fn()
-                .mockResolvedValue([{ source: 'Test Source', _count: { _all: 5 } }])
+            groupBy: jest.fn().mockResolvedValue([{ source: 'Test Source', _count: { _all: 5 } }])
         }
     };
     return { PrismaClient: jest.fn(() => mPrismaClient) };

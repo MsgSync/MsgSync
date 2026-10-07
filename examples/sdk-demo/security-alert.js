@@ -11,7 +11,7 @@ async function runSecurityCampaign() {
     const HEADERS = { headers: { 'X-API-Key': 'demo-api-key' } };
 
     try {
-    // 1. Create the "Impacted Users" list
+        // 1. Create the "Impacted Users" list
         const listResp = await axios.post(
             `${API_BASE}/lists`,
             { name: 'Security Notifications' },
@@ -37,7 +37,7 @@ async function runSecurityCampaign() {
 
         // 3. Define the Security Template
         const securityTemplate =
-      "Security Alert: Hi {{firstName}}, a new login was detected for your account from {{device}} in {{location}}. If this wasn't you, secure your account immediately: https://msgsync.com/secure";
+            "Security Alert: Hi {{firstName}}, a new login was detected for your account from {{device}} in {{location}}. If this wasn't you, secure your account immediately: https://msgsync.com/secure";
 
         console.log('\n3. Creating Security Campaign...');
         const campaignResp = await axios.post(
@@ -59,10 +59,7 @@ async function runSecurityCampaign() {
             '- To Charlie: "Security Alert: Hi Charlie, a new login was detected... from Chrome on Mac in London, UK..."'
         );
     } catch (error) {
-        console.error(
-            'Security Alert Error:',
-            error.response?.data || error.message
-        );
+        console.error('Security Alert Error:', error.response?.data || error.message);
     }
 }
 

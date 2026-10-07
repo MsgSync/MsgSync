@@ -15,9 +15,9 @@ class SyncService {
     }
 
     /**
-   * Syncs a normalized message to the Platform.
-   * @param {Object} message - The normalized record from Aggregator DB.
-   */
+     * Syncs a normalized message to the Platform.
+     * @param {Object} message - The normalized record from Aggregator DB.
+     */
     async syncToPlatform(message) {
         console.log(`Syncing aggregated message ${message.id} to platform...`);
 

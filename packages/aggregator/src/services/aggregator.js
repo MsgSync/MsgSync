@@ -50,8 +50,8 @@ async function aggregateFromSource(source) {
     console.log(`Aggregating from source: ${source.name} (${source.type})`);
 
     try {
-    // Determine how to fetch data based on source type and config
-    // For now, let's pretend we're fetching from an API endpoint
+        // Determine how to fetch data based on source type and config
+        // For now, let's pretend we're fetching from an API endpoint
         const response = await axios.get(source.config.url, {
             headers: source.config.headers || {}
         });
@@ -72,9 +72,7 @@ async function aggregateFromSource(source) {
             });
         }
 
-        console.log(
-            `Successfully aggregated ${rawMessages.length} messages from ${source.name}`
-        );
+        console.log(`Successfully aggregated ${rawMessages.length} messages from ${source.name}`);
     } catch (error) {
         console.error(`Error aggregating from ${source.name}:`, error.message);
     }

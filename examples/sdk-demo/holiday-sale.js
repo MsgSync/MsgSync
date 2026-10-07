@@ -11,7 +11,7 @@ async function runHolidayCampaign() {
     const HEADERS = { headers: { 'X-API-Key': 'demo-api-key' } };
 
     try {
-    // 1. Create the "Holiday Shoppers" list
+        // 1. Create the "Holiday Shoppers" list
         const listResp = await axios.post(
             `${API_BASE}/lists`,
             { name: 'Holiday Shoppers' },
@@ -42,7 +42,7 @@ async function runHolidayCampaign() {
 
         // 3. Define the Holiday Template
         const holidayTemplate =
-      "Season's Greetings {{firstName}}! ❄️ Gift yourself with our Winter Sale. Use code {{code}} for {{off}} OFF everything! Valid until Jan 5. Shop now: https://example.com/sale";
+            "Season's Greetings {{firstName}}! ❄️ Gift yourself with our Winter Sale. Use code {{code}} for {{off}} OFF everything! Valid until Jan 5. Shop now: https://example.com/sale";
 
         console.log('\n3. Creating Holiday Campaign...');
         const campaignResp = await axios.post(

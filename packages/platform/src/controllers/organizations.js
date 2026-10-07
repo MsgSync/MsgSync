@@ -5,14 +5,16 @@ const { ROLES } = require('../config/rbac');
 exports.create = async (req, res) => {
     try {
         const requestedType = req.body.type;
-        const type = req.identityRole === ROLES.ADMIN
-            ? requestedType || 'CUSTOMER'
-            : req.identityRole === ROLES.AGGREGATOR
-                ? (['RESELLER', 'CUSTOMER'].includes(requestedType) ? requestedType : 'CUSTOMER')
-                : 'CUSTOMER';
-        const parentId = req.identityRole === ROLES.ADMIN
-            ? req.body.parentId || null
-            : req.organization.id;
+        const type =
+            req.identityRole === ROLES.ADMIN
+                ? requestedType || 'CUSTOMER'
+                : req.identityRole === ROLES.AGGREGATOR
+                  ? ['RESELLER', 'CUSTOMER'].includes(requestedType)
+                      ? requestedType
+                      : 'CUSTOMER'
+                  : 'CUSTOMER';
+        const parentId =
+            req.identityRole === ROLES.ADMIN ? req.body.parentId || null : req.organization.id;
         const org = await organizationService.createOrganization({
             ...req.body,
             type,
@@ -52,7 +54,9 @@ exports.listSubOrgs = async (req, res) => {
         if (parentId) {
             await requireOrganizationAccess(req, parentId);
         } else if (req.identityRole !== ROLES.ADMIN) {
-            return res.status(403).json({ error: 'Only administrators can list all organizations' });
+            return res
+                .status(403)
+                .json({ error: 'Only administrators can list all organizations' });
         }
         const orgs = await organizationService.listSubOrganizations(parentId);
         res.json(orgs);
@@ -91,9 +95,7 @@ exports.addBalance = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         await requireOrganizationAccess(req, req.params.id);
-        const transactions = await organizationService.getTransactions(
-            req.params.id
-        );
+        const transactions = await organizationService.getTransactions(req.params.id);
         res.json(transactions);
     } catch (error) {
         res.status(error.status || 500).json({ error: error.message });

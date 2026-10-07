@@ -1,10 +1,10 @@
 class AiService {
     /**
-   * Analyzes the sentiment of a message content.
-   * In production, this would call OpenAI, HuggingFace, or a dedicated NLP microservice.
-   */
+     * Analyzes the sentiment of a message content.
+     * In production, this would call OpenAI, HuggingFace, or a dedicated NLP microservice.
+     */
     async analyzeSentiment(content) {
-    // Simulated AI processing time
+        // Simulated AI processing time
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         const text = content.toLowerCase();
@@ -67,12 +67,10 @@ class AiService {
     }
 
     /**
-   * Batch analyzes multiple messages for campaign reporting.
-   */
+     * Batch analyzes multiple messages for campaign reporting.
+     */
     async analyzeCampaignSentiment(messages) {
-        const results = await Promise.all(
-            messages.map((m) => this.analyzeSentiment(m.content))
-        );
+        const results = await Promise.all(messages.map((m) => this.analyzeSentiment(m.content)));
         const summary = {
             positive: 0,
             neutral: 0,

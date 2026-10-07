@@ -9,10 +9,10 @@ class GenericHttpProvider {
     }
 
     /**
-   * Sends an SMS using a generic HTTP request.
-   * @param {Object} message - The message object.
-   * @returns {Promise<Object>} Delivery result.
-   */
+     * Sends an SMS using a generic HTTP request.
+     * @param {Object} message - The message object.
+     * @returns {Promise<Object>} Delivery result.
+     */
     async send(message) {
         try {
             // Safer template replacement
@@ -34,8 +34,7 @@ class GenericHttpProvider {
 
             return {
                 success: true,
-                externalId:
-          response.data.id || response.data.sid || `http_${Date.now()}`,
+                externalId: response.data.id || response.data.sid || `http_${Date.now()}`,
                 error: null
             };
         } catch (error) {

@@ -4,8 +4,7 @@ const { requireOrganizationAccess } = require('../services/authorizationService'
 exports.listInvoices = async (req, res) => {
     try {
         const { organizationId } = req.query;
-        if (!organizationId)
-            return res.status(400).json({ error: 'organizationId is required' });
+        if (!organizationId) return res.status(400).json({ error: 'organizationId is required' });
         await requireOrganizationAccess(req, organizationId);
 
         const invoices = await invoiceService.getInvoices(organizationId);
@@ -47,10 +46,7 @@ exports.updateStatus = async (req, res) => {
         const existingInvoice = await invoiceService.getInvoiceById(req.params.id);
         if (!existingInvoice) return res.status(404).json({ error: 'Invoice not found' });
         await requireOrganizationAccess(req, existingInvoice.organizationId);
-        const invoice = await invoiceService.updateInvoiceStatus(
-            req.params.id,
-            status
-        );
+        const invoice = await invoiceService.updateInvoiceStatus(req.params.id, status);
         res.json(invoice);
     } catch (error) {
         res.status(400).json({ error: error.message });

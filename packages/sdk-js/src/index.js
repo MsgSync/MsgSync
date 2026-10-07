@@ -14,13 +14,13 @@ class MsgSyncClient {
     }
 
     /**
-   * Sends an SMS message.
-   * @param {Object} params - The message parameters.
-   * @param {string} params.recipient - Destination phone number.
-   * @param {string} params.content - Message body.
-   * @param {Object} [params.metadata] - Optional metadata.
-   * @returns {Promise<Object>} The API response.
-   */
+     * Sends an SMS message.
+     * @param {Object} params - The message parameters.
+     * @param {string} params.recipient - Destination phone number.
+     * @param {string} params.content - Message body.
+     * @param {Object} [params.metadata] - Optional metadata.
+     * @returns {Promise<Object>} The API response.
+     */
     async sendMessage(params) {
         try {
             const response = await this.client.post('/messages', params);
@@ -31,10 +31,10 @@ class MsgSyncClient {
     }
 
     /**
-   * Gets the status of a message.
-   * @param {string} messageId - The ID of the message.
-   * @returns {Promise<Object>} The API response.
-   */
+     * Gets the status of a message.
+     * @param {string} messageId - The ID of the message.
+     * @returns {Promise<Object>} The API response.
+     */
     async getMessageStatus(messageId) {
         try {
             const response = await this.client.get(`/messages/${messageId}`);
@@ -45,9 +45,9 @@ class MsgSyncClient {
     }
 
     /**
-   * Lists recent messages.
-   * @returns {Promise<Object>} The API response.
-   */
+     * Lists recent messages.
+     * @returns {Promise<Object>} The API response.
+     */
     async listMessages() {
         try {
             const response = await this.client.get('/messages');
@@ -58,13 +58,13 @@ class MsgSyncClient {
     }
 
     /**
-   * Sends an OTP (One-Time Password) to a recipient.
-   * @param {Object} params - The OTP parameters.
-   * @param {string} params.recipient - Destination phone number.
-   * @param {number} [params.length] - Length of the OTP.
-   * @param {number} [params.ttl] - Time to live in seconds.
-   * @returns {Promise<Object>} The API response.
-   */
+     * Sends an OTP (One-Time Password) to a recipient.
+     * @param {Object} params - The OTP parameters.
+     * @param {string} params.recipient - Destination phone number.
+     * @param {number} [params.length] - Length of the OTP.
+     * @param {number} [params.ttl] - Time to live in seconds.
+     * @returns {Promise<Object>} The API response.
+     */
     async sendOTP(params) {
         try {
             const response = await this.client.post('/otp/send', params);
@@ -75,11 +75,11 @@ class MsgSyncClient {
     }
 
     /**
-   * Verifies an OTP code.
-   * @param {string} recipient - Destination phone number.
-   * @param {string} code - The code to verify.
-   * @returns {Promise<Object>} The API response.
-   */
+     * Verifies an OTP code.
+     * @param {string} recipient - Destination phone number.
+     * @param {string} code - The code to verify.
+     * @returns {Promise<Object>} The API response.
+     */
     async verifyOTP(recipient, code) {
         try {
             const response = await this.client.post('/otp/verify', {

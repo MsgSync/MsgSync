@@ -163,65 +163,65 @@ requirepass your-strong-redis-password
 **`docker-compose.production.yml`**
 
 ```yaml
-version: "3.8"
+version: '3.8'
 
 services:
-  platform:
-    build:
-      context: ./packages/platform
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-    env_file:
-      - ./packages/platform/.env.production
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          cpus: "1"
-          memory: 1G
+    platform:
+        build:
+            context: ./packages/platform
+            dockerfile: Dockerfile
+        ports:
+            - '3001:3001'
+        environment:
+            - NODE_ENV=production
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+        env_file:
+            - ./packages/platform/.env.production
+        restart: unless-stopped
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        deploy:
+            replicas: 2
+            resources:
+                limits:
+                    cpus: '1'
+                    memory: 1G
 
-  aggregator:
-    build:
-      context: ./packages/aggregator
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${AGGREGATOR_DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-    env_file:
-      - ./packages/aggregator/.env.production
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    aggregator:
+        build:
+            context: ./packages/aggregator
+            dockerfile: Dockerfile
+        ports:
+            - '3000:3000'
+        environment:
+            - NODE_ENV=production
+            - DATABASE_URL=${AGGREGATOR_DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+        env_file:
+            - ./packages/aggregator/.env.production
+        restart: unless-stopped
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+            interval: 30s
+            timeout: 10s
+            retries: 3
 
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - platform
-      - aggregator
-    restart: unless-stopped
+    nginx:
+        image: nginx:alpine
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./ssl:/etc/nginx/ssl:ro
+        depends_on:
+            - platform
+            - aggregator
+        restart: unless-stopped
 ```
 
 **Deploy:**
@@ -364,23 +364,23 @@ pnpm add winston
 **`packages/platform/src/utils/logger.js`**
 
 ```javascript
-const winston = require("winston");
+const winston = require('winston');
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || "info",
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.File({ filename: "error.log", level: "error" }),
-    new winston.transports.File({ filename: "combined.log" }),
-  ],
+    level: process.env.LOG_LEVEL || 'info',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' })
+    ]
 });
 
-if (process.env.NODE_ENV !== "production") {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  );
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(
+        new winston.transports.Console({
+            format: winston.format.simple()
+        })
+    );
 }
 
 module.exports = logger;
@@ -406,35 +406,35 @@ module.exports = logger;
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: msgsync-platform
+    name: msgsync-platform
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: msgsync-platform
-  template:
-    metadata:
-      labels:
-        app: msgsync-platform
-    spec:
-      containers:
-        - name: platform
-          image: your-registry/msgsync-platform:latest
-          ports:
-            - containerPort: 3001
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: msgsync-secrets
-                  key: database-url
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "500m"
-            limits:
-              memory: "1Gi"
-              cpu: "1000m"
+    replicas: 3
+    selector:
+        matchLabels:
+            app: msgsync-platform
+    template:
+        metadata:
+            labels:
+                app: msgsync-platform
+        spec:
+            containers:
+                - name: platform
+                  image: your-registry/msgsync-platform:latest
+                  ports:
+                      - containerPort: 3001
+                  env:
+                      - name: DATABASE_URL
+                        valueFrom:
+                            secretKeyRef:
+                                name: msgsync-secrets
+                                key: database-url
+                  resources:
+                      requests:
+                          memory: '512Mi'
+                          cpu: '500m'
+                      limits:
+                          memory: '1Gi'
+                          cpu: '1000m'
 ```
 
 ### Database Optimization
@@ -477,9 +477,9 @@ find /backups -name "msgsync_*.sql.gz" -mtime +30 -delete
 1. **RTO (Recovery Time Objective)**: 1 hour
 2. **RPO (Recovery Point Objective)**: 15 minutes
 3. **Backup Strategy**:
-   - Continuous WAL archiving for PostgreSQL
-   - Redis AOF persistence enabled
-   - Daily full backups to S3/GCS
+    - Continuous WAL archiving for PostgreSQL
+    - Redis AOF persistence enabled
+    - Daily full backups to S3/GCS
 
 ### 3. Testing Recovery
 

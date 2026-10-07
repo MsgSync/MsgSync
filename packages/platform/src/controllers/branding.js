@@ -13,10 +13,7 @@ exports.getBranding = async (req, res) => {
 exports.updateBranding = async (req, res) => {
     try {
         const { organizationId } = req.params;
-        const branding = await brandingService.updateBranding(
-            organizationId,
-            req.body
-        );
+        const branding = await brandingService.updateBranding(organizationId, req.body);
         res.json(branding);
     } catch (error) {
         res.status(400).json({ error: error.message });

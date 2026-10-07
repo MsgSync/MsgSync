@@ -6,8 +6,8 @@ const QRCode = require('qrcode');
 
 class SecurityService {
     /**
-   * Checks if a login is restricted based on organization country rules.
-   */
+     * Checks if a login is restricted based on organization country rules.
+     */
     async checkLoginRestricted(organizationId, remoteIp) {
         const organization = await prisma.organization.findUnique({
             where: { id: organizationId },
@@ -16,8 +16,8 @@ class SecurityService {
 
         if (
             !organization ||
-      !organization.allowedCountries ||
-      organization.allowedCountries.length === 0
+            !organization.allowedCountries ||
+            organization.allowedCountries.length === 0
         ) {
             return { restricted: false };
         }
@@ -37,8 +37,8 @@ class SecurityService {
     }
 
     /**
-   * Generates a 2FA secret and placeholder QR code URL.
-   */
+     * Generates a 2FA secret and placeholder QR code URL.
+     */
     async generate2FASecret(userId, email) {
         const secret = speakeasy.generateSecret({
             name: `MsgSync:${email}`
@@ -54,8 +54,8 @@ class SecurityService {
     }
 
     /**
-   * Verifies a 2FA token before enabling.
-   */
+     * Verifies a 2FA token before enabling.
+     */
     async verify2FAPreSetup(secret, token) {
         return speakeasy.totp.verify({
             secret,
@@ -97,10 +97,10 @@ class SecurityService {
     }
 
     /**
-   * Checks if a message request is valid based on security rules.
-   */
+     * Checks if a message request is valid based on security rules.
+     */
     async validateRequest(apiKey, organization, recipient, content, remoteIp) {
-    // 1. IP Whitelisting
+        // 1. IP Whitelisting
         if (apiKey.allowedIps && apiKey.allowedIps.length > 0) {
             if (!apiKey.allowedIps.includes(remoteIp)) {
                 return { valid: false, reason: 'IP_NOT_ALLOWED' };
@@ -135,8 +135,8 @@ class SecurityService {
     }
 
     /**
-   * Basic pattern matching for spam/phishing keywords.
-   */
+     * Basic pattern matching for spam/phishing keywords.
+     */
     checkForSpam(content) {
         const blacklist = [
             'lottery',
@@ -172,13 +172,7 @@ class SecurityService {
         });
     }
 
-    async logSecurityEvent(
-        userId,
-        organizationId,
-        action,
-        metadata = {},
-        ipAddress = null
-    ) {
+    async logSecurityEvent(userId, organizationId, action, metadata = {}, ipAddress = null) {
         return await prisma.auditLog.create({
             data: {
                 action,

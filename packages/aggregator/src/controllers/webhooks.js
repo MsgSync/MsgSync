@@ -13,7 +13,7 @@ async function handleWebhook(req, res) {
     console.log(`Received webhook from source: ${source}`);
 
     try {
-    // 1. Normalize the message based on source
+        // 1. Normalize the message based on source
         const normalized = normalizeMessage(rawPayload, source, 'webhook');
 
         // 2. Save to Aggregator Database

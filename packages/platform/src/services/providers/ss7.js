@@ -57,8 +57,8 @@ class SS7Provider extends EventEmitter {
     }
 
     handleIncomingMessage(data) {
-    // Parse M3UA/SCCP message
-    // This is a simplified parser - production requires full protocol implementation
+        // Parse M3UA/SCCP message
+        // This is a simplified parser - production requires full protocol implementation
         try {
             const message = this.parseM3UAMessage(data);
             if (message.type === 'SMS_DELIVER') {
@@ -72,8 +72,8 @@ class SS7Provider extends EventEmitter {
     }
 
     parseM3UAMessage(buffer) {
-    // Simplified M3UA/SCCP parser
-    // Production implementation should use proper ASN.1 decoding
+        // Simplified M3UA/SCCP parser
+        // Production implementation should use proper ASN.1 decoding
         return {
             type: 'SMS_DELIVER',
             sender: buffer.toString('hex', 0, 10),
@@ -112,8 +112,8 @@ class SS7Provider extends EventEmitter {
     }
 
     buildSCCPMessage(params) {
-    // Simplified SCCP message builder
-    // Production requires proper TCAP/MAP encoding
+        // Simplified SCCP message builder
+        // Production requires proper TCAP/MAP encoding
         const buffer = Buffer.alloc(256);
 
         // M3UA Header

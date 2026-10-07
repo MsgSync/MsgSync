@@ -66,11 +66,9 @@ exports.login = async (req, res) => {
         }
 
         if (user.twoFactorEnabled) {
-            const tempToken = jwt.sign(
-                { userId: user.id, type: '2FA_PENDING' },
-                JWT_SECRET,
-                { expiresIn: '10m' }
-            );
+            const tempToken = jwt.sign({ userId: user.id, type: '2FA_PENDING' }, JWT_SECRET, {
+                expiresIn: '10m'
+            });
 
             return res.json({
                 status: 'success',
@@ -84,23 +82,18 @@ exports.login = async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        const refreshToken = jwt.sign(
-            { userId: user.id, type: 'REFRESH' },
-            JWT_SECRET,
-            { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-        );
+        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
+            expiresIn: REFRESH_TOKEN_EXPIRES_IN
+        });
 
         await prisma.user.update({
             where: { id: user.id },
             data: { lastLoginAt: new Date() }
         });
 
-        await securityService.logSecurityEvent(
-            user.id,
-            user.organizationId,
-            'LOGIN_SUCCESS',
-            { remoteIp }
-        );
+        await securityService.logSecurityEvent(user.id, user.organizationId, 'LOGIN_SUCCESS', {
+            remoteIp
+        });
 
         res.json({
             status: 'success',
@@ -183,15 +176,23 @@ exports.register = async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        const refreshToken = jwt.sign(
-            { userId: user.id, type: 'REFRESH' },
-            JWT_SECRET,
-            { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-        );
+        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
+            expiresIn: REFRESH_TOKEN_EXPIRES_IN
+        });
 
         res.status(201).json({
             status: 'success',
-            data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization } }
+            data: {
+                accessToken,
+                refreshToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    organization: user.organization
+                }
+            }
         });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
@@ -246,11 +247,9 @@ exports.refreshToken = async (req, res) => {
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        const newRefreshToken = jwt.sign(
-            { userId: user.id, type: 'REFRESH' },
-            JWT_SECRET,
-            { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-        );
+        const newRefreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
+            expiresIn: REFRESH_TOKEN_EXPIRES_IN
+        });
 
         res.json({
             status: 'success',
@@ -286,13 +285,24 @@ exports.verify2FA = async (req, res) => {
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
-        const refreshToken = jwt.sign(
-            { userId: user.id, type: 'REFRESH' },
-            JWT_SECRET,
-            { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
-        );
+        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
+            expiresIn: REFRESH_TOKEN_EXPIRES_IN
+        });
 
-        res.json({ status: 'success', data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization } } });
+        res.json({
+            status: 'success',
+            data: {
+                accessToken,
+                refreshToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    organization: user.organization
+                }
+            }
+        });
     } catch (error) {
         res.status(401).json({ error: 'Invalid session or code' });
     }
@@ -342,33 +352,76 @@ exports.ssoLogin = async (req, res) => {
         if (!user) {
             let org = await prisma.organization.findFirst({ where: { type: 'ADMIN' } });
             if (!org) {
-                org = await prisma.organization.create({ data: { name: 'Default Admin Org', type: 'ADMIN' } });
+                org = await prisma.organization.create({
+                    data: { name: 'Default Admin Org', type: 'ADMIN' }
+                });
             }
             user = await prisma.user.create({
-                data: { email: mockUserInfo.email, name: mockUserInfo.name, ssoId: mockUserInfo.id, ssoProvider: provider, avatarUrl: mockUserInfo.avatar, organizationId: org.id },
+                data: {
+                    email: mockUserInfo.email,
+                    name: mockUserInfo.name,
+                    ssoId: mockUserInfo.id,
+                    ssoProvider: provider,
+                    avatarUrl: mockUserInfo.avatar,
+                    organizationId: org.id
+                },
                 include: { organization: true }
             });
         }
 
         const securityService = require('../services/securityService');
         const remoteIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        const restriction = await securityService.checkLoginRestricted(user.organizationId, remoteIp);
+        const restriction = await securityService.checkLoginRestricted(
+            user.organizationId,
+            remoteIp
+        );
 
         if (restriction.restricted) {
-            return res.status(403).json({ status: 'error', message: `Access denied from ${restriction.detectedCountry}` });
+            return res
+                .status(403)
+                .json({
+                    status: 'error',
+                    message: `Access denied from ${restriction.detectedCountry}`
+                });
         }
 
         if (user.twoFactorEnabled) {
-            const tfaToken = jwt.sign({ userId: user.id, type: '2FA_PENDING' }, JWT_SECRET, { expiresIn: '10m' });
-            return res.json({ status: 'success', data: { requires2FA: true, tempToken: tfaToken } });
+            const tfaToken = jwt.sign({ userId: user.id, type: '2FA_PENDING' }, JWT_SECRET, {
+                expiresIn: '10m'
+            });
+            return res.json({
+                status: 'success',
+                data: { requires2FA: true, tempToken: tfaToken }
+            });
         }
 
-        const accessToken = jwt.sign({ userId: user.id, email: user.email, orgId: user.organizationId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
+        const accessToken = jwt.sign(
+            { userId: user.id, email: user.email, orgId: user.organizationId },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+        const refreshToken = jwt.sign({ userId: user.id, type: 'REFRESH' }, JWT_SECRET, {
+            expiresIn: REFRESH_TOKEN_EXPIRES_IN
+        });
 
-        await securityService.logSecurityEvent(user.id, user.organizationId, 'LOGIN_SUCCESS', { remoteIp });
+        await securityService.logSecurityEvent(user.id, user.organizationId, 'LOGIN_SUCCESS', {
+            remoteIp
+        });
 
-        res.json({ status: 'success', data: { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization } } });
+        res.json({
+            status: 'success',
+            data: {
+                accessToken,
+                refreshToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    organization: user.organization
+                }
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

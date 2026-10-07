@@ -13,15 +13,15 @@ MsgSync is a powerful messaging platform designed to synchronize and manage mess
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/MsgSync/MsgSync.git
-   cd MsgSync
-   ```
+    ```bash
+    git clone https://github.com/MsgSync/MsgSync.git
+    cd MsgSync
+    ```
 
 2. Install dependencies for the root and workspaces:
-   ```bash
-   pnpm install
-   ```
+    ```bash
+    pnpm install
+    ```
 
 ## Modules Overview
 

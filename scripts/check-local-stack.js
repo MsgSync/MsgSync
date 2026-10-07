@@ -1,7 +1,9 @@
 const { execSync } = require('child_process');
 
 function run(command) {
-    return execSync(command, { stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
+    return execSync(command, { stdio: ['ignore', 'pipe', 'pipe'] })
+        .toString()
+        .trim();
 }
 
 function main() {

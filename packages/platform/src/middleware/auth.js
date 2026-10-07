@@ -7,9 +7,7 @@ const { normalizeRole, permissionsForRole } = require('../config/rbac');
 async function authenticate(req, res, next) {
     const apiKeyValue = req.headers['x-api-key'];
     const authHeader = req.headers.authorization;
-    const bearerToken = authHeader?.startsWith('Bearer ')
-        ? authHeader.slice(7)
-        : null;
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     const credential = apiKeyValue || bearerToken;
 
     if (!credential) {

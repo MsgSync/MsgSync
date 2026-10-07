@@ -11,7 +11,7 @@ async function runOTPDemo() {
     const recipient = '+15550001122';
 
     try {
-    // 1. Request an OTP
+        // 1. Request an OTP
         console.log(`\n1. Requesting OTP for ${recipient}...`);
         const sendResp = await client.sendOTP({
             recipient: recipient,

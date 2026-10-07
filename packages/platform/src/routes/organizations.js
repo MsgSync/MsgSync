@@ -11,9 +11,25 @@ router.use(apiLimiter);
 
 router.post('/', authorize(PERMISSIONS.ORGANIZATION_MANAGE), organizationController.create);
 router.get('/:id', authorize(PERMISSIONS.ORGANIZATION_READ), organizationController.getById);
-router.get('/:id/sub-orgs', authorize(PERMISSIONS.ORGANIZATION_READ), organizationController.listSubOrgs);
-router.post('/:id/balance', authorize(PERMISSIONS.BALANCE_MANAGE), organizationController.addBalance);
-router.get('/:id/transactions', authorize(PERMISSIONS.INVOICE_READ), organizationController.getTransactions);
-router.get('/:id/reporting', authorize(PERMISSIONS.ANALYTICS_READ), organizationController.getReporting);
+router.get(
+    '/:id/sub-orgs',
+    authorize(PERMISSIONS.ORGANIZATION_READ),
+    organizationController.listSubOrgs
+);
+router.post(
+    '/:id/balance',
+    authorize(PERMISSIONS.BALANCE_MANAGE),
+    organizationController.addBalance
+);
+router.get(
+    '/:id/transactions',
+    authorize(PERMISSIONS.INVOICE_READ),
+    organizationController.getTransactions
+);
+router.get(
+    '/:id/reporting',
+    authorize(PERMISSIONS.ANALYTICS_READ),
+    organizationController.getReporting
+);
 
 module.exports = router;

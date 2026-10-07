@@ -43,9 +43,9 @@ class OrganizationService {
             if (!org) throw new Error('Organization not found');
 
             const newBalance =
-        type === 'CREDIT'
-            ? parseFloat(org.balance) + parseFloat(amount)
-            : parseFloat(org.balance) - parseFloat(amount);
+                type === 'CREDIT'
+                    ? parseFloat(org.balance) + parseFloat(amount)
+                    : parseFloat(org.balance) - parseFloat(amount);
 
             if (newBalance < 0) throw new Error('Insufficient balance');
 
@@ -76,7 +76,7 @@ class OrganizationService {
     }
 
     async getReportingData(organizationId) {
-    // Basic aggregation for dummy reporting
+        // Basic aggregation for dummy reporting
         const messages = await prisma.message.groupBy({
             by: ['status'],
             where: { organizationId },

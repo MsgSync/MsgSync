@@ -5,9 +5,9 @@ const axios = require('axios');
 
 class LookupService {
     /**
-   * Performs an HLR/MNP lookup for a phone number.
-   * Uses cache if available and fresh (less than 30 days).
-   */
+     * Performs an HLR/MNP lookup for a phone number.
+     * Uses cache if available and fresh (less than 30 days).
+     */
     async performLookup(phone) {
         const cleanPhone = phone.replace('+', '');
 
@@ -17,10 +17,7 @@ class LookupService {
         });
 
         const cacheExpiry = 30 * 24 * 60 * 60 * 1000; // 30 days
-        if (
-            cached &&
-      Date.now() - new Date(cached.lastCheckedAt).getTime() < cacheExpiry
-        ) {
+        if (cached && Date.now() - new Date(cached.lastCheckedAt).getTime() < cacheExpiry) {
             return cached;
         }
 
@@ -66,13 +63,11 @@ class LookupService {
     }
 
     /**
-   * Performs a real external HLR request based on configuration.
-   */
+     * Performs a real external HLR request based on configuration.
+     */
     async performExternalHlr(config, phone) {
         try {
-            console.log(
-                `Calling HLR provider ${config.name} for ${phone} via ${config.baseUrl}`
-            );
+            console.log(`Calling HLR provider ${config.name} for ${phone} via ${config.baseUrl}`);
 
             const options = {
                 method: config.method,
@@ -88,7 +83,7 @@ class LookupService {
                 // Here we'll support a generic Bearer token or Key if apiSecret exists
                 if (config.apiSecret) {
                     options.headers['Authorization'] =
-            `Basic ${Buffer.from(config.apiKey + ':' + config.apiSecret).toString('base64')}`;
+                        `Basic ${Buffer.from(config.apiKey + ':' + config.apiSecret).toString('base64')}`;
                 } else {
                     options.headers['X-API-Key'] = config.apiKey;
                 }
@@ -107,14 +102,12 @@ class LookupService {
             // Apply mapping if provided
             if (config.mapping) {
                 const mapping =
-          typeof config.mapping === 'string'
-              ? JSON.parse(config.mapping)
-              : config.mapping;
+                    typeof config.mapping === 'string'
+                        ? JSON.parse(config.mapping)
+                        : config.mapping;
                 return {
                     isValid: this.getValueByPath(data, mapping.isValid) ?? true,
-                    carrier:
-            this.getValueByPath(data, mapping.carrier) ||
-            config.name + ' Network',
+                    carrier: this.getValueByPath(data, mapping.carrier) || config.name + ' Network',
                     mcc: this.getValueByPath(data, mapping.mcc) || '000',
                     mnc: this.getValueByPath(data, mapping.mnc) || '00',
                     type: this.getValueByPath(data, mapping.type) || 'mobile',
@@ -132,45 +125,35 @@ class LookupService {
                 isPorted: !!data.isPorted
             };
         } catch (error) {
-            console.error(
-                `HLR External Call for ${config.name} Failed:`,
-                error.message
-            );
+            console.error(`HLR External Call for ${config.name} Failed:`, error.message);
             return null;
         }
     }
 
     /**
-   * Helper to get nested value from object via path strings like 'data.user.name'
-   */
+     * Helper to get nested value from object via path strings like 'data.user.name'
+     */
     getValueByPath(obj, path) {
         if (!path) return undefined;
         return path.split('.').reduce((acc, part) => acc && acc[part], obj);
     }
 
     /**
-   * Simulates an HLR/MNP response.
-   */
+     * Simulates an HLR/MNP response.
+     */
     async mockExternalHlr(phone) {
-    // Simulated network delay
+        // Simulated network delay
         await new Promise((resolve) => setTimeout(resolve, 800));
 
         // Logic to simulate different results based on number patterns
         const isPorted = phone.endsWith('1') || phone.endsWith('7');
-        const carrierType =
-      phone.startsWith('1') || phone.length > 10 ? 'mobile' : 'landline';
+        const carrierType = phone.startsWith('1') || phone.length > 10 ? 'mobile' : 'landline';
 
-        const mobileCarriers = [
-            'Vodafone',
-            'T-Mobile',
-            'AT&T',
-            'Orange',
-            'Telefónica'
-        ];
+        const mobileCarriers = ['Vodafone', 'T-Mobile', 'AT&T', 'Orange', 'Telefónica'];
         const carrier =
-      carrierType === 'mobile'
-          ? mobileCarriers[Math.floor(Math.random() * mobileCarriers.length)]
-          : 'Fixed Line Operator';
+            carrierType === 'mobile'
+                ? mobileCarriers[Math.floor(Math.random() * mobileCarriers.length)]
+                : 'Fixed Line Operator';
 
         return {
             isValid: true,

@@ -1,9 +1,9 @@
 ---
 name: Feature Request
 about: Suggest an idea for MsgSync
-title: "[FEATURE] "
+title: '[FEATURE] '
 labels: enhancement
-assignees: ""
+assignees: ''
 ---
 
 ## Feature Description
