@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-surface: #0f131c;
+    --color-surface-dim: #0f131c;
+    --color-surface-bright: #353942;
+    --color-surface-container-lowest: #0a0e16;
+    --color-surface-container-low: #181c24;
+    --color-surface-container: #1c2028;
+    --color-surface-container-high: #262a33;
+    --color-surface-container-highest: #31353e;
+    --color-on-surface: #dfe2ee;
+    --color-on-surface-variant: #bcc9cd;
+    --color-outline: #869397;
+    --color-outline-variant: #3d494c;
+    --color-primary: #4cd7f6;
+    --color-primary-container: #06b6d4;
+    --color-on-primary: #003640;
+    --color-on-primary-container: #00424f;
+    --color-secondary: #4edea3;
+    --color-secondary-container: #00a572;
+    --color-on-secondary: #002113;
+    --color-tertiary: #d0bcff;
+    --color-error: #ffb4ab;
+    --color-error-container: #93000a;
+    --color-on-error: #690005;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar for NOC console */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0e16;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #31353e;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3d494c;
+  }
+}
+
+.font-code-metric {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+}
+
+.font-code-metric-lg {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 22px;
+  line-height: 28px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.glow-cyan {
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
+
+.glow-red {
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+}
